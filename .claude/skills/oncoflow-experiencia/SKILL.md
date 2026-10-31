@@ -97,6 +97,13 @@ Use os quatro status da plataforma com selos de texto: *Informação consultada*
 
 ## OncoFlow Pro (portal web, desktop ≥ 1280 px)
 
+No MVP (`src/App.tsx`, `src/components/`), o Pro segue o mockup de desktop do time: barra lateral (Início,
+Pacientes, Pendências, Comunicação), cabeçalho com saudação, busca, sino de pendências e menu do usuário, quatro
+indicadores calculados dos dados (nunca números fixos), lista "Pacientes em acompanhamento" e detalhe com abas
+Jornada (etapas em linha horizontal + próximo compromisso), Agenda, Exames, Comunicação (chat do IRIS, "Assumir
+conversa") e Resumo (diagnóstico, pendências, check-ins, plano terapêutico). A cor do paciente é a situação operacional derivada das pendências (`infoSituacao`), nunca prioridade
+clínica. Os itens abaixo são o alvo completo.
+
 1. **Visão geral:** pacientes acompanhados, etapa atual, tarefas abertas (vencidas em destaque: "vencida há
    3 dias"), check-ins aguardando revisão com o prazo e alertas operacionais. Filtros: meus pacientes, com
    tarefa vencida, com check-in aguardando revisão.

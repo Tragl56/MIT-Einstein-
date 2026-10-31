@@ -1,6 +1,7 @@
-# Segredos
-.env
+# Segredos (o exemplo fica versionado)
+.env*
 *.env.local
+!.env.example
 
 # Python
 .venv/
@@ -8,15 +9,19 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Node
+# Node e builds
 node_modules/
+build/
 dist/
+coverage/
 *.tsbuildinfo
+*.log
 
 # Relatórios gerados e artefatos de teste
 reports/avaliacao_*.md
 playwright-report/
 test-results/
+.playwright-cli/
 
 # Áudio gravado (nunca versionar voz; fixtures fictícias ficam em fixtures/audio)
 *.webm

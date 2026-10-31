@@ -80,7 +80,13 @@ com o conteúdo.
 
 ## Agente e ferramentas
 
-Claude com tool use (para detalhes atuais do SDK, carregue a skill `claude-api`; modelo em
+**No MVP atual** (`server/lia.ts`), a interpretação é feita por regras locais (`classificar`), sem modelo de
+linguagem, e as respostas saem de modelos de texto por status. Isso cumpre o roteiro sem rede. Para trocar por
+um modelo, substitua só `classificar` (o modelo escolhe a ferramenta e os argumentos); mantenha os textos por
+status, a confirmação em duas fases e `verificarAfirmacoes`. A transcrição usa Gemini (`/api/transcrever-audio`)
+e a leitura em voz alta usa o sintetizador do navegador.
+
+**Alvo:** Claude com tool use (para detalhes atuais do SDK, carregue a skill `claude-api`; modelo em
 `ONCOFLOW_MODELO_LIA`, padrão `claude-sonnet-5-5`, porque latência importa na voz). As ferramentas chamam o
 backend **com o token do paciente** (ou do cuidador, com o escopo da delegação). A Lia nunca recebe acesso
 que o próprio usuário não tem.

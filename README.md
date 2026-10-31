@@ -3,14 +3,79 @@
 Plataforma de coordenação da jornada oncológica: **cada etapa do cuidado, conectada.** MVP para o MIT Hacking
 Medicine (trilha de Oncologia), só com **dados fictícios**.
 
-- **OncoFlow Pro** (`frontend/apps/pro`, porta 5173): portal web da equipe — médicos, enfermagem, navegação, gestão.
-- **OncoFlow Paciente** (`frontend/apps/paciente`, porta 5174): app mobile-first do paciente.
-- **API** (`backend/`, porta 8000): FastAPI + PostgreSQL.
-
 As regras do produto e as decisões de arquitetura estão em [CLAUDE.md](CLAUDE.md) e nas skills em
 `.claude/skills/oncoflow-*`.
 
-## Rodar localmente
+O repositório tem dois projetos lado a lado:
+
+| Projeto | Onde | Para quê |
+|---|---|---|
+| **MVP da demo** (base IRIS) | raiz: `server.ts`, `server/`, `src/` | O que roda na apresentação. Node/Express, estado em memória |
+| **Arquitetura-alvo** | `backend/` + `frontend/` | Versão com FastAPI, PostgreSQL, autenticação e auditoria, em construção |
+
+Outros diretórios: `oncoflow-casa/` (protótipo com painel web e ESP32), `fixtures/` (dados fictícios),
+`outputs/` (capturas da demo) e `work/` (scripts de verificação).
+
+---
+
+## MVP da demo (raiz)
+
+Uma plataforma, duas experiências sobre o mesmo servidor:
+
+| Experiência | Endereço | Origem |
+|---|---|---|
+| **OncoFlow Pro** (equipe) | `http://localhost:3000/` | Painel do protótipo IRIS, adaptado às regras do OncoFlow |
+| **OncoFlow Paciente** | `http://localhost:3000/paciente` | App do conceito OncoFlow, com a assistente Lia |
+
+### Rodar
+
+```bash
+npm install
+npm run dev
+```
+
+Abra o Pro numa aba e o app do paciente em outra (ou no celular, na mesma rede). Os dois leem o
+mesmo estado no servidor e se atualizam a cada 2 segundos. O menu do usuário tem **Reiniciar dados da demo**.
+
+A transcrição de voz usa o Gemini e precisa de `GEMINI_API_KEY` (veja `.env.example`). Sem a chave,
+a Lia e o check-in funcionam por texto e pelos chips de sugestão.
+
+### Roteiro rápido
+
+1. Paciente: **Falar com a Lia** → "Quando é minha próxima consulta?" → aceitar o lembrete.
+2. Paciente: "Hoje estou muito cansada e preocupada com o trabalho." → **Registrar check-in**.
+3. Paciente: "Quero falar com minha enfermeira." → **Pedir contato**.
+4. Equipe (Enf. Rodrigo): as pendências aparecem com origem, fala literal, prazo do serviço e
+   responsável. Na aba **Comunicação** do paciente, **Assumir conversa** e responder; o app da paciente
+   mostra quem está atendendo.
+
+### O que mudou em relação ao IRIS
+
+- A IA não responde mais sobre sintomas nem remédios. A Lia só informa o que está no sistema,
+  organiza e encaminha, sempre com um de quatro status: consultado, registrado, encaminhado ou
+  confirmado. Ações de escrita pedem confirmação.
+- O alarme por palavra-chave virou **hipótese do sistema** para a equipe revisar. A lista de
+  termos, os prazos e as regras de revisão são dados do serviço em `server/configServico.ts`.
+- O estado saiu do React e foi para o servidor (`server/estado.ts`), compartilhado pelas duas
+  experiências. O simulador de WhatsApp deu lugar ao app do paciente.
+- Ficaram do IRIS: conversas com "Assumir conversa", retorno automático da assistente após
+  20 minutos sem atividade do profissional, plano terapêutico com upload, videochamada por link.
+
+### Testes
+
+```bash
+npm run lint && npm run build
+```
+
+---
+
+## Arquitetura-alvo (`backend/` + `frontend/`)
+
+- **OncoFlow Pro** (`frontend/apps/pro`, porta 5173): portal web da equipe.
+- **OncoFlow Paciente** (`frontend/apps/paciente`, porta 5174): app mobile-first do paciente.
+- **API** (`backend/`, porta 8000): FastAPI + PostgreSQL.
+
+### Rodar localmente
 
 Requisitos: Docker Desktop, Python 3.12+ e Node 20+.
 
@@ -41,25 +106,25 @@ npm run dev:paciente   # http://localhost:5174
 Ou tudo em contêineres: `docker compose up --build`.
 
 Com `DEMO_MODE=true`, a API popula o banco na primeira subida e os dois apps mostram uma barra para trocar de
-usuário fictício (Dra. Ana, Carla, Enf. Bruno, Diego, Maria) e para restaurar os dados da demo. Fora do modo
-demo, as rotas `/api/demo/*` não existem.
+usuário fictício e para restaurar os dados da demo. Fora do modo demo, as rotas `/api/demo/*` não existem.
 
-## Testes
+### Testes
 
 ```bash
 cd backend && .venv/Scripts/pytest -q     # usa o banco oncoflow_teste; desce e sobe todas as migrações
 cd frontend && npm run typecheck && npm run build
 ```
 
+---
+
 ## Estrutura
 
 ```
-backend/app/
-  acesso/      autenticação, papéis e contexto (paciente sempre vem do token)
-  auditoria/   eventos somente-inserção (trigger no banco bloqueia UPDATE/DELETE/TRUNCATE)
-  dominio/     instituições, pacientes, jornada, agenda, tarefas, check-ins, consultas, consentimentos…
-  demo/        seed fictício e reset
-backend/alembic/   migrações (reversíveis)
-frontend/packages/shared/   tokens da marca, cliente HTTP, sessão e barra da demo
-fixtures/          transcrições fictícias usadas pelo seed e pelos testes
+server.ts, server/   MVP: Express, estado em memória, Lia, detector de urgência, rotas, seed e config do serviço
+src/                 MVP: OncoFlow Pro (src/App.tsx, src/components/) e Paciente (src/paciente/)
+backend/app/         alvo: acesso, auditoria somente-inserção, domínio, demo
+backend/alembic/     alvo: migrações (reversíveis)
+frontend/            alvo: apps pro e paciente + packages/shared
+fixtures/            transcrições fictícias usadas pelo seed e pelos testes
+oncoflow-casa/       protótipo OncoFlow Casa (painel web + firmware ESP32)
 ```

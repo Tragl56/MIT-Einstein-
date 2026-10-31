@@ -20,6 +20,27 @@ O código precisa tornar os erros perigosos impossíveis por construção: IA va
 virando fato, ação dada como feita sem ter sido, transição de estado sem rastro, cuidador vendo mais do que
 foi autorizado.
 
+## Código atual do MVP (base IRIS)
+
+O MVP da demo **não** usa ainda o stack abaixo. Ele parte do protótipo IRIS do time (decisão de 31/10/2026):
+
+| Parte | Onde | Observação |
+|---|---|---|
+| Servidor | `server.ts` + `server/` (Express, TypeScript) | Estado em memória (`server/estado.ts`), reset em `POST /api/demo/reset` |
+| Rotas | `server/rotas.ts` | `/api/pro/*` (header de demo `x-demo-usuario`) e `/api/paciente/*` (`Bearer demo-maria`) |
+| Visões | `server/visoes.ts` | A do paciente é lista explícita de campos; mensagens com `visivelPaciente: false` nunca saem |
+| Lia | `server/lia.ts` | Regras locais + confirmação em duas fases + quatro status + `verificarAfirmacoes` |
+| Urgência | `server/urgencia.ts` | Termos vêm de `server/configServico.ts`; vira hipótese para a equipe |
+| Pendências | `Pendencia` em `src/types.ts` | Origem, estado, responsável, prazo do serviço, desfecho obrigatório |
+| Front | `src/App.tsx` (Pro, base IRIS) e `src/paciente/` (Paciente) | Um build Vite, carregamento separado por rota |
+
+Ainda não existem no MVP: copiloto de consulta, banco de dados, autenticação real, cuidador, auditoria
+persistente. Ao portar para o stack-alvo, mantenha os mesmos contratos de visão e as mesmas regras.
+
+## Arquitetura-alvo
+
+O stack, a estrutura e as convenções abaixo valem para depois da demo.
+
 ## Stack
 
 | Camada | Escolha | Observação |
