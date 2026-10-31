@@ -62,7 +62,7 @@ export function visaoPaciente(paciente: Paciente): InicioPaciente {
       .map((p) => ({
         id: p.id,
         // O título da hipótese ("possível sinal de urgência") é linguagem da equipe, não do paciente.
-        titulo: p.tipo === 'sinal_urgencia' ? 'Relato para a equipe de enfermagem' : p.titulo,
+        titulo: p.tipo === 'sinal_urgencia' ? 'Report for the nursing team' : p.titulo,
         estado: estadoParaPaciente(p),
         criadaEm: p.criadaEm,
       })),

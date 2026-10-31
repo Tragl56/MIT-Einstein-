@@ -13,7 +13,7 @@ async function chamar<T>(caminho: string, corpo?: unknown): Promise<T> {
     body: corpo === undefined ? undefined : JSON.stringify(corpo),
   });
   const dados = await resposta.json().catch(() => ({}));
-  if (!resposta.ok) throw new Error(dados.mensagem || 'Não conseguimos concluir agora. Tente de novo em instantes.');
+  if (!resposta.ok) throw new Error(dados.mensagem || "We couldn't finish that right now. Please try again in a moment.");
   return dados as T;
 }
 
@@ -34,7 +34,7 @@ export function usePaciente() {
       setErro(null);
       if (novo.versao !== versao.current) aplicar(novo);
     } catch {
-      setErro('Sem conexão agora. Tentando de novo…');
+      setErro('No connection right now. Trying again…');
     }
   }, [aplicar]);
 

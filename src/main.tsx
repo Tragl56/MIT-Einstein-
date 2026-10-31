@@ -10,7 +10,7 @@ const ProApp = lazy(() => import('./App.tsx'));
 const PacienteApp = lazy(() => import('./paciente/PacienteApp.tsx'));
 
 const ehPaciente = window.location.pathname.startsWith('/paciente');
-document.title = ehPaciente ? 'OncoFlow Paciente' : 'OncoFlow Pro';
+document.title = ehPaciente ? 'OncoFlow Patient' : 'OncoFlow Pro';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -3,22 +3,22 @@ async (page) => {
   await page.request.post(`${base}/api/demo/reset`);
   const urgent = await page.request.post(`${base}/api/paciente/conversa`, {
     headers: { authorization: 'Bearer demo-maria' },
-    data: { texto: 'Estou com falta de ar', origem: 'texto' }
+    data: { texto: 'I am short of breath', origem: 'texto' }
   });
   if (!urgent.ok()) throw new Error('Urgency fixture rejected');
   const state = await (await page.request.get(`${base}/api/paciente/inicio`, {
     headers: { authorization: 'Bearer demo-maria' }
   })).json();
   await page.goto(`${base}/paciente`);
-  await page.getByRole('button', { name: /Falar com a Lia/ }).click();
+  await page.getByRole('button', { name: /Talk to Lia/ }).click();
   const urgencyVisible = await page.getByRole('alert').filter({ hasText: state.avisoUrgencia.contato }).isVisible();
   const call = await page.request.post(`${base}/api/pro/pacientes/pac-maria/videochamada`, {
     headers: { 'x-demo-usuario': 'usr-camila' }, data: {}
   });
   if (!call.ok()) throw new Error('Call fixture rejected');
   const { link } = await call.json();
-  await page.getByText('Sua conversa está com Dra. Camila Ribeiro.', { exact: true }).waitFor();
-  const invitation = page.getByRole('link', { name: /Entrar na chamada/ });
+  await page.getByText('You are now talking with Dr. Camila Ribeiro.', { exact: true }).waitFor();
+  const invitation = page.getByRole('link', { name: /Join call/ });
   const callVisible = await invitation.isVisible();
   const callLinkPreserved = callVisible && (await invitation.getAttribute('href')) === link;
   const result = { urgencyVisible, callVisible, callLinkPreserved };

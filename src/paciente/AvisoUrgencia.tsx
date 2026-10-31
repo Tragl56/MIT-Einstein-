@@ -36,10 +36,10 @@ export const AvisoUrgencia: React.FC<Props> = ({ aviso, destaque = false }) => {
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-urgente">
           <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden />
-          Não é canal de emergência
+          Not an emergency channel
         </span>
         <span className="flex items-center gap-1 text-xs font-semibold text-azul">
-          O que fazer
+          What to do
           <ChevronDown className={`w-4 h-4 transition-transform ${aberto ? 'rotate-180' : ''}`} aria-hidden />
         </span>
       </button>

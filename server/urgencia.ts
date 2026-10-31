@@ -6,8 +6,9 @@
 import { CONFIG_SERVICO } from './configServico';
 import { normalizar } from './util';
 
-// Negações simples imediatamente antes do termo ("sem febre", "não tenho mais febre").
-const NEGACOES = ['sem', 'nao tenho', 'nao estou com', 'nao tive', 'nao sinto', 'nenhum', 'nenhuma'];
+// Negações simples imediatamente antes do termo ("no fever", "I don't have a fever anymore").
+// O texto já vem normalizado, então "don't" chega como "don t".
+const NEGACOES = ['no', 'not', 'without', 'don t have', 'didn t have', 'don t feel', 'haven t had', 'never had', 'free of'];
 
 function escaparRegex(texto: string): string {
   return texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

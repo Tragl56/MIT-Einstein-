@@ -5,8 +5,8 @@ import { useNivelVisual } from './useNivelVisual';
 export type EstadoOrbe = 'espera' | 'ouvindo' | 'processando' | 'falando' | 'concluido';
 
 export const ROTULO_ORBE: Record<EstadoOrbe, string> = {
-  espera: 'Lia disponível', ouvindo: 'Ouvindo', processando: 'Consultando suas informações',
-  falando: 'Lia falando', concluido: 'Pronto',
+  espera: 'Lia available', ouvindo: 'Listening', processando: 'Looking up your information',
+  falando: 'Lia speaking', concluido: 'Done',
 };
 
 interface OrbeLiaProps {

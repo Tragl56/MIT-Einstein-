@@ -143,9 +143,9 @@ export function useGravador() {
 }
 
 function escolherVoz(): SpeechSynthesisVoice | undefined {
-  const vozes = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith('pt'));
-  const preferidas = /francisca|maria|luciana|thalita|vit[oó]ria|female|feminina|google portugu[eê]s do brasil/i;
-  return vozes.find((v) => v.lang === 'pt-BR' && preferidas.test(v.name)) ?? vozes.find((v) => v.lang === 'pt-BR') ?? vozes[0];
+  const vozes = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith('en'));
+  const preferidas = /aria|jenny|samantha|ava|allison|zira|female|google us english/i;
+  return vozes.find((v) => v.lang === 'en-US' && preferidas.test(v.name)) ?? vozes.find((v) => v.lang === 'en-US') ?? vozes[0];
 }
 
 export function useFala() {
@@ -173,7 +173,7 @@ export function useFala() {
     parar();
     const rodada = geracao.current;
     const fala = new SpeechSynthesisUtterance(texto);
-    fala.lang = 'pt-BR';
+    fala.lang = 'en-US';
     fala.rate = velocidade;
     const voz = escolherVoz();
     if (voz) fala.voice = voz;

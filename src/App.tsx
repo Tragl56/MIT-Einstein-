@@ -16,7 +16,7 @@ import { PaginaPendencias } from './components/PaginaPendencias';
 import { InternoView } from './components/InternoView';
 
 const CHAVE_USUARIO = 'oncoflow-pro-usuario';
-const INSTITUICAO = 'Centro de Oncologia Fictício';
+const INSTITUICAO = 'Fictional Oncology Center';
 
 function lerUsuarioSalvo(): string | null {
   try {
@@ -107,7 +107,7 @@ export default function App() {
           selecionadoId={selecionado?.id}
           onSelecionar={setPacienteSelecionadoId}
           onVerTodos={limite ? () => navegar('pacientes') : undefined}
-          titulo={limite ? 'Pacientes em acompanhamento' : `Pacientes (${filtrados.length})`}
+          titulo={limite ? 'Patients under follow-up' : `Patients (${filtrados.length})`}
         />
       </div>
       <div className="xl:col-span-7">
@@ -119,7 +119,7 @@ export default function App() {
             minutosRetornoLia={estado!.minutosRetornoLia}
           />
         ) : (
-          <p className="text-tinta-suave">Selecione um paciente.</p>
+          <p className="text-tinta-suave">Select a patient.</p>
         )}
       </div>
     </div>
@@ -155,7 +155,7 @@ export default function App() {
           )}
 
           {!estado ? (
-            <p className="text-tinta-suave">Carregando pacientes…</p>
+            <p className="text-tinta-suave">Loading patients…</p>
           ) : pagina === 'inicio' ? (
             <>
               <Indicadores

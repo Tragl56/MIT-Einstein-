@@ -3,41 +3,42 @@
 const FUSO = 'America/Sao_Paulo';
 
 export function iniciais(nome: string): string {
-  const partes = nome.replace(/^(Dra?|Enf)\.\s*/, '').split(' ').filter(Boolean);
+  const partes = nome.replace(/^(Dra?\.|Nurse)\s*/, '').split(' ').filter(Boolean);
   return ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
 }
 
-// "Dra. Camila Ribeiro" -> "Dra. Camila"; "Carla Menezes" -> "Carla"
+// "Dr. Camila Ribeiro" -> "Dr. Ribeiro"; "Nurse Rodrigo Mendes" -> "Rodrigo"; "Carla Menezes" -> "Carla"
 export function nomeCurto(nome: string): string {
-  const titulo = nome.match(/^(Dra?|Enf)\.\s*/)?.[0] ?? '';
-  return `${titulo}${nome.slice(titulo.length).split(' ')[0]}`;
+  if (/^Dra?\.\s/.test(nome)) return `Dr. ${nome.split(' ').slice(-1)[0]}`;
+  return nome.replace(/^Nurse\s+/, '').split(' ')[0];
 }
 
-// "Carcinoma de pulmão não pequenas células, estágio IV..." -> "Carcinoma de pulmão não pequenas células"
+// "Non-small cell lung carcinoma, stage IV..." -> "Non-small cell lung carcinoma"
 export function diagnosticoCurto(diagnostico: string): string {
   return diagnostico.split(/[,.]/)[0].trim();
 }
 
 export function saudacao(agora = new Date()): string {
-  const hora = Number(new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, hour: 'numeric', hourCycle: 'h23' }).format(agora));
-  if (hora < 12) return 'Bom dia';
-  if (hora < 18) return 'Boa tarde';
-  return 'Boa noite';
+  const hora = Number(new Intl.DateTimeFormat('en-US', { timeZone: FUSO, hour: 'numeric', hourCycle: 'h23' }).format(agora));
+  if (hora < 12) return 'Good morning';
+  if (hora < 18) return 'Good afternoon';
+  return 'Good evening';
 }
 
-// "Ter, 3 de nov · 14h"
+// "Tue, Nov 3 · 2 PM"
 export function dataCompromisso(iso: string): string {
   const d = new Date(iso);
-  const semana = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, weekday: 'short' }).format(d).replace('.', '');
-  const dia = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, day: 'numeric', month: 'long' }).format(d);
-  const p = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, hour: 'numeric', minute: '2-digit' }).formatToParts(d);
+  const semana = new Intl.DateTimeFormat('en-US', { timeZone: FUSO, weekday: 'short' }).format(d);
+  const dia = new Intl.DateTimeFormat('en-US', { timeZone: FUSO, day: 'numeric', month: 'short' }).format(d);
+  const p = new Intl.DateTimeFormat('en-US', { timeZone: FUSO, hour: 'numeric', minute: '2-digit', hour12: true }).formatToParts(d);
   const h = p.find((x) => x.type === 'hour')?.value ?? '';
   const m = p.find((x) => x.type === 'minute')?.value ?? '00';
-  return `${semana.charAt(0).toUpperCase()}${semana.slice(1)}, ${dia} · ${h}h${m === '00' ? '' : m}`;
+  const periodo = p.find((x) => x.type === 'dayPeriod')?.value ?? '';
+  return `${semana}, ${dia} · ${h}${m === '00' ? '' : `:${m}`} ${periodo}`;
 }
 
 export function dataHoraCurta(iso: string): string {
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: FUSO,
     day: '2-digit',
     month: '2-digit',

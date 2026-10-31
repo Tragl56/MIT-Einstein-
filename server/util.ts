@@ -14,34 +14,36 @@ export function agoraISO(): string {
 }
 
 export function horarioDe(iso: string): string {
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: FUSO,
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(iso));
 }
 
-// "terça-feira, 3 de novembro, às 14h" (ou "às 14h30")
+// "Tuesday, November 3, at 2 PM" (ou "at 2:30 PM")
 export function dataHoraPorExtenso(iso: string): string {
   const data = new Date(iso);
-  const dia = new Intl.DateTimeFormat('pt-BR', {
+  const dia = new Intl.DateTimeFormat('en-US', {
     timeZone: FUSO,
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   }).format(data);
-  const partes = new Intl.DateTimeFormat('pt-BR', {
+  const partes = new Intl.DateTimeFormat('en-US', {
     timeZone: FUSO,
     hour: 'numeric',
     minute: '2-digit',
+    hour12: true,
   }).formatToParts(data);
   const hora = partes.find((p) => p.type === 'hour')?.value ?? '';
   const minuto = partes.find((p) => p.type === 'minute')?.value ?? '00';
-  return `${dia}, às ${hora}h${minuto === '00' ? '' : minuto}`;
+  const periodo = partes.find((p) => p.type === 'dayPeriod')?.value ?? '';
+  return `${dia}, at ${hora}${minuto === '00' ? '' : `:${minuto}`} ${periodo}`;
 }
 
 export function dataCurta(iso: string): string {
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: FUSO,
     day: '2-digit',
     month: '2-digit',
