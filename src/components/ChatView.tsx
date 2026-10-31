@@ -120,7 +120,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   };
 
   return (
-    <div id={`chat-paciente-${paciente.id}`} className="flex flex-col h-full bg-fundo rounded-xl border border-linha overflow-hidden">
+    <div id={`chat-paciente-${paciente.id}`} className="conversation-panel flex flex-col h-full bg-fundo border border-linha overflow-hidden">
       <div className="bg-white border-b border-linha px-4 py-3 sm:px-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center gap-3 min-w-0">

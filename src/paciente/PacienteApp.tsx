@@ -1,7 +1,7 @@
 // OncoFlow Paciente: app mobile-first da paciente, híbrido entre navegação visual e a Lia.
 // Na demo roda em /paciente com a sessão fictícia da Maria.
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, X } from 'lucide-react';
 import { transcrever, usePaciente } from './api';
 import { useFala, useGravador } from './voz';
@@ -39,6 +39,14 @@ export default function PacienteApp() {
   const [prefsAbertas, setPrefsAbertas] = useState(false);
   const [transcrevendo, setTranscrevendo] = useState(false);
   const [erroVoz, setErroVoz] = useState<string | null>(null);
+  const [modoLia, setModoLia] = useState<'voz' | 'texto'>('voz');
+  const operacaoVoz = useRef(0);
+  const cancelarVoz = useCallback(() => {
+    operacaoVoz.current += 1;
+    gravador.cancelar();
+    setTranscrevendo(false);
+    setErroVoz(null);
+  }, [gravador.cancelar]);
 
   // Tipografia ajustável no app (padrão 18 px), sem impedir o zoom do sistema.
   useEffect(() => {
@@ -51,56 +59,66 @@ export default function PacienteApp() {
   }, [prefs]);
 
   const irPara = useCallback(
-    (destino: Tela) => {
+    (destino: Tela, modo: 'voz' | 'texto' = 'voz') => {
       fala.parar();
+      cancelarVoz();
+      if (destino === 'lia') setModoLia(modo);
       setErroVoz(null);
       setTela(destino);
       window.scrollTo({ top: 0 });
     },
-    [fala]
+    [fala.parar, cancelarVoz]
   );
 
   const falar = useCallback((texto: string) => fala.falar(texto, prefs.velocidade), [fala, prefs.velocidade]);
   const falaComVelocidade = useMemo(
-    () => ({ falando: fala.falando, disponivel: fala.disponivel, falar, parar: fala.parar }),
-    [fala.falando, fala.disponivel, falar, fala.parar]
+    () => ({ falando: fala.falando, disponivel: fala.disponivel, nivel: fala.nivel, falar, parar: fala.parar }),
+    [fala.falando, fala.disponivel, fala.nivel, falar, fala.parar]
   );
 
-  // Push-to-talk: toca para começar, toca de novo para parar e transcrever.
-  const alternarGravacao = useCallback(
-    async (aoTranscrever: (texto: string) => void) => {
-      setErroVoz(null);
-      if (gravador.gravando) {
-        setTranscrevendo(true);
+  // Late permission/transcription results cannot send a message after cancellation or navigation.
+  const alternarGravacao = useCallback(async (aoTranscrever: (texto: string) => void) => {
+    if (gravador.iniciando || transcrevendo) return;
+    const operacao = ++operacaoVoz.current;
+    setErroVoz(null);
+    if (gravador.gravando) {
+      setTranscrevendo(true);
+      try {
         const audio = await gravador.parar();
+        if (operacao !== operacaoVoz.current) return;
         const texto = audio ? await transcrever(audio.base64, audio.mimeType) : null;
-        setTranscrevendo(false);
+        if (operacao !== operacaoVoz.current) return;
         if (texto) aoTranscrever(texto);
-        else setErroVoz('Não consegui ouvir bem. Quer tentar de novo ou digitar? Você também pode tocar numa sugestão.');
-        return;
+        else setErroVoz('Não consegui transcrever agora. Você pode tentar novamente ou digitar sua mensagem.');
+      } catch {
+        if (operacao === operacaoVoz.current) setErroVoz('Não consegui transcrever agora. Você pode tentar novamente ou digitar sua mensagem.');
+      } finally {
+        if (operacao === operacaoVoz.current) setTranscrevendo(false);
       }
-      const ok = await gravador.iniciar();
-      if (!ok) setErroVoz('Não consegui usar o microfone. Você pode digitar ou tocar numa sugestão.');
-    },
-    [gravador]
-  );
+      return;
+    }
+    const ok = await gravador.iniciar();
+    if (operacao === operacaoVoz.current && !ok) setErroVoz('Não consegui usar o microfone. Verifique a permissão ou continue digitando.');
+  }, [gravador.iniciando, gravador.gravando, gravador.iniciar, gravador.parar, transcrevendo]);
 
   const gravacao = {
+    iniciando: gravador.iniciando,
+    nivel: gravador.nivel,
     gravando: gravador.gravando,
     transcrevendo,
     erro: erroVoz,
     alternar: alternarGravacao,
-    cancelar: gravador.cancelar,
+    cancelar: cancelarVoz,
   };
 
   const pedirLia = (texto: string) => {
-    irPara('lia');
+    irPara('lia', 'texto');
     enviar(texto, 'texto');
   };
 
   return (
-    <div className="min-h-[100dvh] bg-fundo text-azul">
-      <div className="max-w-[440px] mx-auto px-[max(16px,env(safe-area-inset-left))]">
+    <div className="patient-app">
+      <div className="patient-frame">
         {erro && (
           <div role="alert" className="mt-3 flex items-center gap-2 rounded-xl bg-atencao-fundo border border-atencao-borda text-atencao px-3 py-2">
             <AlertCircle className="w-5 h-5 shrink-0" aria-hidden />
@@ -135,6 +153,7 @@ export default function PacienteApp() {
           />
         ) : (
           <TelaLia
+            modoInicial={modoLia}
             inicio={inicio}
             ocupado={ocupado}
             onVoltar={() => irPara('inicio')}

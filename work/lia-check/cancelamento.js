@@ -1,4 +1,21 @@
 async (page) => {
+  // Each run installs its own synthetic stream and starts in the ready voice view.
+  await page.addInitScript(() => {
+    window.__liaTest = { streams: [], contexts: [] };
+    Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { configurable: true, value: async () => {
+      const audio = new AudioContext();
+      const oscillator = audio.createOscillator();
+      const destination = audio.createMediaStreamDestination();
+      oscillator.connect(destination);
+      oscillator.start();
+      await audio.resume();
+      window.__liaTest.streams.push(destination.stream);
+      window.__liaTest.contexts.push(audio);
+      return destination.stream;
+    }});
+  });
+  await page.goto('http://127.0.0.1:3103/paciente');
+  await page.getByRole('button', { name: /Falar com a Lia/ }).click();
   const result = {};
   let messages = 0;
   page.on('request', request => {
@@ -52,6 +69,6 @@ async (page) => {
   await page.getByRole('textbox', { name: /Mensagem para a Lia/ }).waitFor();
   result.permissionErrorAllowsText = true;
   result.cancelledMessages = messages;
-  await page.evaluate(() => window.__liaTest.contexts.forEach(context => context.close()));
+  await page.evaluate(() => window.__liaTest.contexts.filter(context => context.state !== 'closed').forEach(context => context.close()));
   return result;
 }

@@ -1,38 +1,25 @@
-import React from 'react';
+import React, { useId } from 'react';
 
-// Símbolo do OncoFlow (mockup de desktop do time): esfera turquesa formada por duas faixas que se
-// entrelaçam em volta de uma abertura em "S", sugerindo a letra O e a ideia de fluxo.
+/** Folded O symbol, matching the translucent ribbon identity of the concept cover. */
 export const LogoOncoFlow: React.FC<{ className?: string }> = ({ className }) => {
-  const id = React.useId().replace(/:/g, '');
-  return (
-    <svg viewBox="0 0 40 40" className={className} role="img" aria-label="OncoFlow">
-      <defs>
-        <linearGradient id={`${id}-corpo`} x1="0.85" y1="0.1" x2="0.15" y2="0.95">
-          <stop offset="0" style={{ stopColor: 'var(--color-logo-escuro)' }} />
-          <stop offset="0.55" style={{ stopColor: 'var(--color-logo-medio)' }} />
-          <stop offset="1" style={{ stopColor: 'var(--color-logo-claro)' }} />
-        </linearGradient>
-        <radialGradient id={`${id}-brilho`} cx="0.3" cy="0.25" r="0.6">
-          <stop offset="0" stopColor="white" stopOpacity="0.55" />
-          <stop offset="1" stopColor="white" stopOpacity="0" />
-        </radialGradient>
-        <mask id={`${id}-abertura`}>
-          <rect width="40" height="40" fill="white" />
-          <path d="M7 16C11 8 19 9 21.5 15C23.5 20 27 23.5 33 24C29 32 20 31.5 18 25.5C16.5 20.5 12.5 16.5 7 16Z" fill="black" />
-        </mask>
-      </defs>
-      <g mask={`url(#${id}-abertura)`}>
-        <circle cx="20" cy="20" r="18" fill={`url(#${id}-corpo)`} />
-        <circle cx="20" cy="20" r="18" fill={`url(#${id}-brilho)`} />
-        {/* faixa clara na borda da abertura dá a sensação de volume das duas fitas */}
-        <path
-          d="M7 16C11 8 19 9 21.5 15C23.5 20 27 23.5 33 24"
-          fill="none"
-          stroke="white"
-          strokeOpacity="0.45"
-          strokeWidth="2.5"
-        />
-      </g>
-    </svg>
-  );
+  const id = useId().replace(/:/g, '');
+  const contour = 'M48 4C23 4 7 23 7 48C7 74 23 92 48 92C74 92 90 74 90 48C90 22 73 4 48 4ZM48 25C60 25 67 34 67 48C67 63 60 72 48 72C36 72 29 62 29 48C29 34 36 25 48 25Z';
+  return <svg viewBox="0 0 96 96" className={className} role="img" aria-label="OncoFlow">
+    <defs>
+      <linearGradient id={id + '-base'} x1=".1" y1=".08" x2=".9" y2=".9">
+        <stop stopColor="var(--lia-glass-light)" /><stop offset=".4" stopColor="var(--lia-aqua)" /><stop offset="1" stopColor="var(--lia-blue)" />
+      </linearGradient>
+      <linearGradient id={id + '-ribbon'} x1="20" y1="15" x2="75" y2="78" gradientUnits="userSpaceOnUse">
+        <stop stopColor="var(--lia-glass-light)" /><stop offset=".48" stopColor="var(--lia-cyan)" /><stop offset="1" stopColor="var(--lia-blue)" />
+      </linearGradient>
+      <clipPath id={id + '-clip'}><path d={contour} fillRule="evenodd" /></clipPath>
+    </defs>
+    <path d={contour} fillRule="evenodd" fill={'url(#' + id + '-base)'} />
+    <g clipPath={'url(#' + id + '-clip)'}>
+      <path d="M40-1C75 0 88 20 77 41C68 58 56 51 56 41C55 17 31 30 22 14Z" fill={'url(#' + id + '-ribbon)'} />
+      <path d="M85 31C107 72 63 99 40 88C24 81 25 65 36 63C55 59 56 83 75 65C87 52 71 44 85 31Z" fill={'url(#' + id + '-ribbon)'} opacity=".87" />
+      <path d="M9 30C20 20 29 32 30 46C30 63 53 68 51 84C48 100 7 83 2 60Z" fill={'url(#' + id + '-base)'} opacity=".95" />
+      <path d="M16 25C28 12 36 25 48 27M61 66C74 78 81 66 85 55" stroke="white" strokeWidth="1.3" strokeOpacity=".65" />
+    </g>
+  </svg>;
 };

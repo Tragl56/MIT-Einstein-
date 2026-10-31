@@ -36,10 +36,10 @@ export const Indicadores: React.FC<IndicadoresProps> = ({ pacientes, onAbrir }) 
           key={rotulo}
           type="button"
           onClick={() => onAbrir(destino)}
-          className="flex items-center gap-4 rounded-2xl bg-white border border-linha/70 shadow-[0_2px_12px_-6px_rgba(18,59,86,0.15)] px-6 py-5 text-left cursor-pointer hover:border-verde/50"
+          className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-2xl bg-white border border-linha/70 shadow-[0_2px_12px_-6px_rgba(18,59,86,0.15)] px-4 sm:px-6 py-5 text-left cursor-pointer hover:border-verde/50"
         >
           <Icone className={`w-9 h-9 shrink-0 ${cor}`} strokeWidth={1.6} aria-hidden />
-          <span>
+          <span className="min-w-0 break-words">
             <span className="block text-3xl font-bold text-azul tabular-nums leading-none">{valor}</span>
             <span className="block mt-1.5 text-tinta-suave">{rotulo}</span>
           </span>

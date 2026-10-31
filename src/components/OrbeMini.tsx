@@ -1,10 +1,7 @@
 import React from 'react';
+import { LiaOrbArt } from './LiaOrbArt';
 
-// Versão estática e pequena do orbe da Lia, para rótulos no OncoFlow Pro.
+// Static version: readable in compact team labels, without continuous decorative animation.
 export const OrbeMini: React.FC<{ className?: string }> = ({ className }) => (
-  <span
-    aria-hidden
-    className={`inline-block rounded-full shrink-0 ${className ?? ''}`}
-    style={{ background: 'radial-gradient(circle at 35% 30%, var(--color-gelo), var(--color-turquesa) 45%, var(--color-azul))' }}
-  />
+  <span aria-hidden="true" className={`inline-block shrink-0 ${className ?? ''}`}><LiaOrbArt /></span>
 );

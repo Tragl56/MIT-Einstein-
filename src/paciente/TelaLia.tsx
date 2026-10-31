@@ -2,7 +2,7 @@
 // A paciente escolhe digitar ou falar. Toda ação de escrita aparece como "Entendi: …" com botões
 // de confirmação, e cada resposta mostra o status real em texto.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   CheckCircle2,
   Info,
@@ -10,7 +10,6 @@ import {
   Send,
   Stethoscope,
   Volume2,
-  X,
   ClipboardCheck,
   Forward,
   ExternalLink,
@@ -20,6 +19,7 @@ import type { InicioPaciente, Mensagem, StatusResultado } from '../types';
 import { AvisoUrgencia } from './AvisoUrgencia';
 import { OrbeLia, type EstadoOrbe } from './OrbeLia';
 import { Cabecalho, type Tela } from './telas';
+import { TelaVozLia } from './TelaVozLia';
 
 const SELO: Record<StatusResultado, { rotulo: string; Icone: React.ElementType }> = {
   consultado: { rotulo: 'Informação consultada', Icone: Info },
@@ -37,6 +37,7 @@ const SUGESTOES = [
 ];
 
 interface TelaLiaProps {
+  modoInicial?: 'voz' | 'texto';
   inicio: InicioPaciente;
   ocupado: boolean;
   onVoltar: () => void;
@@ -44,9 +45,11 @@ interface TelaLiaProps {
   responder: (token: string, aceitar: boolean) => Promise<unknown>;
   irPara: (t: Tela) => void;
   abrirDocumento: (id: string) => void;
-  fala: { falando: boolean; disponivel: boolean; falar: (t: string) => void; parar: () => void };
+  fala: { falando: boolean; disponivel: boolean; nivel: RefObject<number>; falar: (t: string) => void; parar: () => void };
   lerRespostas: boolean;
   gravacao: {
+    iniciando: boolean;
+    nivel: RefObject<number>;
     gravando: boolean;
     transcrevendo: boolean;
     erro: string | null;
@@ -66,8 +69,11 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
   fala,
   lerRespostas,
   gravacao,
+  modoInicial = 'texto',
 }) => {
   const [texto, setTexto] = useState('');
+  const [modo, setModo] = useState<'voz' | 'texto'>(modoInicial);
+  const [rascunhoVoz, setRascunhoVoz] = useState<string | null>(null);
   const [concluido, setConcluido] = useState(false);
   const fimRef = useRef<HTMLDivElement>(null);
   const vistas = useRef(inicio.conversa.length);
@@ -102,7 +108,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
 
   const estadoOrbe: EstadoOrbe = gravacao.gravando
     ? 'ouvindo'
-    : gravacao.transcrevendo || ocupado
+    : gravacao.iniciando || gravacao.transcrevendo || ocupado
     ? 'processando'
     : fala.falando
     ? 'falando'
@@ -121,43 +127,49 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
 
   const falarComLia = () => {
     fala.parar();
-    gravacao.alternar((transcrito) => mandar(transcrito, 'voz'));
+    if (modo !== 'voz') { setModo('voz'); return; }
+    setRascunhoVoz(null);
+    setConcluido(false);
+    gravacao.alternar((transcrito) => setRascunhoVoz(transcrito));
   };
 
-  const proposta =
-    inicio.proposta && new Date(inicio.proposta.expiraEm).getTime() > Date.now() ? inicio.proposta : undefined;
+  const proposta = inicio.proposta && new Date(inicio.proposta.expiraEm).getTime() > Date.now() ? inicio.proposta : undefined;
+  const ultimaResposta = [...inicio.conversa].reverse().find((m) => m.autor === 'lia' || m.autor === 'profissional');
+  const paraTexto = () => {
+    respostaPorVoz.current = false;
+    gravacao.cancelar();
+    fala.parar();
+    if (rascunhoVoz !== null) setTexto(rascunhoVoz);
+    setRascunhoVoz(null);
+    setModo('texto');
+  };
 
-  if (gravacao.gravando || gravacao.transcrevendo) {
-    return (
-      <div className="min-h-[85vh] flex flex-col items-center justify-between py-8">
-        <p className="text-xl font-bold text-azul">{gravacao.gravando ? 'Estou ouvindo…' : 'Entendendo…'}</p>
-        <div className="flex flex-col items-center gap-6">
-          <OrbeLia estado={estadoOrbe} tamanho={200} mostrarRotulo />
-          <p className="text-tinta-suave text-center">
-            {gravacao.gravando ? 'Pode falar, estou aqui para ajudar.' : 'Transformando sua fala em texto.'}
-          </p>
-        </div>
-        {gravacao.gravando ? (
-          <div className="flex flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={falarComLia}
-              aria-label="Parar e enviar"
-              className="w-20 h-20 rounded-full border-2 border-azul bg-white text-azul flex items-center justify-center cursor-pointer"
-            >
-              <X className="w-9 h-9" aria-hidden />
-            </button>
-            <span className="text-sm text-azul font-semibold">Toque para parar</span>
-            <button type="button" onClick={gravacao.cancelar} className="text-sm text-tinta-suave underline cursor-pointer min-h-10">
-              Cancelar sem enviar
-            </button>
-          </div>
-        ) : (
-          <span className="text-sm text-tinta-suave">Aguarde um instante</span>
-        )}
-      </div>
-    );
-  }
+  if (modo === 'voz') return <TelaVozLia nome={nome} estado={estadoOrbe}
+    nivel={gravacao.gravando ? gravacao.nivel : fala.nivel}
+    iniciando={gravacao.iniciando} gravando={gravacao.gravando} transcrevendo={gravacao.transcrevendo}
+    ocupado={ocupado} falando={fala.falando} vozDisponivel={fala.disponivel} erro={gravacao.erro}
+    rascunho={rascunhoVoz} resposta={inicio.conversa.some((m) => m.autor === 'paciente') ? ultimaResposta : undefined} proposta={proposta}
+    avisos={inicio.conversa.filter((m) => m.tipoSistema === 'urgencia' || m.tipoSistema === 'videochamada')}
+    atendente={inicio.modoConversa === 'profissional' ? inicio.atendente : undefined}
+    avisoUrgencia={inicio.avisoUrgencia} quemVe={inicio.quemVe}
+    onRascunho={setRascunhoVoz} onGravar={falarComLia}
+    onCancelar={() => { gravacao.cancelar(); setRascunhoVoz(null); }}
+    onEnviar={() => {
+      if (!rascunhoVoz?.trim()) return;
+      const transcrito = rascunhoVoz;
+      setRascunhoVoz(null);
+      void mandar(transcrito, 'voz');
+    }}
+    onOuvir={() => { if (ultimaResposta) fala.falar(ultimaResposta.texto); }}
+    onAcao={(acao) => acao.tipo === 'abrir_documento' ? abrirDocumento(acao.alvo) : irPara(acao.alvo as Tela)}
+    onPararFala={fala.parar}
+    onConfirmar={(aceitar) => {
+      if (!proposta) return;
+      fala.parar();
+      respostaPorVoz.current = true;
+      void responder(proposta.token, aceitar);
+    }}
+    onTexto={paraTexto} onVoltar={onVoltar} />;
 
   const renderMensagem = (m: Mensagem) => {
     if (m.tipoSistema === 'urgencia') {
