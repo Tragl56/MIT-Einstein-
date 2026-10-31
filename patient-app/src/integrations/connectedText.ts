@@ -1,7 +1,25 @@
 import { registerTranslations } from "../i18n";
 
 registerTranslations("en-US", {
-  "Demonstração com dados fictícios. Registros e pedidos confirmados são compartilhados com o painel conectado. Este aplicativo não é um serviço de urgência.": "Demo with fictional data. Confirmed check-ins and requests are shared with the connected panel. This app is not an emergency service.",
+  "Relatos de sintomas na Lia são verificados pelo serviço e sinais de atenção são enviados automaticamente ao painel conectado para revisão profissional. O registro não significa que alguém já leu. Não há monitoramento de urgência real: procure atendimento sem esperar pelo aplicativo. Os cenários de demonstração abaixo continuam locais.":
+    "Symptom reports made to Lia are checked by the service, and signs requiring attention are sent automatically to the connected panel for professional review. A stored record does not mean someone has read it. There is no real emergency monitoring: seek care without waiting for the app. The demo scenarios below remain local.",
+  "As orientações completas estão no Perfil e nos documentos publicados.":
+    "The full instructions are available in Profile and the published documents.",
+  "Informações compartilhadas pelo hospital":
+    "Information shared by the hospital",
+  "Diagnóstico informado pelo hospital": "Diagnosis recorded by the hospital",
+  "Tratamento ou etapa informada": "Recorded treatment or care stage",
+  "Ciclo informado": "Recorded cycle",
+  "Diagnóstico informado pelo hospital: {value}.":
+    "Diagnosis recorded by the hospital: {value}.",
+  "Tratamento ou etapa informada: {value}.":
+    "Recorded treatment or care stage: {value}.",
+  "Ciclo informado: {value}.": "Recorded cycle: {value}.",
+  "Fonte: {value}.": "Source: {value}.",
+  "Relatos de sintomas feitos à Lia são verificados pelo serviço conectado. Sinais identificados são registrados no painel para revisão da equipe, sem garantia de leitura imediata ou avaliação clínica.":
+    "Symptom reports made to Lia are checked by the connected service. Identified signs are stored in the panel for team review, without a guarantee of immediate reading or clinical assessment.",
+  "Demonstração com dados fictícios. Registros e pedidos confirmados são compartilhados com o painel conectado. Este aplicativo não é um serviço de urgência.":
+    "Demo with fictional data. Confirmed check-ins and requests are shared with the connected panel. This app is not an emergency service.",
   "Último registro confirmado:": "Last confirmed check-in:",
   "Conecte ao hospital para consultar as mensagens compartilhadas pela equipe.":
     "Connect to the hospital to read messages shared by the team.",

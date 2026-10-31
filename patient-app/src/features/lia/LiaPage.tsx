@@ -39,6 +39,12 @@ import {
 } from "../voice/capture";
 import { SafetyDemo, type SafetyDemoHandle } from "../safety/SafetyDemo";
 import {
+  checkConnectedSymptoms,
+  type ConnectedSymptomInput,
+  type ConnectedSymptomOutcome,
+} from "../safety/connectedSymptoms";
+import { ConnectedSymptomStatus } from "../safety/ConnectedSymptomStatus";
+import {
   createLiveConversationController,
   type LiveConversationController,
 } from "../voice/liveConversationController";
@@ -131,6 +137,7 @@ export function LiaPage({
   const [configured, setConfigured] = useState(false);
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState("");
+  const [voiceWarning, setVoiceWarning] = useState("");
   const [voice, setVoice] = useState(true);
   const [seconds, setSeconds] = useState(0);
   const [callActive, setCallActive] = useState(false);
@@ -141,6 +148,11 @@ export function LiaPage({
     null,
   );
   const [waitingToStart, setWaitingToStart] = useState(false);
+  const [symptomNotice, setSymptomNotice] = useState<{
+    input: ConnectedSymptomInput;
+    outcome: Exclude<ConnectedSymptomOutcome, { kind: "not_applicable" }>;
+  } | null>(null);
+  const [retryingReport, setRetryingReport] = useState(false);
   const requestedStart = useRef(false);
   const seenStartRequest = useRef(startRequest);
   const latest = useRef({
@@ -218,35 +230,47 @@ export function LiaPage({
   }
 
   async function speakDuringCall(text: string, signal: AbortSignal) {
-    setStage("synthesizing");
-    const blob = await synthesizeSpeech(
-      text,
-      latest.current.appBridge.getSnapshot().prefs.speechRate,
-      signal,
-    );
-    if (signal.aborted)
-      throw new DOMException(translate("Conversa encerrada"), "AbortError");
-    const session = createPlaybackSession(blob, {
-      signal,
-      onStarted: () => {
-        if (playback.current === session && !signal.aborted && live.current) {
-          playbackStarted.current = true;
-          setStage("speaking");
-        }
-      },
-      onLevel: (level) => {
-        if (playback.current === session) outputLevel.current = level;
-      },
-    });
-    playback.current = session;
     try {
-      await session.play();
-    } finally {
-      if (playback.current === session) {
-        playback.current = null;
-        playbackStarted.current = false;
-        outputLevel.current = 0;
+      setStage("synthesizing");
+      const blob = await synthesizeSpeech(
+        text,
+        latest.current.appBridge.getSnapshot().prefs.speechRate,
+        signal,
+      );
+      if (signal.aborted)
+        throw new DOMException(translate("Conversa encerrada"), "AbortError");
+      const session = createPlaybackSession(blob, {
+        signal,
+        onStarted: () => {
+          if (playback.current === session && !signal.aborted && live.current) {
+            playbackStarted.current = true;
+            setStage("speaking");
+          }
+        },
+        onLevel: (level) => {
+          if (playback.current === session) outputLevel.current = level;
+        },
+      });
+      playback.current = session;
+      try {
+        await session.play();
+      } finally {
+        if (playback.current === session) {
+          playback.current = null;
+          playbackStarted.current = false;
+          outputLevel.current = 0;
+        }
       }
+      setVoiceWarning("");
+    } catch (error) {
+      if (signal.aborted || !live.current) throw error;
+      // Losing TTS must not stop microphone transcription or the safety route.
+      setVoiceWarning(
+        locale === "en-US"
+          ? "Voice playback is unavailable. You can keep speaking; Lia will show her replies in writing."
+          : "A reprodução da voz está indisponível. Você pode continuar falando; a Lia mostrará as respostas por escrito.",
+      );
+      setMinimized(false);
     }
   }
 
@@ -254,6 +278,94 @@ export function LiaPage({
     setPendingAction(actions.current?.pending() ?? null);
     if (result.showApp && conversation.current?.isActive()) setMinimized(true);
     return { text: result.text, intent: "other" as LiaIntent };
+  }
+  async function reviewConnectedSymptoms(
+    input: ConnectedSymptomInput,
+    signal: AbortSignal,
+  ) {
+    const bridge = latest.current.appBridge;
+    const before = bridge.getSnapshot();
+    if (!before.connected || !bridge.reportSymptoms) return null;
+    const result = await checkConnectedSymptoms({
+      report: bridge.reportSymptoms,
+      input,
+      signal,
+    });
+    const now = latest.current.appBridge.getSnapshot().context;
+    if (
+      signal.aborted ||
+      !live.current ||
+      before.context.sessionId !== now.sessionId ||
+      before.context.epoch !== now.epoch ||
+      before.context.personaId !== now.personaId
+    )
+      throw new DOMException(translate("Conversa encerrada"), "AbortError");
+    if (result.kind === "not_applicable") return null;
+    actions.current?.clear();
+    setPendingAction(null);
+    setSymptomNotice({ input, outcome: result });
+    return { text: result.text, intent: "safety" as LiaIntent };
+  }
+  async function retrySymptomReport() {
+    const previous = symptomNotice;
+    if (
+      !previous ||
+      previous.outcome.kind !== "unconfirmed" ||
+      retryingReport ||
+      (busy.current && !callActive)
+    )
+      return;
+    setRetryingReport(true);
+    const run = async (signal: AbortSignal) => {
+      try {
+        const result = await reviewConnectedSymptoms(previous.input, signal);
+        if (result) return result;
+        setSymptomNotice(null);
+        return {
+          text:
+            locale === "en-US"
+              ? "The service did not register an attention signal for this message. If you need assessment, contact your care team."
+              : "O serviço não registrou um sinal de atenção para esta mensagem. Se você precisa de avaliação, entre em contato com sua equipe.",
+          intent: "safety" as LiaIntent,
+        };
+      } finally {
+        if (live.current) setRetryingReport(false);
+      }
+    };
+    const call = conversation.current;
+    if (call?.isActive()) {
+      call.submitAction(
+        locale === "en-US"
+          ? "Retry sending report"
+          : "Tentar enviar relato novamente",
+        run,
+      );
+      return;
+    }
+    const id = ++job.current;
+    const controller = new AbortController();
+    abort.current?.abort();
+    abort.current = controller;
+    busy.current = true;
+    setStage("processing");
+    try {
+      const result = await run(controller.signal);
+      if (!isCurrent(id)) return;
+      setMessages((m) => [
+        ...m,
+        {
+          id: ++sequence.current,
+          role: "assistant",
+          text: result.text,
+          intent: result.intent,
+        },
+      ]);
+      busy.current = false;
+      setStage("idle");
+      if (voice) await speak(result.text, id);
+    } catch (error) {
+      failure(error, id);
+    }
   }
   async function respondWithActions(
     text: string,
@@ -264,11 +376,19 @@ export function LiaPage({
   ): Promise<{ text: string; intent: LiaIntent }> {
     if (signal.aborted || !live.current)
       throw new DOMException(translate("Conversa encerrada"), "AbortError");
-    const decision = safety.current?.submitLiveReport(
-      text,
-      source,
-      operationId,
+    const connectedResult = await reviewConnectedSymptoms(
+      {
+        text,
+        source: source === "provider" ? "voice" : "text",
+        locale,
+        operationId,
+      },
+      signal,
     );
+    if (connectedResult) return connectedResult;
+    const decision =
+      !latest.current.appBridge.getSnapshot().connected &&
+      safety.current?.submitLiveReport(text, source, operationId);
     if (decision) {
       actions.current?.clear();
       setPendingAction(null);
@@ -374,6 +494,7 @@ export function LiaPage({
     interrupt();
     const startId = job.current;
     setError("");
+    setVoiceWarning("");
     setReviewing(false);
     setDraft("");
     // Show microphone controls only after the controller can honor them.
@@ -545,6 +666,9 @@ export function LiaPage({
     interrupt();
     setError("");
     setReviewing(false);
+    // Keep an uncertain report and its original locale/payload for idempotent
+    // retry. Changing display language must not create a second report.
+    setRetryingReport(false);
   }, [locale]);
   useEffect(() => {
     latest.current.onCallActiveChange?.(callActive);
@@ -630,7 +754,13 @@ export function LiaPage({
 
   async function send() {
     const text = draft.trim();
-    if (!text || text.length > 1500 || busy.current || !consent || !configured)
+    if (
+      !text ||
+      text.length > 1500 ||
+      busy.current ||
+      !consent ||
+      (!configured && !latest.current.appBridge.getSnapshot().connected)
+    )
       return;
     stopPlayback();
     setError("");
@@ -685,7 +815,41 @@ export function LiaPage({
       setReviewing(true);
       setStage("idle");
       busy.current = false;
-      const preview = safety.current?.previewLiveReport(result.text);
+      if (latest.current.appBridge.getSnapshot().connected) {
+        busy.current = true;
+        setStage("processing");
+        const assessment = await reviewConnectedSymptoms(
+          {
+            text: result.text,
+            source: "voice",
+            locale,
+            operationId: `voice-${id}`,
+          },
+          controller.signal,
+        );
+        if (!isCurrent(id)) return;
+        busy.current = false;
+        setStage("idle");
+        if (assessment) {
+          setDraft("");
+          setReviewing(false);
+          setMessages((m) => [
+            ...m,
+            { id: ++sequence.current, role: "user", text: result.text },
+            {
+              id: ++sequence.current,
+              role: "assistant",
+              text: assessment.text,
+              intent: "safety",
+            },
+          ]);
+          if (voice) void speak(assessment.text, id);
+          return;
+        }
+      }
+      const preview = latest.current.appBridge.getSnapshot().connected
+        ? undefined
+        : safety.current?.previewLiveReport(result.text);
       if (preview?.disposition === "urgent_care") {
         const decision = safety.current?.submitLiveReport(
           result.text,
@@ -826,6 +990,21 @@ export function LiaPage({
     );
   }
 
+  const symptomFeedback = symptomNotice && (
+    <ConnectedSymptomStatus
+      outcome={symptomNotice.outcome}
+      locale={locale}
+      retrying={
+        retryingReport ||
+        stage === "processing" ||
+        stage === "transcribing" ||
+        stage === "permission"
+      }
+      onRetry={() => void retrySymptomReport()}
+      onDismiss={() => setSymptomNotice(null)}
+    />
+  );
+
   return (
     <div className="lia-live">
       <header className="lia-chat-header">
@@ -854,6 +1033,13 @@ export function LiaPage({
               "Seu texto e áudio serão processados pela OpenAI e ElevenLabs para gerar as respostas. Nesta apresentação, use somente relatos fictícios.",
             )}
           </p>
+          {latest.current.appBridge.getSnapshot().connected && (
+            <p>
+              {locale === "en-US"
+                ? "Symptom reports spoken or typed to Lia are checked by the demo service and attention signals are automatically shared with the care team panel. There is no real emergency monitoring."
+                : "Relatos de sintomas ditos ou digitados à Lia são verificados pelo serviço da demonstração e sinais de atenção são compartilhados automaticamente com o painel da equipe. Não há monitoramento de urgência real."}
+            </p>
+          )}
           <button className="primary full" onClick={acceptConsent}>
             <Check size={18} />
             {waitingToStart
@@ -920,10 +1106,11 @@ export function LiaPage({
           }
           caption={messages.filter((m) => m.role === "assistant").at(-1)?.text}
           error={error}
+          voiceWarning={voiceWarning}
           textScale={prefs.textScale}
           onMinimize={showApp}
           confirmation={
-            pendingAction && (
+            pendingAction ? (
               <LiaActionConfirmation
                 pending={pendingAction}
                 disabled={
@@ -935,6 +1122,8 @@ export function LiaPage({
                 onConfirm={(id) => resolveAction(id, true)}
                 onCancel={(id) => resolveAction(id, false)}
               />
+            ) : (
+              symptomFeedback
             )
           }
         />
@@ -957,7 +1146,7 @@ export function LiaPage({
             void startConversation();
           }}
           confirmation={
-            pendingAction && (
+            pendingAction ? (
               <LiaActionConfirmation
                 pending={pendingAction}
                 disabled={
@@ -969,6 +1158,8 @@ export function LiaPage({
                 onConfirm={(id) => resolveAction(id, true)}
                 onCancel={(id) => resolveAction(id, false)}
               />
+            ) : (
+              symptomFeedback
             )
           }
         />
@@ -978,6 +1169,7 @@ export function LiaPage({
           {error}
         </p>
       )}
+      {!callActive && symptomFeedback}
       {messages.length === 0 && (
         <section className="lia-welcome">
           <img className="lia-avatar" src="./visual/lia-orb.svg" alt="" />
@@ -997,9 +1189,13 @@ export function LiaPage({
       )}
       {!configured && (
         <p className="lia-footnote">
-          {translate(
-            "A IA ao vivo está disponível no APK Android. Você pode explorar a agenda e os cenários neste navegador.",
-          )}
+          {latest.current.appBridge.getSnapshot().connected
+            ? locale === "en-US"
+              ? "You can report symptoms by text to the connected care team panel. Live AI and voice need the configured Android providers."
+              : "Você pode relatar sintomas por texto ao painel conectado. A IA ao vivo e a voz precisam dos provedores configurados no Android."
+            : translate(
+                "A IA ao vivo está disponível no APK Android. Você pode explorar a agenda e os cenários neste navegador.",
+              )}
         </p>
       )}
       <div
@@ -1106,7 +1302,13 @@ export function LiaPage({
           <button
             className="lia-send"
             aria-label={translate("Enviar mensagem")}
-            disabled={!draft.trim() || !consent || !configured || busy.current}
+            disabled={
+              !draft.trim() ||
+              !consent ||
+              (!configured &&
+                !latest.current.appBridge.getSnapshot().connected) ||
+              busy.current
+            }
             onClick={() => void send()}
           >
             <Send size={24} aria-hidden="true" />
@@ -1187,7 +1389,7 @@ export function LiaPage({
       <p className="lia-footnote lia-care-note">
         {translate(
           latest.current.appBridge.getSnapshot().connected
-            ? "Os envios confirmados são compartilhados com o painel da demonstração. Não há monitoramento de urgência. Em uma situação real, procure atendimento sem esperar pelo aplicativo. Os cenários acima simulam alertas localmente; para compartilhar um relato com o painel, use Mensagens da equipe."
+            ? "Relatos de sintomas na Lia são verificados pelo serviço e sinais de atenção são enviados automaticamente ao painel conectado para revisão profissional. O registro não significa que alguém já leu. Não há monitoramento de urgência real: procure atendimento sem esperar pelo aplicativo. Os cenários de demonstração abaixo continuam locais."
             : "Este app não é acompanhado por uma equipe real. Em uma situação real de urgência, procure atendimento imediatamente, sem aguardar resposta pelo aplicativo.",
         )}
       </p>

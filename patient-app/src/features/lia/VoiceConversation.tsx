@@ -30,6 +30,7 @@ type Props = {
   liveTranscript?: string;
   hint?: string;
   error?: string;
+  voiceWarning?: string;
   onRetry?(): void;
   onFinishTurn?(): void;
   onMinimize?(): void;
@@ -233,6 +234,7 @@ export function VoiceConversation({
   liveTranscript,
   hint,
   error,
+  voiceWarning,
   onRetry,
   onFinishTurn,
   onMinimize,
@@ -244,6 +246,9 @@ export function VoiceConversation({
   const endCallback = useRef(onEnd);
   endCallback.current = onEnd;
   const [captions, setCaptions] = useState(false);
+  useEffect(() => {
+    if (voiceWarning) setCaptions(true);
+  }, [voiceWarning]);
   const status =
     stage === "speaking" ||
     stage === "thinking" ||
@@ -349,6 +354,11 @@ export function VoiceConversation({
                     ? translate("Recebi sua fala.")
                     : ""}
         </p>
+        {voiceWarning && (
+          <p className="voice-playback-warning" role="status">
+            {voiceWarning}
+          </p>
+        )}
         {confirmation}
         {stage === "listening" && !muted && onFinishTurn && (
           <button

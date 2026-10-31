@@ -13,6 +13,8 @@ import type {
   HospitalWellbeingInput,
   HospitalMessageInput,
   HospitalReadOptions,
+  HospitalSymptomReportInput,
+  HospitalSymptomReportResult,
 } from "../../../shared/hospitalContracts";
 import { createHospitalRepository, isLocalDemoHost } from "./repository";
 import { hospitalFetch } from "../nativeHttp";
@@ -78,6 +80,10 @@ export type HospitalConnection = {
   getSnapshot(): HospitalView;
   subscribe(listener: () => void): () => void;
   refresh(): Promise<void>;
+  reportSymptoms(
+    value: HospitalSymptomReportInput,
+    options?: HospitalReadOptions,
+  ): Promise<HospitalSymptomReportResult>;
   submitRequest(
     value: Omit<HospitalRequestInput, "confirmation">,
     options?: HospitalReadOptions,
@@ -232,7 +238,7 @@ export function createHospitalConnection(
     {
       signature: string;
       input: unknown;
-      result?: Promise<void>;
+      result?: Promise<unknown>;
       failed?: boolean;
     }
   >();
@@ -317,12 +323,12 @@ export function createHospitalConnection(
     })();
     return refreshPromise;
   }
-  async function mutate<T>(
+  async function mutate<T, TResult>(
     key: string,
     signature: string,
     createInput: () => T,
-    write: (input: T, signal: AbortSignal) => Promise<unknown>,
-    accepted: (result: unknown) => Partial<HospitalView>,
+    write: (input: T, signal: AbortSignal) => Promise<TResult>,
+    accepted: (result: TResult) => Partial<HospitalView>,
     signal?: AbortSignal,
   ) {
     ensureActive();
@@ -336,7 +342,7 @@ export function createHospitalConnection(
       operation = { signature, input: createInput() };
       operations.set(key, operation);
     }
-    if (operation.result) return operation.result;
+    if (operation.result) return operation.result as Promise<TResult>;
     const captured = operation;
     revision += 1;
     publish({ pending: view.pending + 1 });
@@ -353,6 +359,7 @@ export function createHospitalConnection(
         revision += 1;
         captured.failed = false;
         publish({ ...accepted(result), error: null });
+        return result;
       } catch (error) {
         captured.result = undefined;
         captured.failed = true;
@@ -383,6 +390,16 @@ export function createHospitalConnection(
       };
     },
     refresh,
+    reportSymptoms(value, options) {
+      return mutate(
+        `symptoms-${value.idempotencyKey}`,
+        JSON.stringify(value),
+        () => ({ ...value }),
+        (input, signal) => repository.reportSymptoms(input, { signal }),
+        () => ({}),
+        options?.signal,
+      ).then((result) => result.data);
+    },
     submitRequest(value, options) {
       return mutate(
         `request-${value.idempotencyKey}`,
@@ -401,7 +418,7 @@ export function createHospitalConnection(
           };
         },
         options?.signal,
-      );
+      ).then(() => {});
     },
     recordWellbeing(value, options) {
       return mutate(
@@ -419,7 +436,7 @@ export function createHospitalConnection(
           ).data.feeling,
         }),
         options?.signal,
-      );
+      ).then(() => {});
     },
     sendMessage(value, options) {
       return mutate(
@@ -439,7 +456,7 @@ export function createHospitalConnection(
           };
         },
         options?.signal,
-      );
+      ).then(() => {});
     },
     updatePreferences(value, options) {
       return mutate(
@@ -453,7 +470,7 @@ export function createHospitalConnection(
           ).data,
         }),
         options?.signal,
-      );
+      ).then(() => {});
     },
     disconnect() {
       active = false;

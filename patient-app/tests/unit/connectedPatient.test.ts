@@ -116,6 +116,9 @@ function setup() {
           textScale: input.textScale,
         }),
     ),
+    reportSymptoms: vi.fn<HospitalPatientRepository["reportSymptoms"]>(
+      async () => snapshot({ ...scope, status: "not_applicable" }),
+    ),
     disconnect: vi.fn(),
   };
   return {
@@ -396,20 +399,18 @@ describe("explicit hospital pairing", () => {
   });
 
   it("binds the repository to the server scope and keeps its credential outside the visible view", async () => {
-    const fetcher = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            accessToken: "secret-pair-token",
-            expiresAt: identity.expiresAt,
-            scope,
-            patient: { displayName: identity.displayName },
-            demo: true,
-          }),
-          { headers: { "Content-Type": "application/json" } },
-        ),
-      );
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          accessToken: "secret-pair-token",
+          expiresAt: identity.expiresAt,
+          scope,
+          patient: { displayName: identity.displayName },
+          demo: true,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      ),
+    );
     const connection = await pairHospital({
       origin: "https://hospital.example",
       code: "OF-123456",

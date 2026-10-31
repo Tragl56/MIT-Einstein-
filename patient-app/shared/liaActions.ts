@@ -7,6 +7,17 @@ import type {
   Persona,
   Preferences,
 } from "./contracts";
+import type {
+  HospitalCareContext,
+  HospitalSymptomReportResult,
+} from "./hospitalContracts";
+
+export type LiaSymptomReportInput = {
+  text: string;
+  source: "text" | "voice";
+  locale: "pt-BR" | "en-US";
+  operationId: string;
+};
 
 export const LIA_PAGES = [
   "home",
@@ -57,6 +68,7 @@ export type LiaAppSnapshot = {
   savedMood: string;
   /** Connected snapshots contain patient-visible server data only; never credentials. */
   connected?: { status: "loading" | "ready" | "offline"; asOf?: string };
+  careContext?: HospitalCareContext;
   messages?: {
     id: string;
     authorLabel: string;
@@ -79,6 +91,10 @@ export type PendingLiaAction = {
 };
 export type LiaAppBridge = {
   getSnapshot(): LiaAppSnapshot;
+  reportSymptoms?(
+    input: LiaSymptomReportInput,
+    signal?: AbortSignal,
+  ): Promise<HospitalSymptomReportResult>;
   execute(
     action: LiaAction,
     operationId: string,

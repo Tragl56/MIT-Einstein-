@@ -90,7 +90,7 @@ export const appEnglishTranslations: Record<string, string> = {
   "Limpar pedidos e registros desta sessão":
     "Clear requests and check-ins from this session",
   "Sobre esta versão": "About this version",
-  "OncoFlow Paciente · 0.10.0": "OncoFlow Patient · 0.10.0",
+  "OncoFlow Paciente · 0.11.0": "OncoFlow Patient · 0.11.0",
   "Apenas preferências de leitura e idioma são salvas neste aparelho. Ao fechar ou recarregar, os registros da demonstração são apagados.":
     "Only reading and language preferences are saved on this device. Demo records are cleared when you close or reload the app.",
   "TUDO ORGANIZADO": "EVERYTHING ORGANIZED",

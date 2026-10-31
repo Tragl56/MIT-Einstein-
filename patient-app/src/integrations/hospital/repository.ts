@@ -22,6 +22,8 @@ import {
   validateWellbeingInput,
   validateMessageInput,
   validatePreferencesInput,
+  parseSymptomReport,
+  validateSymptomReportInput,
 } from "./validation";
 
 export { HospitalIntegrationError } from "./errors";
@@ -368,6 +370,26 @@ export function createHospitalRepository(
         (data, expectedScope) => parseList(data, expectedScope, parseMessage),
         readOptions,
       ),
+    async reportSymptoms(value, readOptions) {
+      const input = validateSymptomReportInput(value);
+      const body = JSON.stringify(input);
+      bindOperation(`symptoms:${input.idempotencyKey}`, body);
+      return execute(
+        "symptom-reports",
+        "symptom_report",
+        (data, expectedScope) => {
+          const result = parseSymptomReport(data, expectedScope);
+          if (
+            result.status === "recorded" &&
+            (result.text !== input.text || result.source !== input.source)
+          )
+            throw new HospitalIntegrationError("invalid_response");
+          return result;
+        },
+        readOptions,
+        { body, idempotencyKey: input.idempotencyKey },
+      );
+    },
     async sendMessage(value, readOptions) {
       const input = validateMessageInput(value);
       const body = JSON.stringify(input);

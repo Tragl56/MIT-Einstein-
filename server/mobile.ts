@@ -10,7 +10,7 @@ import {
   todosPacientes, usuarioPorId,
 } from './estado';
 import { CONFIG_SERVICO } from './configServico';
-import { detectarUrgencia } from './urgencia';
+import { detectarRelatoAfirmativo, detectarUrgencia } from './urgencia';
 import { agoraISO, gerarId } from './util';
 
 type Scope = { tenantId: string; hospitalId: string; patientId: string };
@@ -21,6 +21,7 @@ type Preferences = RecordBase & { locale: 'pt-BR' | 'en-US'; explanation: 'short
 type RequestLink = { patientId: string; type: 'contact' | 'reschedule'; appointmentId?: string; idempotencyKey: string };
 type Wellbeing = RecordBase & { feeling: string; note?: string; recordedAt: string; createdAt: string; idempotencyKey: string; status: 'recorded' };
 type Message = RecordBase & { role: 'patient' | 'team' | 'system'; authorLabel: string; text: string; createdAt: string; status: 'recorded' };
+type SymptomReport = RecordBase & { text: string; source: 'text' | 'voice'; recordedAt: string; status: 'recorded'; alertId: string; reviewRequired: true; guidance: string };
 type DraftDocument = RecordBase & { title: string; issuedAt: string; typeLabel: string; authorLabel: string; body: string[]; published: boolean };
 type Idempotent = { fingerprint: string; resource: string; resultId: string; result?: unknown };
 type Extras = {
@@ -30,6 +31,7 @@ type Extras = {
   preferences: Record<string, Preferences>;
   requests: Record<string, RequestLink>;
   wellbeing: Record<string, Wellbeing>;
+  symptomReports: Record<string, SymptomReport>;
   drafts: Record<string, DraftDocument>;
   idempotency: Record<string, Idempotent>;
 };
@@ -39,6 +41,8 @@ export type MobileOptions = {
   now?: () => number;
   pairingTtlMs?: number;
   sessionTtlMs?: number;
+  /** Test-only fault injection for the local atomic persistence boundary; never an HTTP option. */
+  beforePersist?: () => void;
 };
 const scopeFor = (patientId: string): Scope => ({ tenantId: 'demo', hospitalId: 'oncoflow', patientId });
 const baseFor = (patientId: string, id: string): RecordBase => ({ ...scopeFor(patientId), id });
@@ -89,20 +93,23 @@ const route = (fn: (req: Request, res: Response) => void) => (req: Request, res:
 export function criarIntegracaoMobile(options: MobileOptions = {}) {
   const now = options.now ?? Date.now;
   const filename = options.statePath === null ? null : path.resolve(options.statePath ?? process.env.ONCOFLOW_DEMO_STATE_PATH ?? 'outputs/.oncoflow-demo/state.json');
-  const fresh = (): Extras => ({ convertedAt: new Date(now()).toISOString(), appointmentStatuses: {}, journeyDates: {}, preferences: {}, requests: {}, wellbeing: {}, drafts: {}, idempotency: {} });
+  const fresh = (): Extras => ({ convertedAt: new Date(now()).toISOString(), appointmentStatuses: {}, journeyDates: {}, preferences: {}, requests: {}, wellbeing: {}, symptomReports: {}, drafts: {}, idempotency: {} });
   let extras = fresh();
   const pairings = new Map<string, { patientId: string; expires: number }>();
   const sessions = new Map<string, { patientId: string; expires: number }>();
   const attempts = new Map<string, { count: number; expires: number }>();
+  const savedRequests = new WeakSet<Request>();
   if (filename && existsSync(filename)) {
     // A broken file is surfaced, never silently replaced by a new seed.
     const saved = JSON.parse(readFileSync(filename, 'utf8'));
     if (saved.format !== 'oncoflow-fictional-demo-1' || !saved.extras || !saved.extras.idempotency) throw new Error('Invalid saved fictional demo state.');
     importarEstado(saved.state);
     extras = saved.extras;
+    extras.symptomReports ??= {};
   }
   function persist() {
     if (!filename) return;
+    options.beforePersist?.();
     mkdirSync(path.dirname(filename), { recursive: true });
     const temporary = `${filename}.${process.pid}.tmp`;
     writeFileSync(temporary, JSON.stringify({ format: 'oncoflow-fictional-demo-1', state: exportarEstado(), extras }), { encoding: 'utf8', mode: 0o600 });
@@ -176,15 +183,25 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
     const previous = extras.idempotency[storeKey];
     if (previous) {
       if (previous.resource !== resource || previous.fingerprint !== fingerprint) throw new ErroDominio(409, 'idempotencia_conflitante', 'Esta operação já foi usada com outros dados.');
+      savedRequests.add(req);
       if (resource === 'preferences' && previous.result) return previous.result;
       return lookup(previous.resultId);
     }
     bound(`write:${p.id}`, 60);
     if (Object.keys(extras.idempotency).length >= 20_000) throw new ErroDominio(429, 'limite_demo', 'Limite de operações desta demonstração atingido.');
-    const result = create();
-    extras.idempotency[storeKey] = { fingerprint, resource, resultId: result.id, ...(resource === 'preferences' ? { result: lookup(result.id) } : {}) };
-    persist();
-    return lookup(result.id);
+    const stateBefore = structuredClone(exportarEstado());
+    const extrasBefore = structuredClone(extras);
+    try {
+      const result = create();
+      extras.idempotency[storeKey] = { fingerprint, resource, resultId: result.id, ...(resource === 'preferences' ? { result: lookup(result.id) } : {}) };
+      persist();
+      savedRequests.add(req);
+      return lookup(result.id);
+    } catch (error) {
+      // Failed storage must not leave an acknowledged-looking in-memory message or alert.
+      importarEstado(stateBefore); extras = extrasBefore;
+      throw error;
+    }
   }
   function mobileData(p: Paciente) {
     const published = documents(p).map(d => ({ ...d, published: true }));
@@ -195,7 +212,7 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
     if (req.path.startsWith('/api/')) {
       res.setHeader('Cache-Control', 'no-store');
       const original = res.json.bind(res);
-      res.json = ((body: unknown) => { if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && res.statusCode < 400) persist(); return original(body); }) as typeof res.json;
+      res.json = ((body: unknown) => { if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && res.statusCode < 400 && !savedRequests.has(req)) persist(); return original(body); }) as typeof res.json;
     }
     next();
   });
@@ -231,7 +248,12 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
   r.get(`${prefix}/summary`, route((req, res) => {
     const p = patient(req);
     const last = Object.values(extras.wellbeing).filter(record => record.patientId === p.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).at(-1);
-    envelope(res, p, 'patient_summary', { ...baseFor(p.id, p.id), displayName: p.nome, preferredName: p.nome.split(' ')[0], careTeamLabel: CONFIG_SERVICO.instituicao, ...(last ? { lastWellbeing: { feeling: last.feeling, recordedAt: last.recordedAt } } : {}) });
+    const contextText = (value: string, limit: number) => Boolean(value?.trim() && value.length <= limit && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value));
+    const patientInstructions = p.documentos.filter(d => d.tipo === 'orientacao').flatMap(d => d.texto.split(/\n+/)).filter(paragraph => contextText(paragraph, 4000)).slice(-16);
+    // Do not truncate a diagnosis or instruction into a changed clinical statement. The
+    // optional context is omitted if its source cannot meet the patient display contract.
+    const careContext = contextText(p.diagnosticoResumido, 200) ? { diagnosisLabel: p.diagnosticoResumido, ...(contextText(p.esquemaResumido, 200) ? { treatmentLabel: p.esquemaResumido } : {}), ...(contextText(p.cicloAtual, 200) ? { cycleLabel: p.cicloAtual } : {}), sourceLabel: 'Cadastro fictício do OncoFlow e orientações publicadas pela equipe', patientInstructions } : undefined;
+    envelope(res, p, 'patient_summary', { ...baseFor(p.id, p.id), displayName: p.nome, preferredName: p.nome.split(' ')[0], careTeamLabel: CONFIG_SERVICO.instituicao, ...(careContext ? { careContext } : {}), ...(last ? { lastWellbeing: { feeling: last.feeling, recordedAt: last.recordedAt } } : {}) });
   }));
   r.get(`${prefix}/appointments`, route((req, res) => { const p = patient(req); envelope(res, p, 'appointments', appointments(p)); }));
   r.get(`${prefix}/journey`, route((req, res) => { const p = patient(req); envelope(res, p, 'journey', journey(p)); }));
@@ -289,6 +311,29 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
       return message;
     }, messageId => messageResult(p, p.mensagens.find(m => m.id === messageId && visibleMessage(m))!));
     envelope(res, p, 'message', result);
+  }));
+  r.post(`${prefix}/symptom-reports`, route((req, res) => {
+    const p = patient(req);
+    const item = object(req.body, ['text', 'source', 'locale', 'idempotencyKey']);
+    const literal = text(item.text, 4000); const source = choice(item.source, ['text', 'voice'] as const); const locale = choice(item.locale, ['pt-BR', 'en-US'] as const); const key = id(item.idempotencyKey);
+    if (req.header('Idempotency-Key') !== key) return invalid('A chave de idempotência deve corresponder ao corpo.');
+    const finding = detectarRelatoAfirmativo(literal);
+    // No message, pending item, audit content or idempotency record for non-report turns.
+    // A previously accepted operation still replays its stored result after a config change.
+    if (!finding && !extras.idempotency[`${p.id}:${key}`]) {
+      bound(`write:${p.id}`, 60);
+      savedRequests.add(req);
+      envelope(res, p, 'symptom_report', { ...scopeFor(p.id), status: 'not_applicable' }); return;
+    }
+    const result = idempotent(req, p, 'symptom_report', key, item, () => {
+      adicionarMensagem(p, { autor: 'paciente', nomeAutor: p.nome, texto: literal, origem: source === 'voice' ? 'voz' : 'texto', visivelPaciente: true });
+      const alert = registrarSinalUrgencia(p, literal, finding!.termo);
+      const record: SymptomReport = { ...baseFor(p.id, gerarId('symptom')), text: literal, source, recordedAt: agoraISO(), status: 'recorded', alertId: alert.id, reviewRequired: true, guidance: CONFIG_SERVICO.relatoAutomaticoDemo.orientacao[locale] };
+      extras.symptomReports[record.id] = record;
+      auditar(p.id, 'registrou_relato_automatico_demo', record.id);
+      return record;
+    }, reportId => extras.symptomReports[reportId]);
+    envelope(res, p, 'symptom_report', result);
   }));
   r.put(`${prefix}/preferences`, route((req, res) => {
     const p = patient(req);

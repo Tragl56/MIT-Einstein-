@@ -1,18 +1,20 @@
-# OncoFlow Paciente — MVP conectado 0.10.0
+# OncoFlow Paciente — MVP conectado 0.11.0
+
+A 0.11 corrige o encaminhamento de sintomas ditos ou digitados à Lia. Relatos afirmativos identificados pelas regras do serviço geram um alerta com a fala literal no Pro, sem exigir um cenário pronto ou outra confirmação. A Lia apresenta orientação para buscar avaliação e só anuncia o registro após o recibo do servidor. O cadastro oncológico autorizado acompanha o Perfil e a conversa. Falha do TTS mantém a escuta e as respostas escritas. Detalhes e limites em [verification-v011.md](docs/verification-v011.md).
 
 Aplicativo Android para apresentar o OncoFlow com três perfis fictícios, jornada, agenda e a Lia por texto e voz. Na 0.8, a Lia também executa tarefas no aplicativo: abre telas e documentos, consulta informações, ajusta preferências e prepara registros e pedidos simulados com confirmação. O APK faz chamadas diretas à OpenAI e à ElevenLabs. O modo independente não depende de servidor próprio; o modo conectado consulta e grava no servidor do painel. A Lia ao vivo precisa de internet, chaves válidas e créditos disponíveis nos provedores.
 
 A 0.9.0 (versionCode 10) compacta o cabeçalho e os cartões do Início para aproximar **Falar com a Lia** da primeira tela do telefone. A faixa fixa de demonstração foi retirada; os avisos continuam na entrada, no Perfil, na Lia e nos fluxos simulados. O aplicativo passa a oferecer português do Brasil e inglês dos Estados Unidos, incluindo os dados fictícios e a conversa. Na 0.10.0, a integração com o painel Express foi ativada por pareamento temporário por paciente.
 
-## Plataforma conectada na versão 0.10
+## Plataforma conectada
 
-Na entrada ou no Perfil, escolha **Conectar ao hospital**, informe o endereço do painel e o código gerado para o paciente em **Aplicativo do paciente → Gerar código de pareamento**. Para o servidor HTTP na mesma rede Wi-Fi, marque **Rede local de demonstração (HTTP)**; endereços públicos precisam de HTTPS. Não existe servidor público configurado nesta entrega. O guia completo está em `docs/connected-demo.md` na raiz do repositório integrado.
+Na entrada ou no Perfil, escolha **Conectar ao hospital**, informe o endereço do painel e o código gerado para o paciente em **Aplicativo do paciente → Gerar código de pareamento**. Para o servidor HTTP na mesma rede Wi-Fi, marque **Rede local de demonstração (HTTP)**; ao usar HTTPS, deixe a opção desmarcada. O link HTTPS temporário autorizado para a apresentação é informado separadamente ao usuário; não há hospedagem permanente configurada no código. O guia completo está em `docs/connected-demo.md` na raiz do repositório integrado.
 
 Depois do pareamento, app e Lia usam a identidade e os dados do servidor: agenda, jornada, documentos publicados, registros, pedidos, mensagens e preferências. As escritas só informam sucesso após confirmação do servidor. Assumir/concluir no Pro muda o status no app; a resposta escrita pela equipe aparece em Mensagens da equipe. Pedir reagendamento não altera o horário; a equipe precisa editar o compromisso. Documento interno não vira publicação automaticamente.
 
 O servidor da rede precisa ficar acessível enquanto os dois trocam dados. A sessão pareada fica em memória; reiniciar o app ou o servidor exige novo código. Dados confirmados persistem no servidor. A troca de paciente e a desconexão abortam atualizações antigas. **Explorar demonstração** mantém os três perfis locais anteriores. Todo o conjunto continua fictício, sem serviço de atendimento clínico real.
 
-O código autocontido do app está em `patient-app/` no repositório do painel. A execução conjunta usa `npm run build:platform` e `npm run start:platform` na raiz desse repositório. Verificação desta entrega: [docs/verification-v010.md](docs/verification-v010.md). As seções sobre versões anteriores abaixo são histórico e descrevem também o modo independente.
+O código autocontido do app está em `patient-app/` no repositório do painel. A execução conjunta usa `npm run build:platform` e `npm run start:platform` na raiz desse repositório. Verificação desta entrega: [docs/verification-v011.md](docs/verification-v011.md). As seções sobre versões anteriores abaixo são histórico e descrevem também o modo independente.
 
 ## O que esta versão permite apresentar
 
@@ -49,7 +51,7 @@ A Lia usa o orbe SVG do kit e ondas ligadas aos níveis reais do áudio sintetiz
 
 ## Instalar e apresentar
 
-1. O artefato desta versão é `../output/apk/OncoFlow-Paciente-demo-v0.10.0.apk`. O build e a verificação estão registrados em [docs/verification-v010.md](docs/verification-v010.md). Transfira o APK para o Android e abra o arquivo. Autorize a instalação pelo aplicativo usado para abrir o APK, se o Android solicitar.
+1. O artefato desta versão é `../output/apk/OncoFlow-Paciente-demo-v0.11.0.apk`. O build e a verificação estão registrados em [docs/verification-v011.md](docs/verification-v011.md). Transfira o APK para o Android e abra o arquivo. Autorize a instalação pelo aplicativo usado para abrir o APK, se o Android solicitar.
 2. Abra o OncoFlow, escolha o idioma e um perfil fictício e toque em **Explorar demonstração** ou **Explore demo**. Não há login.
 3. Toque em **Falar com a Lia** no Início ou em **Lia** na navegação principal. Na primeira vez, toque em **Entendi, ativar e conversar** e permita o microfone. O aviso informa o processamento de texto e áudio pela OpenAI e ElevenLabs; use somente conteúdo fictício. **Prefiro digitar** permite permanecer no texto, com o aceite necessário antes de enviar mensagens.
 4. Nas próximas vezes, o mesmo acesso inicia a chamada diretamente. Aguarde a conexão e a saudação da Lia; então fale naturalmente. Ao terminar a frase, a pausa permite concluir a transcrição e iniciar a resposta, sem revisão nem toque em **Enviar**. Se o turno não terminar, use **Terminei de falar**.
@@ -114,7 +116,7 @@ npm ci
 npm run apk:debug
 ```
 
-Saída prevista pelo script: `../output/apk/OncoFlow-Paciente-demo-v0.10.0.apk`, assinado para desenvolvimento, e `SHA256SUMS-v0.10.0.txt` no mesmo diretório. Android mínimo 7/API24; a conversa também depende de Android System WebView compatível com WebRTC, AudioWorklet e WebAssembly. Detalhes em [docs/android-build.md](docs/android-build.md), decisões de voz preservadas em [docs/implementation-v06.md](docs/implementation-v06.md) e estado das verificações em [docs/verification-v09.md](docs/verification-v09.md). Não é uma versão publicada em loja. As verificações [0.8](docs/verification-v08.md), [0.7.1](docs/verification-v071.md), [0.7.0](docs/verification-v07.md), [0.6](docs/verification-v06.md), [0.5](docs/verification-v05.md), [0.4](docs/verification-v04.md), [0.3](docs/verification-v03.md) e [0.2](docs/verification-v02.md) permanecem como histórico.
+Saída prevista pelo script: `../output/apk/OncoFlow-Paciente-demo-v0.11.0.apk`, assinado para desenvolvimento, e `SHA256SUMS-v0.10.0.txt` no mesmo diretório. Android mínimo 7/API24; a conversa também depende de Android System WebView compatível com WebRTC, AudioWorklet e WebAssembly. Detalhes em [docs/android-build.md](docs/android-build.md), decisões de voz preservadas em [docs/implementation-v06.md](docs/implementation-v06.md) e estado das verificações em [docs/verification-v09.md](docs/verification-v09.md). Não é uma versão publicada em loja. As verificações [0.8](docs/verification-v08.md), [0.7.1](docs/verification-v071.md), [0.7.0](docs/verification-v07.md), [0.6](docs/verification-v06.md), [0.5](docs/verification-v05.md), [0.4](docs/verification-v04.md), [0.3](docs/verification-v03.md) e [0.2](docs/verification-v02.md) permanecem como histórico.
 
 `npm run dev` e `npm run build` preparam automaticamente os assets do detector em `public/vad/`: modelo Silero V5, AudioWorklet e runtime ONNX, com licenças. Se essa preparação ou a inicialização local falhar, a chamada informa erro; não libera o microfone bruto como substituição silenciosa. O detector funciona localmente, mas a conversa com os provedores continua exigindo internet.
 

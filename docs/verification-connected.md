@@ -1,8 +1,8 @@
 # Verificação da plataforma conectada
 
-Entrega de 31/10/2026: app Android 0.10.0 (versionCode 11), OncoFlow Pro e API compartilhada de demonstração.
+Entrega de 31/10/2026: app Android 0.11.0 (versionCode 12), OncoFlow Pro e API compartilhada de demonstração.
 
-Resultados completos, identificação do APK e limites estão em [verification-v010.md](../patient-app/docs/verification-v010.md). O [guia de execução](connected-demo.md) contém a instalação, o pareamento, o armazenamento persistente e a preparação para hospedagem.
+Resultados completos, identificação do APK e limites estão em [verification-v011.md](../patient-app/docs/verification-v011.md). O [guia de execução](connected-demo.md) contém a instalação, o pareamento, o armazenamento persistente e a preparação para hospedagem.
 
 Foram verificados o envio de bem-estar e pedidos pelo app/Lia, atendimento assumido/concluído no Pro, mensagens nos dois sentidos, edição de agenda/preparo e jornada, publicação explícita de documentos, preferências, isolamento por paciente, idempotência e restauração após reinício. Os ensaios usaram apenas dados fictícios.
 

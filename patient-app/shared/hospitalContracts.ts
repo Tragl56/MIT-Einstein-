@@ -19,7 +19,37 @@ export type HospitalPatientSummary = HospitalRecord & {
   preferredName?: string;
   careTeamLabel: string;
   lastWellbeing?: { feeling: string; recordedAt: string };
+  careContext?: HospitalCareContext;
 };
+
+/** Confirmed registry facts and patient-published instructions; no inferred clinical state. */
+export type HospitalCareContext = {
+  diagnosisLabel: string;
+  treatmentLabel?: string;
+  cycleLabel?: string;
+  sourceLabel: string;
+  patientInstructions: string[];
+};
+
+export type HospitalSymptomReportInput = {
+  text: string;
+  source: "text" | "voice";
+  locale: "pt-BR" | "en-US";
+  idempotencyKey: string;
+};
+
+/** This receipt confirms storage and a pending review, never clinical severity or delivery to a clinician. */
+export type HospitalSymptomReportResult =
+  | (HospitalPatientScope & { status: "not_applicable" })
+  | (HospitalRecord & {
+      text: string;
+      source: "text" | "voice";
+      recordedAt: string;
+      status: "recorded";
+      alertId: string;
+      reviewRequired: true;
+      guidance: string;
+    });
 
 export type HospitalAppointment = HospitalRecord & {
   startsAt: string;
@@ -167,6 +197,10 @@ export interface HospitalPatientRepository {
     input: HospitalWellbeingInput,
     options?: HospitalReadOptions,
   ): Promise<HospitalSnapshot<HospitalWellbeingRecord>>;
+  reportSymptoms(
+    input: HospitalSymptomReportInput,
+    options?: HospitalReadOptions,
+  ): Promise<HospitalSnapshot<HospitalSymptomReportResult>>;
   /** Invalidate on logout/patient switch; no late result may update the old session. */
   disconnect(): void;
 }

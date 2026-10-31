@@ -198,6 +198,12 @@ describe("Lia uses the connected server snapshot and acknowledgement", () => {
         ) => {},
       ),
       updatePreferences: vi.fn(async () => {}),
+      reportSymptoms: vi.fn(async () => ({
+        tenantId: "demo",
+        hospitalId: "oncoflow",
+        patientId: "pac-maria",
+        status: "not_applicable" as const,
+      })),
     };
     const bridge = createLiaAppBridge({
       data,
@@ -240,6 +246,53 @@ describe("Lia uses the connected server snapshot and acknowledgement", () => {
       text: expect.stringContaining("confirmado pelo hospital"),
     });
     expect(f.navigate).toHaveBeenCalledWith("requests");
+  });
+  it("exposes automatic reporting only in a connected session and rejects a captured reporter after the patient changes", async () => {
+    expect(fixture().bridge.reportSymptoms).toBeUndefined();
+    const f = connectedFixture();
+    expect(f.bridge.reportSymptoms).toEqual(expect.any(Function));
+    const report = f.bridge.reportSymptoms!;
+    const input = {
+      text: "Estou com dor",
+      source: "voice" as const,
+      locale: "pt-BR" as const,
+      operationId: "utterance-1",
+    };
+    expect(await report(input)).toMatchObject({ status: "not_applicable" });
+    createSession("joao");
+    await expect(report(input)).rejects.toThrow();
+    expect(f.remote.reportSymptoms).toHaveBeenCalledTimes(1);
+  });
+  it("reads only confirmed cancer facts and published instructions in the connected profile", async () => {
+    const f = connectedFixture();
+    f.state.careContext = {
+      diagnosisLabel: "Câncer de mama",
+      treatmentLabel: "Acompanhamento com equipe",
+      sourceLabel: "Cadastro confirmado",
+      patientInstructions: [
+        "Use o canal da equipe para dúvidas sobre o plano.",
+      ],
+    };
+    const result = await f.bridge.execute(
+      { type: "read", target: "profile", value: null },
+      "read-profile",
+      f.context,
+    );
+    expect(result.text).toContain("Câncer de mama");
+    expect(result.text).toContain("Cadastro confirmado");
+    expect(result.text).toContain("Use o canal da equipe");
+    expect(result.text).not.toMatch(
+      /quimioterapia|imunossupress|estágio|prognóstico/,
+    );
+    f.state.careContext.patientInstructions = ["x".repeat(4000)];
+    const longResult = await f.bridge.execute(
+      { type: "read", target: "profile", value: null },
+      "read-profile-long",
+      f.context,
+    );
+    expect(longResult.text.length).toBeLessThanOrEqual(2400);
+    expect(longResult.text).not.toContain("xxxx");
+    expect(longResult.text).toContain("orientações completas");
   });
   it("reads attributed team messages and actual request states", async () => {
     const f = connectedFixture();

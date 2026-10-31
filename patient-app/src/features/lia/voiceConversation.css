@@ -462,6 +462,16 @@ dialog.voice-conversation[open] {
   line-height: 1.4;
   flex-shrink: 0;
 }
+.voice-playback-warning {
+  color: #274b59;
+  background: #eef5f7;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: calc(14px * var(--voice-text-scale, 1));
+  max-height: 18dvh;
+  overflow: auto;
+  flex-shrink: 0;
+}
 .voice-conversation .lia-action-confirmation {
   --text-scale: var(--voice-text-scale);
 }

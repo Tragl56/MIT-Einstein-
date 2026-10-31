@@ -13,6 +13,9 @@ import type {
   HospitalMessage,
   HospitalMessageInput,
   HospitalPreferencesInput,
+  HospitalCareContext,
+  HospitalSymptomReportInput,
+  HospitalSymptomReportResult,
 } from "../../../shared/hospitalContracts";
 import { HospitalIntegrationError } from "./errors";
 
@@ -122,13 +125,16 @@ export function parseSummary(
   const item = object(
     value,
     [...recordKeys, "displayName", "careTeamLabel"],
-    ["preferredName", "lastWellbeing"],
+    ["preferredName", "lastWellbeing", "careContext"],
   );
   return {
     ...record(item, scope),
     displayName: text(item.displayName),
     careTeamLabel: text(item.careTeamLabel),
     ...optionalText(item, "preferredName"),
+    ...(item.careContext === undefined
+      ? {}
+      : { careContext: parseCareContext(item.careContext) }),
     ...(item.lastWellbeing === undefined
       ? {}
       : {
@@ -144,6 +150,85 @@ export function parseSummary(
           })(),
         }),
   };
+}
+
+export function parseCareContext(value: unknown): HospitalCareContext {
+  const item = object(
+    value,
+    ["diagnosisLabel", "sourceLabel", "patientInstructions"],
+    ["treatmentLabel", "cycleLabel"],
+  );
+  if (
+    !Array.isArray(item.patientInstructions) ||
+    item.patientInstructions.length > 24
+  )
+    return fail();
+  return {
+    diagnosisLabel: text(item.diagnosisLabel),
+    sourceLabel: text(item.sourceLabel),
+    ...optionalText(item, "treatmentLabel"),
+    ...optionalText(item, "cycleLabel"),
+    patientInstructions: item.patientInstructions.map((instruction) =>
+      text(instruction, 4000),
+    ),
+  };
+}
+
+export function parseSymptomReport(
+  value: unknown,
+  scope: HospitalPatientScope,
+): HospitalSymptomReportResult {
+  if (
+    value &&
+    typeof value === "object" &&
+    (value as ObjectValue).status === "not_applicable"
+  ) {
+    const item = object(value, [...scopeKeys, "status"]);
+    if (
+      scopeKeys.some(
+        (key) => item[key] !== scope[key as keyof HospitalPatientScope],
+      )
+    )
+      return fail();
+    return { ...scope, status: "not_applicable" };
+  }
+  const item = object(value, [
+    ...recordKeys,
+    "text",
+    "source",
+    "recordedAt",
+    "status",
+    "alertId",
+    "reviewRequired",
+    "guidance",
+  ]);
+  if (item.reviewRequired !== true) return fail();
+  return {
+    ...record(item, scope),
+    text: text(item.text, 4000),
+    source: choice(item.source, ["text", "voice"] as const),
+    recordedAt: date(item.recordedAt),
+    status: choice(item.status, ["recorded"] as const),
+    alertId: id(item.alertId),
+    reviewRequired: true,
+    guidance: text(item.guidance, 4000),
+  };
+}
+
+export function validateSymptomReportInput(
+  value: unknown,
+): HospitalSymptomReportInput {
+  try {
+    const item = object(value, ["text", "source", "locale", "idempotencyKey"]);
+    return {
+      text: text(item.text, 4000),
+      source: choice(item.source, ["text", "voice"] as const),
+      locale: choice(item.locale, ["pt-BR", "en-US"] as const),
+      idempotencyKey: id(item.idempotencyKey),
+    };
+  } catch {
+    throw new HospitalIntegrationError("invalid_input");
+  }
 }
 export function parseAppointment(
   value: unknown,

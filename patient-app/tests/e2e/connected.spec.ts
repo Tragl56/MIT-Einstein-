@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { mockConnectedAgent } from "./helpers/connectedAgent";
 
 const scope = {
   tenantId: "demo",
@@ -31,6 +32,7 @@ async function hospitalApi(page: Page) {
   const requests: RequestRecord[] = [];
   const messages: MessageRecord[] = [];
   const reports: Record<string, unknown>[] = [];
+  const symptomReports: Record<string, unknown>[] = [];
   const writes: {
     endpoint: string;
     body: Record<string, unknown>;
@@ -57,6 +59,7 @@ async function hospitalApi(page: Page) {
     },
   ];
   let failNextRequest = false;
+  let failNextSymptom = false;
   let holdCheckin = false;
   let releaseCheckin: (() => void) | undefined;
   await page.route(`${base}/**`, async (route) => {
@@ -105,6 +108,12 @@ async function hospitalApi(page: Page) {
           displayName: "Maria do painel",
           preferredName: "Maria",
           careTeamLabel: "Equipe de navegação",
+          careContext: {
+            diagnosisLabel: "Carcinoma invasivo de mama",
+            treatmentLabel: "Acompanhamento cadastrado",
+            sourceLabel: "Cadastro fictício do serviço",
+            patientInstructions: ["Traga suas perguntas para a equipe."],
+          },
         }),
       );
     else if (endpoint === "appointments")
@@ -167,6 +176,38 @@ async function hospitalApi(page: Page) {
         }
         await json(envelope("request", requests[0]));
       } else await json(envelope("requests", requests));
+    } else if (endpoint === "symptom-reports") {
+      if (body!.text !== "Estou com febre e vomitando") {
+        await json(
+          envelope("symptom_report", { ...scope, status: "not_applicable" }),
+        );
+      } else {
+        if (
+          !symptomReports.some(
+            (item) => item.idempotencyKey === body!.idempotencyKey,
+          )
+        )
+          symptomReports.push(body!);
+        if (failNextSymptom) {
+          failNextSymptom = false;
+          await route.abort("failed");
+          return;
+        }
+        await json(
+          envelope("symptom_report", {
+            ...scope,
+            id: "symptom-1",
+            text: body!.text,
+            source: body!.source,
+            recordedAt: now,
+            status: "recorded",
+            alertId: "signal-1",
+            reviewRequired: true,
+            guidance:
+              "Procure avaliação no serviço de oncologia agora. Se não conseguir contato, procure um pronto atendimento. Não espere pelo aplicativo.",
+          }),
+        );
+      }
     } else if (endpoint === "wellbeing") {
       if (holdCheckin)
         await new Promise<void>((resolve) => {
@@ -203,10 +244,14 @@ async function hospitalApi(page: Page) {
     requests,
     messages,
     reports,
+    symptomReports,
     writes,
     preferences,
     failRequest() {
       failNextRequest = true;
+    },
+    failSymptom() {
+      failNextSymptom = true;
     },
     holdReport() {
       holdCheckin = true;
@@ -220,6 +265,211 @@ async function hospitalApi(page: Page) {
     },
   };
 }
+
+async function textLia(page: Page) {
+  await page.evaluate(() => {
+    location.hash = "#lia";
+  });
+  await page.getByLabel("Mensagem para a Lia", { exact: true }).waitFor();
+  await page.getByLabel("Ouvir as respostas da Lia", { exact: true }).uncheck();
+}
+async function sayByText(page: Page, text: string) {
+  await page.getByLabel("Mensagem para a Lia", { exact: true }).fill(text);
+  await page
+    .getByRole("button", { name: "Enviar mensagem", exact: true })
+    .click();
+}
+
+test("a connected symptom report does not require the AI or TTS provider to be configured", async ({
+  page,
+}) => {
+  await mockConnectedAgent(page, false);
+  const api = await hospitalApi(page);
+  await connect(page);
+  await textLia(page);
+  await sayByText(page, "Estou com febre e vomitando");
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "Alerta registrado",
+  );
+  expect(api.symptomReports).toHaveLength(1);
+  expect(await page.evaluate("window.agent.chats.length")).toBe(0);
+});
+
+test("an identical symptom in a new app session creates a new report, while retries stay idempotent", async ({
+  page,
+}) => {
+  await mockConnectedAgent(page);
+  const api = await hospitalApi(page);
+  await connect(page);
+  await textLia(page);
+  await sayByText(page, "Estou com febre e vomitando");
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "Alerta registrado",
+  );
+  await page.reload();
+  await connect(page);
+  await textLia(page);
+  await sayByText(page, "Estou com febre e vomitando");
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "Alerta registrado",
+  );
+  expect(api.symptomReports).toHaveLength(2);
+  expect(api.symptomReports[0].idempotencyKey).not.toBe(
+    api.symptomReports[1].idempotencyKey,
+  );
+});
+
+test("Lia automatically registers a literal symptom report before GPT, without an extra confirmation", async ({
+  page,
+}) => {
+  await mockConnectedAgent(page);
+  const api = await hospitalApi(page);
+  await connect(page);
+  await textLia(page);
+  await sayByText(page, "Estou com febre e vomitando");
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "Alerta registrado",
+  );
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "pronto atendimento",
+  );
+  expect(api.symptomReports).toHaveLength(1);
+  expect(api.symptomReports[0]).toMatchObject({
+    text: "Estou com febre e vomitando",
+    source: "text",
+    locale: "pt-BR",
+  });
+  expect(await page.evaluate("window.agent.chats.length")).toBe(0);
+  await expect(
+    page.getByRole("button", { name: "Sim, confirmar", exact: true }),
+  ).toHaveCount(0);
+});
+
+test("Lia retry reconciles a lost acknowledgement with the same report key", async ({
+  page,
+}) => {
+  await mockConnectedAgent(page);
+  const api = await hospitalApi(page);
+  await connect(page);
+  await textLia(page);
+  api.failSymptom();
+  await sayByText(page, "Estou com febre e vomitando");
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "Envio não confirmado",
+  );
+  await expect(page.getByTestId("connected-symptom-status")).not.toContainText(
+    "Alerta registrado",
+  );
+  await page.getByRole("button", { name: "Perfil", exact: true }).click();
+  await page
+    .getByLabel("Idioma do aplicativo", { exact: true })
+    .selectOption("en-US");
+  await page.evaluate(() => {
+    location.hash = "#lia";
+  });
+  await page
+    .getByRole("button", {
+      name: "Retry sending report",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "Alert recorded",
+  );
+  expect(api.symptomReports).toHaveLength(1);
+  const writes = api.writes.filter(
+    (item) => item.endpoint === "symptom-reports",
+  );
+  expect(writes).toHaveLength(2);
+  expect(writes[1].body).toEqual(writes[0].body);
+});
+
+test("Lia sends the registered cancer context to GPT for education while negated symptoms create no alert", async ({
+  page,
+}) => {
+  await mockConnectedAgent(page);
+  const api = await hospitalApi(page);
+  await connect(page);
+  await textLia(page);
+  await sayByText(page, "Não estou com febre. Pode explicar meu diagnóstico?");
+  await expect(page.getByTestId("lia-answer").last()).toContainText("cadastro");
+  expect(api.symptomReports).toHaveLength(0);
+  const chats = await page.evaluate<any[]>("window.agent.chats");
+  expect(chats).toHaveLength(1);
+  expect(chats[0].context).toContain("Carcinoma invasivo de mama");
+  expect(chats[0].context).not.toContain("planoTerapeuticoTexto");
+  await expect(page.getByTestId("connected-symptom-status")).toHaveCount(0);
+});
+
+for (const scale of [1, 2])
+  test(`continuous voice uses automatic symptoms and reachable controls at text scale ${scale}`, async ({
+    page,
+  }) => {
+    await mockConnectedAgent(page);
+    await page.setViewportSize({ width: 360, height: 640 });
+    const api = await hospitalApi(page);
+    api.preferences.textScale = scale;
+    await connect(page);
+    await page.getByRole("button", { name: /Falar com a Lia Diga/ }).click();
+    await expect.poll(() => page.evaluate("window.agent.plays")).toBe(1);
+    await page.evaluate("window.agent.finish()");
+    await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+      "data-stage",
+      "listening",
+    );
+    await page.evaluate('window.agent.turn("Estou com febre e vomitando")');
+    await expect(page.getByTestId("connected-symptom-status")).toContainText(
+      "Alerta registrado",
+    );
+    expect(api.symptomReports[0]).toMatchObject({ source: "voice" });
+    expect(await page.evaluate("window.agent.chats.length")).toBe(0);
+    for (const name of ["Silenciar microfone", "Encerrar conversa"])
+      await expect(
+        page.getByRole("button", { name, exact: true }),
+      ).toBeInViewport({ ratio: 1 });
+    await page
+      .getByRole("button", { name: "Encerrar conversa", exact: true })
+      .click();
+  });
+
+test("TTS quota failure keeps the microphone, written guidance and automatic alerts working", async ({
+  page,
+}) => {
+  await mockConnectedAgent(page, true, false);
+  await page.setViewportSize({ width: 360, height: 640 });
+  const api = await hospitalApi(page);
+  api.preferences.textScale = 2;
+  await connect(page);
+  await page.getByRole("button", { name: /Falar com a Lia Diga/ }).click();
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-stage",
+    "listening",
+  );
+  await expect(page.locator(".voice-playback-warning")).toContainText(
+    "continuar falando",
+  );
+  await expect(
+    page.getByRole("region", { name: "Legendas da conversa" }),
+  ).toBeVisible();
+  await page.evaluate('window.agent.turn("Estou com febre e vomitando")');
+  await expect(page.getByTestId("connected-symptom-status")).toContainText(
+    "Alerta registrado",
+  );
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-stage",
+    "listening",
+  );
+  expect(api.symptomReports).toHaveLength(1);
+  expect(await page.evaluate("window.agent.chats.length")).toBe(0);
+  await expect(page.locator(".voice-call-error")).toHaveCount(0);
+  for (const name of ["Silenciar microfone", "Encerrar conversa"])
+    await expect(
+      page.getByRole("button", { name, exact: true }),
+    ).toBeInViewport({ ratio: 1 });
+  await page
+    .getByRole("button", { name: "Encerrar conversa", exact: true })
+    .click();
+});
 
 async function connect(page: Page) {
   await page.goto("/");
@@ -390,18 +640,31 @@ test("check-in UI waits for a hospital acknowledgement", async ({ page }) => {
   });
 });
 
-for (const size of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
-  test(`connected home keeps Lia reachable without scrolling at ${size.width}x${size.height}`, async ({ page }) => {
+for (const size of [
+  { width: 390, height: 844 },
+  { width: 360, height: 640 },
+]) {
+  test(`connected home keeps Lia reachable without scrolling at ${size.width}x${size.height}`, async ({
+    page,
+  }) => {
     await page.setViewportSize(size);
     await hospitalApi(page);
     await connect(page);
     await page.evaluate(() => document.fonts.ready);
     const layout = await page.evaluate(() => {
-      const cta = document.querySelector('.home-lia-cta')!.getBoundingClientRect();
-      const nav = document.querySelector('.bottom-nav')!.getBoundingClientRect();
+      const cta = document
+        .querySelector(".home-lia-cta")!
+        .getBoundingClientRect();
+      const nav = document
+        .querySelector(".bottom-nav")!
+        .getBoundingClientRect();
       return {
-        scroll: window.scrollY, bottom: cta.bottom, navTop: nav.top,
-        reachable: !!document.elementFromPoint(cta.x + cta.width / 2, cta.y + cta.height / 2)?.closest('.home-lia-cta'),
+        scroll: window.scrollY,
+        bottom: cta.bottom,
+        navTop: nav.top,
+        reachable: !!document
+          .elementFromPoint(cta.x + cta.width / 2, cta.y + cta.height / 2)
+          ?.closest(".home-lia-cta"),
       };
     });
     expect(layout.scroll).toBe(0);

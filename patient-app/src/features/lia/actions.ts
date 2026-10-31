@@ -108,7 +108,9 @@ function resourceAvailable(
       (item) =>
         item.id === action.target &&
         item.personaId === snapshot.context.personaId &&
-        (action.type !== "request_reschedule" || item.status === "confirmed" || item.status === "scheduled"),
+        (action.type !== "request_reschedule" ||
+          item.status === "confirmed" ||
+          item.status === "scheduled"),
     );
   }
   if (action.type === "open_document") {
@@ -414,6 +416,29 @@ export function buildLiaContext(snapshot: LiaAppSnapshot): string {
         textScale: snapshot.prefs.textScale,
       },
       savedMood: shorten(snapshot.savedMood, 160),
+      ...(snapshot.connected && snapshot.careContext
+        ? {
+            careContext: {
+              diagnosisLabel: shorten(snapshot.careContext.diagnosisLabel, 200),
+              ...(snapshot.careContext.treatmentLabel
+                ? {
+                    treatmentLabel: shorten(
+                      snapshot.careContext.treatmentLabel,
+                      200,
+                    ),
+                  }
+                : {}),
+              ...(snapshot.careContext.cycleLabel
+                ? { cycleLabel: shorten(snapshot.careContext.cycleLabel, 200) }
+                : {}),
+              sourceLabel: shorten(snapshot.careContext.sourceLabel, 200),
+              patientInstructions: take(
+                snapshot.careContext.patientInstructions,
+                Math.min(tier.items, 24),
+              ).map((instruction) => shorten(instruction)),
+            },
+          }
+        : {}),
       counts: {
         appointments: ownAppointments.length,
         journey: ownJourney.length,

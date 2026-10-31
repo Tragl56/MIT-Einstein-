@@ -56,6 +56,9 @@ solicitar acesso de rede ao Node.js, permita a rede privada usada pela demonstra
 
 ## Ver a troca nos dois sentidos
 
+- **Sintoma dito ou digitado à Lia (0.11):** “Estou com febre e vomitando” é enviado ao serviço antes do GPT. Um sinal afirmativo configurado gera alerta com fala literal no painel e orientação para procurar avaliação. Negação/pergunta educativa não vira sintoma. O alerta aguarda revisão profissional; o registro não confirma que alguém leu. Se a voz falhar, a escuta e o texto continuam disponíveis.
+- **Contexto do câncer:** o Perfil e a Lia recebem diagnóstico, tratamento/ciclo cadastrados e orientações publicadas. Informação ausente continua ausente; o modelo não deduz conduta ou estágio.
+
 - **App → equipe:** envie um registro de bem-estar ou pedido de contato/reagendamento. O app só confirma
   depois que o servidor aceitar. O registro aparece no paciente correspondente do Pro.
 - **Equipe → app:** revise a pendência, assuma o atendimento e envie uma mensagem na Comunicação. O app

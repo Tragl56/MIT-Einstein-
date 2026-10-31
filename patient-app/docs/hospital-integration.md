@@ -1,4 +1,4 @@
-# Integração hospitalar implementada — demonstração 0.10
+# Integração hospitalar implementada — demonstração 0.11
 
 O app Android e o OncoFlow Pro compartilham o servidor Express do repositório MIT-Einstein-. A versão autocontida inclui `patient-app/`, servidor e painel. `docs/connected-demo.md` na raiz da plataforma descreve build, execução na rede e hospedagem futura. O conjunto usa exclusivamente dados fictícios; não é uma conexão com serviço clínico de produção nem uma implementação FHIR.
 
@@ -16,7 +16,8 @@ Prefixo: `/api/v1/tenants/{tenantId}/hospitals/{hospitalId}/patients/{patientId}
 
 | Operação | Recurso | Efeito |
 | --- | --- | --- |
-| GET | summary | Nome, equipe e último bem-estar confirmado, quando houver |
+| GET | summary | Nome, equipe, último bem-estar e careContext autorizado do cadastro oncológico |
+| POST | symptom-reports | Analisa a fala antes do GPT; sinal afirmativo cria relato literal e pendência para revisão com recibo idempotente |
 | GET | appointments / journey / documents | Agenda, jornada e documentos publicados pelo Pro |
 | GET | requests / preferences / messages | Status atuais, preferências e mensagens autorizadas |
 | POST | requests | Pedido confirmado de contato/reagendamento; não altera o compromisso |
@@ -30,7 +31,7 @@ As rotas Pro editam agenda/jornada e publicam documentos com confirmação expl�
 
 ## Confirmação, idempotência e cancelamento
 
-Registros, pedidos e mensagens exigem confirmação; preferências são alterações explícitas. Cada operação usa uma chave estável e mantém o mesmo corpo/timestamp em uma repetição após falha. Não há retry HTTP automático. Servidor persiste idempotência e rejeita mesma chave com outro conteúdo. Perda da resposta pode ter resultado desconhecido: o app não afirma que nada foi enviado e reconcilia o estado posterior.
+Bem-estar, pedidos e mensagens diretas exigem confirmação; preferências são alterações explícitas. O encaminhamento de sinal relatado na Lia é automático, conforme pedido do usuário para este MVP e informado na interface. Cada operação usa uma chave estável; repetição após falha mantém o corpo original e uma sessão nova gera uma chave nova. Não há retry HTTP automático. Servidor persiste idempotência e rejeita mesma chave com outro conteúdo. Perda da resposta pode ter resultado desconhecido: o app não afirma que nada foi enviado e permite repetir a mesma operação.
 
 Alterar perfil, desconectar, cancelar conversa ou mudar idioma impede resultados antigos de atualizar a interface. Abortar uma requisição já despachada não desfaz gravação do servidor; o estado confirmado é consultado novamente. Respostas são limitadas a256KiB, com tipo, IDs, datas, escopo e status validados.
 
@@ -38,6 +39,6 @@ Alterar perfil, desconectar, cancelar conversa ou mudar idioma impede resultados
 
 A autenticação Pro ainda é a identificação fictícia do MVP por `x-demo-usuario`; não equivale a login hospitalar de produção. Pareamento limita o app ao paciente escolhido, mas publicar este MVP não transforma seus usuários de demonstração em contas seguras. Produção exige autenticação institucional, autorização real, revisão operacional e política de dados.
 
-Relatos com termos do serviço fictício podem gerar uma hipótese para revisão no Pro e um aviso institucional visível ao paciente. Isso não atribui prioridade clínica. Cenários locais de alerta na Lia continuam separados e identificados como simulação; mensagens enviadas ao painel seguem o fluxo integrado.
+Relatos afirmativos em texto ou voz na Lia passam por `symptom-reports` antes do GPT. O serviço decide se registra o sinal e retorna orientação/recibo. Perguntas, hipóteses e negações não criam alerta. Isso não atribui prioridade clínica. Os botões de cenários locais continuam separados e identificados como simulação. O contexto oncológico publicado não inclui plano interno ou hipóteses, e não autoriza o modelo a completar dados ausentes.
 
 Dados persistem em arquivo ignorado pelo Git. Para apresentação local, mantenha o servidor ativo; para uso fora da rede, hospede o pacote com HTTPS e volume persistente. Docker/Compose foram preparados; testes HTTP e os ensaios Android são descritos em [verification-v010.md](verification-v010.md).

@@ -107,8 +107,8 @@ export function useEstadoPro(usuario: UsuarioEquipe | null) {
         return undefined;
       }
     },
-    assumirPendencia: (id) => acao(`/api/pro/pendencias/${id}/assumir`),
-    concluirPendencia: (id, desfecho) => acao(`/api/pro/pendencias/${id}/concluir`, { desfecho }),
+    assumirPendencia: (id) => acao(`/api/pro/pendencias/${id}/assumir`, {}, true),
+    concluirPendencia: (id, desfecho) => acao(`/api/pro/pendencias/${id}/concluir`, { desfecho }, true),
     resetarDemo: () => acao('/api/demo/reset'),
   };
 

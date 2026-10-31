@@ -414,6 +414,7 @@ export function App() {
     documents,
     requests,
     savedMood,
+    careContext: hospital ? remote.summary?.careContext : undefined,
     messages: hospital
       ? remote.messages.map(({ id, authorLabel, text, createdAt, role }) => ({
           id,
@@ -437,6 +438,7 @@ export function App() {
     documents,
     requests,
     savedMood,
+    careContext: hospital ? remote.summary?.careContext : undefined,
     messages: hospital
       ? remote.messages.map(({ id, authorLabel, text, createdAt, role }) => ({
           id,
@@ -488,13 +490,15 @@ export function App() {
       connected: () => connectedActions.current,
     });
 
-  async function performConnected(
+  async function performConnected<T>(
     signature: string,
-    write: (idempotencyKey: string) => Promise<void>,
+    write: (idempotencyKey: string) => Promise<T>,
     operationId?: string,
+    retainKey = false,
   ) {
     const current = hospital;
-    if (!current) throw new Error("Disconnected");
+    if (!current || currentHospital.current !== current)
+      throw new Error("Disconnected");
     let key = operationKeys.current.get(signature);
     if (!key) {
       key =
@@ -503,12 +507,31 @@ export function App() {
           : crypto.randomUUID();
       operationKeys.current.set(signature, key);
     }
-    await write(key);
+    const result = await write(key);
     if (currentHospital.current !== current) throw new Error("Disconnected");
-    operationKeys.current.delete(signature);
+    if (!retainKey) operationKeys.current.delete(signature);
+    return result;
   }
   connectedActions.current = hospital
     ? {
+        reportSymptoms: (input, signal) =>
+          performConnected(
+            `symptoms-${input.operationId}`,
+            (key) =>
+              hospital.reportSymptoms(
+                {
+                  text: input.text,
+                  source: input.source,
+                  locale: input.locale,
+                  idempotencyKey: key,
+                },
+                { signal },
+              ),
+            // Turn IDs restart when the app is reopened. The retained UUID is
+            // unique to this connection; retries reuse it, new sessions do not.
+            undefined,
+            true,
+          ),
         saveMood: (feeling, id, signal) =>
           performConnected(
             `wellbeing-${feeling}`,
@@ -1246,6 +1269,11 @@ export function App() {
                     <p>{t("Conectado ao painel da equipe")}</p>
                     <p>
                       {t(
+                        "Relatos de sintomas feitos à Lia são verificados pelo serviço conectado. Sinais identificados são registrados no painel para revisão da equipe, sem garantia de leitura imediata ou avaliação clínica.",
+                      )}
+                    </p>
+                    <p>
+                      {t(
                         "Sessão mantida apenas enquanto o app está aberto. Ao reiniciar, use um novo código.",
                       )}
                     </p>
@@ -1255,6 +1283,47 @@ export function App() {
                     >
                       {t("Desconectar")}
                     </button>
+                  </section>
+                )}
+                {hospital && remote.summary?.careContext && (
+                  <section
+                    className="card"
+                    aria-labelledby="care-context-title"
+                  >
+                    <h2 id="care-context-title">
+                      {t("Informações compartilhadas pelo hospital")}
+                    </h2>
+                    <p>
+                      <strong>
+                        {t("Diagnóstico informado pelo hospital")}
+                      </strong>
+                      <br />
+                      {remote.summary.careContext.diagnosisLabel}
+                    </p>
+                    {remote.summary.careContext.treatmentLabel && (
+                      <p>
+                        <strong>{t("Tratamento ou etapa informada")}</strong>
+                        <br />
+                        {remote.summary.careContext.treatmentLabel}
+                      </p>
+                    )}
+                    {remote.summary.careContext.cycleLabel && (
+                      <p>
+                        <strong>{t("Ciclo informado")}</strong>
+                        <br />
+                        {remote.summary.careContext.cycleLabel}
+                      </p>
+                    )}
+                    <p className="footnote">
+                      {t("Fonte: {value}.", {
+                        value: remote.summary.careContext.sourceLabel,
+                      })}
+                    </p>
+                    {remote.summary.careContext.patientInstructions.map(
+                      (instruction, index) => (
+                        <p key={index}>{instruction}</p>
+                      ),
+                    )}
                   </section>
                 )}
                 <div className="section-heading">
@@ -1385,7 +1454,7 @@ export function App() {
                 <RowButton
                   icon={Info}
                   title={t("Sobre esta versão")}
-                  description={t("OncoFlow Paciente · 0.10.0")}
+                  description={t("OncoFlow Paciente · 0.11.0")}
                   onClick={() => setModal({ type: "help" })}
                 />
                 <p className="footnote">
@@ -1395,7 +1464,13 @@ export function App() {
                       : "Apenas preferências de leitura e idioma são salvas neste aparelho. Ao fechar ou recarregar, os registros da demonstração são apagados. ",
                   )}
                 </p>
-                <p className="footnote">{t(hospital ? "Demonstração com dados fictícios. Registros e pedidos confirmados são compartilhados com o painel conectado. Este aplicativo não é um serviço de urgência." : DEMO_NOTICE)}</p>
+                <p className="footnote">
+                  {t(
+                    hospital
+                      ? "Demonstração com dados fictícios. Registros e pedidos confirmados são compartilhados com o painel conectado. Este aplicativo não é um serviço de urgência."
+                      : DEMO_NOTICE,
+                  )}
+                </p>
               </>
             )}
             {page === "documents" && (

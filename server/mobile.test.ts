@@ -267,3 +267,95 @@ test('pair attempt map is rate bounded over the actual API', async () => {
     }
   } finally { api.dispose(); await new Promise<void>(resolve => server.close(() => resolve())); }
 });
+
+test('automatic symptom report is scoped, affirmative, atomic, durable and idempotent over HTTP', async t => {
+  const testsRoot = path.resolve('outputs/.oncoflow-demo/tests'); mkdirSync(testsRoot, { recursive: true });
+  const folder = mkdtempSync(path.join(testsRoot, 'symptom-')); const statePath = path.join(folder, 'state.json');
+  let failSave = false; let api: ReturnType<typeof criarApi>; let server: Server; let origin: string;
+  async function start() {
+    api = criarApi({ statePath, beforePersist: () => { if (failSave) throw new Error('Injected persistence failure'); } });
+    await new Promise<void>(resolve => { server = api.app.listen(0, '127.0.0.1', resolve); });
+    const address = server.address(); assert.ok(address && typeof address !== 'string'); origin = `http://127.0.0.1:${address.port}`;
+  }
+  async function stop() { api.dispose(); await new Promise<void>(resolve => server.close(() => resolve())); }
+  async function call(url: string, method = 'GET', body?: unknown, headers: Record<string, string> = {}) {
+    const response = await fetch(origin + url, { method, headers: { ...headers, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    return { status: response.status, body: await response.json() };
+  }
+  async function pair(patientId: string) {
+    const code = (await call(`/api/pro/pacientes/${patientId}/mobile-pairing`, 'POST', {}, teamHeaders)).body.code;
+    const result = await call('/api/mobile/pair', 'POST', { code }); assert.equal(result.status, 200);
+    return { Authorization: `Bearer ${result.body.accessToken}` };
+  }
+  const proPatient = async (patientId = 'pac-maria') => (await call('/api/pro/estado', 'GET', undefined, teamHeaders)).body.pacientes.find((p: any) => p.id === patientId);
+  resetar(); await start();
+  t.after(async () => { failSave = false; await stop(); assert.ok(folder.startsWith(testsRoot + path.sep)); rmSync(folder, { recursive: true, force: true }); });
+  let auth = await pair('pac-maria'); const jose = await pair('pac-001');
+  const reports: any[] = [];
+  await t.test('PT/EN affirmative fever/vomiting in text/voice need no extra confirmation and create exactly one shared review item', async () => {
+    for (const [index, text] of ['Estou vomitando e com febre agora.', 'Estou com febre e vômitos persistentes.', 'Não consigo parar de vomitar.', 'I have a fever and I am vomiting now.', 'O que fazer se tiver febre? Estou vomitando agora.', 'Tive febre ontem, hoje estou vomitando.', 'Tive febre ontem e hoje estou vomitando.', 'What should I do if I get fever? I am vomiting now.', 'I had a fever yesterday, and now I am vomiting.'].entries()) {
+      const source = index % 2 ? 'voice' : 'text'; const locale = index === 3 ? 'en-US' : 'pt-BR';
+      const body = { text, source, locale, idempotencyKey: `auto-report-${index}` }; const headers = { ...auth, 'Idempotency-Key': body.idempotencyKey };
+      const before = await proPatient(); const result = await call(scopePath() + '/symptom-reports', 'POST', body, headers);
+      assert.equal(result.status, 200); assert.equal(result.body.resourceType, 'symptom_report');
+      const record = result.body.data; reports.push({ body, record });
+      assert.deepEqual(Object.keys(record).sort(), ['tenantId', 'hospitalId', 'patientId', 'id', 'text', 'source', 'recordedAt', 'status', 'alertId', 'reviewRequired', 'guidance'].sort());
+      assert.equal(record.text, text); assert.equal(record.source, source); assert.equal(record.status, 'recorded'); assert.equal(record.reviewRequired, true);
+      assert.ok(record.guidance.includes(locale === 'pt-BR' ? 'avaliação agora' : 'assessment now'));
+      assert.ok(record.guidance.includes(locale === 'pt-BR' ? 'Não espere' : 'Do not wait'));
+      assert.deepEqual((await call(scopePath() + '/symptom-reports', 'POST', body, headers)).body.data, record);
+      const after = await proPatient(); assert.equal(after.pendencias.length, before.pendencias.length + 1);
+      const alert = after.pendencias.find((pe: any) => pe.id === record.alertId);
+      assert.equal(alert.falaLiteral, text); assert.equal(alert.origem, 'hipotese_sistema'); assert.equal(alert.estado, 'aberta'); assert.equal(alert.papelDestino, 'enfermagem');
+      assert.equal(after.mensagens.filter((m: any) => m.autor === 'paciente' && m.texto === text).length, 1);
+      assert.ok(!(await proPatient('pac-001')).pendencias.some((pe: any) => pe.id === record.alertId));
+      const visible = (await call(scopePath() + '/messages', 'GET', undefined, auth)).body.data;
+      const internalIds = after.mensagens.filter((m: any) => !m.visivelPaciente).map((m: any) => m.id);
+      assert.ok(!visible.some((m: any) => internalIds.includes(m.id)));
+      assert.equal((await call(scopePath('pac-001') + '/symptom-reports', 'POST', body, headers)).status, 403);
+      assert.equal((await call(scopePath() + '/symptom-reports', 'POST', { ...body, text: text + ' changed' }, headers)).status, 409);
+    }
+  });
+  await t.test('educational questions, hypothetical, historical, third party and negated mentions create no clinical records', async () => {
+    const before = await proPatient();
+    const diskBefore = readFileSync(statePath, 'utf8');
+    const negatives = ['Olá, quando é minha consulta?', 'O que é febre?', 'O que devo fazer se eu tiver febre e vômitos?', 'Se eu estiver vomitando, o que faço?', 'E se eu tiver febre?', 'Talvez eu tenha febre amanhã.', 'Estou sem febre e não estou vomitando.', 'Não tenho febre nem vômitos.', 'Não sinto febre.', 'Tive febre ontem, hoje estou bem.', 'Ontem eu estava vomitando.', 'Minha mãe está com febre e vômitos.', 'Meu filho está vomitando.', 'Ela está com febre.', 'I do not have a fever.', "I'm not vomiting.", 'What is fever?', 'If I have a fever, what should I do?', 'I had a fever yesterday.', 'My mother has a fever.', 'She is vomiting.', 'Can chemotherapy cause vomiting?', 'Tenho uma dúvida sobre febre.', 'Tenho medo de vomitar.', 'If I have a fever and I am vomiting, what should I do?', 'Febre?', 'Vômitos?'];
+    for (const [index, text] of negatives.entries()) {
+      const body = { text, source: 'text', locale: 'pt-BR', idempotencyKey: `auto-no-${index}` };
+      const result = await call(scopePath() + '/symptom-reports', 'POST', body, { ...auth, 'Idempotency-Key': body.idempotencyKey });
+      assert.equal(result.status, 200, text); assert.deepEqual(result.body.data, { tenantId: 'demo', hospitalId: 'oncoflow', patientId: 'pac-maria', status: 'not_applicable' }, text);
+    }
+    const after = await proPatient(); assert.deepEqual(after.pendencias, before.pendencias); assert.deepEqual(after.mensagens, before.mensagens);
+    assert.equal(readFileSync(statePath, 'utf8'), diskBefore);
+    const disk = JSON.parse(readFileSync(statePath, 'utf8')); assert.ok(!Object.keys(disk.extras.idempotency).some(key => key.includes('auto-no-')));
+  });
+  await t.test('registry context is explicit and scoped; internal plan and draft documents never enter summary', async () => {
+    const p = obterPaciente('pac-maria'); p.planoTerapeuticoTexto = 'PRIVATE_PLAN_DO_NOT_EXPOSE';
+    const draft = await call('/api/pro/pacientes/pac-maria/documents', 'POST', { title: 'Internal draft', issuedAt: timestamp(), typeLabel: 'Orientação', body: ['PRIVATE_DRAFT_DO_NOT_EXPOSE'], publish: false }, teamHeaders); assert.equal(draft.status, 200);
+    const summary = (await call(scopePath() + '/summary', 'GET', undefined, auth)).body.data;
+    assert.equal(summary.careContext.diagnosisLabel, p.diagnosticoResumido); assert.equal(summary.careContext.treatmentLabel, p.esquemaResumido); assert.equal(summary.careContext.cycleLabel, p.cicloAtual);
+    assert.deepEqual(Object.keys(summary.careContext).sort(), ['diagnosisLabel', 'treatmentLabel', 'cycleLabel', 'sourceLabel', 'patientInstructions'].sort());
+    assert.ok(summary.careContext.patientInstructions.includes(p.documentos.find(d => d.tipo === 'orientacao')!.texto));
+    assert.ok(!JSON.stringify(summary).includes('PRIVATE_'));
+    assert.notEqual((await call(scopePath('pac-001') + '/summary', 'GET', undefined, jose)).body.data.careContext.diagnosisLabel, summary.careContext.diagnosisLabel);
+  });
+  await t.test('persistence failure rolls back message, alert and operation before any acknowledgment; retry succeeds once', async () => {
+    const before = await proPatient(); const body = { text: 'Estou com febre agora.', source: 'voice', locale: 'pt-BR', idempotencyKey: 'auto-failed-save' }; const headers = { ...auth, 'Idempotency-Key': body.idempotencyKey };
+    failSave = true; assert.equal((await call(scopePath() + '/symptom-reports', 'POST', body, headers)).status, 500); failSave = false;
+    const after = await proPatient(); assert.deepEqual(after.mensagens, before.mensagens); assert.deepEqual(after.pendencias, before.pendencias);
+    assert.ok(!readFileSync(statePath, 'utf8').includes('auto-failed-save'));
+    const result = await call(scopePath() + '/symptom-reports', 'POST', body, headers); assert.equal(result.status, 200); reports.push({ body, record: result.body.data });
+    assert.equal((await proPatient()).pendencias.length, before.pendencias.length + 1);
+    assert.equal((await call(scopePath() + '/symptom-reports', 'POST', { ...body, confirmation: confirmation() }, headers)).status, 400);
+    assert.equal((await call(scopePath() + '/symptom-reports', 'POST', { ...body, text: 'x'.repeat(4001) }, headers)).status, 400);
+    assert.equal((await call(scopePath() + '/symptom-reports', 'POST', body, auth)).status, 400);
+  });
+  await t.test('reports and idempotency survive a fresh server instance and remain isolated', async () => {
+    await stop(); resetar(); await start(); auth = await pair('pac-maria');
+    for (const { body, record } of reports) {
+      const result = await call(scopePath() + '/symptom-reports', 'POST', body, { ...auth, 'Idempotency-Key': body.idempotencyKey });
+      assert.equal(result.status, 200); assert.deepEqual(result.body.data, record);
+      assert.equal((await proPatient()).pendencias.filter((pe: any) => pe.id === record.alertId).length, 1);
+    }
+  });
+});

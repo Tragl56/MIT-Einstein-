@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "appVersion": "0.10.0",
+  "appVersion": "0.11.0",
   "files": [
     {
       "path": ".env.example",
-      "sha256": "7f85175b73bee994d2fa439d1b8dac8a08161a20ef257c1e98e97a0e05539ae5"
+      "sha256": "03637fe2793198d670e6f38e6a2f2025cc37d881cfecd0c7aff78cc897e7050b"
     },
     {
       "path": ".gitignore",
@@ -20,7 +20,7 @@
     },
     {
       "path": "android/app/build.gradle",
-      "sha256": "0767fb3320689fc93f1c75ad3063c219359b4d58e662b2ae7000d18c54b4a95a"
+      "sha256": "130be32fa9a9f47b6a6e5b301c528ec45d5786b009298762907b248a81fed8d4"
     },
     {
       "path": "android/app/capacitor.build.gradle",
@@ -48,7 +48,7 @@
     },
     {
       "path": "android/app/src/main/java/br/com/oncoflow/paciente/LiaProviderPlugin.java",
-      "sha256": "6bb11bfd927ff93aa372c70d11e812dd0ec28ad35880b6c2de3a652f4feb8772"
+      "sha256": "e89050a1540e595b3724e13eca8aba9c1163656e459517aef48f2da463c9698b"
     },
     {
       "path": "android/app/src/main/java/br/com/oncoflow/paciente/LiaRecorder.java",
@@ -57,6 +57,10 @@
     {
       "path": "android/app/src/main/java/br/com/oncoflow/paciente/MainActivity.java",
       "sha256": "e9ca698ccb79ecd45e6f20d4041825e1d8fc7b1cb2b551bc909658a7c7332e3b"
+    },
+    {
+      "path": "android/app/src/main/java/br/com/oncoflow/paciente/ProviderFailure.java",
+      "sha256": "142f0544a6efa90d55503b8bc1be78c2e525c58c6ffe44e6120504c8eb39b7b6"
     },
     {
       "path": "android/app/src/main/java/br/com/oncoflow/paciente/TurnDetector.java",
@@ -219,6 +223,10 @@
       "sha256": "d58d404df10f1059acc9bbf5fd2dd09f72191616b476df1cc58752b923ee3fda"
     },
     {
+      "path": "android/app/src/test/java/br/com/oncoflow/paciente/ProviderFailureTest.java",
+      "sha256": "b7d09126ae51df422d0e9413383191130cbc2058aa73c84625038054e0eb3b44"
+    },
+    {
       "path": "android/app/src/test/java/br/com/oncoflow/paciente/TurnDetectorTest.java",
       "sha256": "f9337836ef607a7055a0dc7fd8326c7b562db345effe88b5da76d574a4917e1a"
     },
@@ -268,11 +276,11 @@
     },
     {
       "path": "docs/android-build.md",
-      "sha256": "f136f7283a5400b20daec00f11aaf715a28ac922d2de6eca9b085e990c3dafa0"
+      "sha256": "5df9a19d29104706055b96e72c186ff71e8d8ce7acf2acda2417c3070d717520"
     },
     {
       "path": "docs/hospital-integration.md",
-      "sha256": "355a4dadbd740736a30c1863130c8f561ba551cedd75fda5d37b0537eee58625"
+      "sha256": "816485668fa4e0670a355995fa034e2055be1ea86d412cb48a7b9c0819f095c7"
     },
     {
       "path": "docs/lia-provider-selection.md",
@@ -283,16 +291,20 @@
       "sha256": "9e66cfa91f34199d78b57cff3279b6c81a14dd31eacbc083b1731fcd884f7e2f"
     },
     {
+      "path": "docs/verification-v011.md",
+      "sha256": "b5c10ce4b0ec27417dee6f063907c799375114be1d72100a906185f99b6d68c8"
+    },
+    {
       "path": "index.html",
       "sha256": "481aa764e4b3bf3fe3d80256ee7abef688c18121c84a559ffaa1e3b78d506537"
     },
     {
       "path": "package-lock.json",
-      "sha256": "bbee24e78f85b70b07e351905b7b76be520249e2bfc877859032f2603503c9d3"
+      "sha256": "4925ea5d3668cf994d17e7a0e3125a275c1652c80050dca1482b692036af0e86"
     },
     {
       "path": "package.json",
-      "sha256": "6a41aa359444ce5cf27657003f2e1914a8441b3e768d205831593a4295cdf074"
+      "sha256": "5bd2c21db3a8b61c9d8d9fcf08d14e7f6510640b35bed42a19753033e7c42aa8"
     },
     {
       "path": "playwright.config.ts",
@@ -336,11 +348,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "876a04edd90a8a029f39185f930cf6b5c8e086cfb77a8a606343de90c8fde6d2"
+      "sha256": "682db857cbfffe3dacdf86c701043b68f12a51d98f54ca79bb8da5c8c4f88030"
     },
     {
       "path": "scripts/build-android.ps1",
-      "sha256": "dd34723638130dca5beea5b69561abc17075a96fce8f5afeb9ac1a4f53f37317"
+      "sha256": "3e80709a26fa6620b210ce91f17b418c6cc6f25b0f0988d3c74af44fbd1062c8"
     },
     {
       "path": "scripts/copy-vad-assets.mjs",
@@ -352,11 +364,11 @@
     },
     {
       "path": "shared/hospitalContracts.ts",
-      "sha256": "923161ad35af1b82c4113c17f0fa85937b711098517b9bf4eec2bdd39c5bf162"
+      "sha256": "ceb0812e55b6e95a1d07cc88c406ff90134a2488dee26de821de6152c5e09ca1"
     },
     {
       "path": "shared/liaActions.ts",
-      "sha256": "e1e8ed7eb6eb82cb633277866de577b8c97bf5d8904ac902950cbf78f43c09e7"
+      "sha256": "8b92eec722c717ffe21aefeb089a47b597918af6edbdfaa275b85f1c91b6f0f9"
     },
     {
       "path": "src/adapters/liaProvider.ts",
@@ -368,11 +380,11 @@
     },
     {
       "path": "src/app/App.tsx",
-      "sha256": "9fac5377ca04e607af87d7b35226d96a3740d90b5014a98c1549bbb7f89a8f79"
+      "sha256": "9def4965eb931a7cb561fe99509831c8eaff7e5e75b2e7dfc77a915cd7fab86e"
     },
     {
       "path": "src/app/liaAppBridge.ts",
-      "sha256": "5e82aa99d865d16920e5a8bfe09d5dfc01ec8adb5c7b945f974518a1a61f1233"
+      "sha256": "dadf6187bf88aee5959de35ee60f780567447f5490dd34e24636014e2349cef4"
     },
     {
       "path": "src/app/session.ts",
@@ -392,7 +404,7 @@
     },
     {
       "path": "src/features/lia/actions.ts",
-      "sha256": "391dd85e53c150f1fb37d990065d3bfe2f3285a63cfe0617e3f04783c02763e8"
+      "sha256": "088d0d1744a36003d3c9f653cf102e399f4ce0ad326a59e5f3d6443feec5b4c8"
     },
     {
       "path": "src/features/lia/lia.css",
@@ -408,15 +420,27 @@
     },
     {
       "path": "src/features/lia/LiaPage.tsx",
-      "sha256": "24eb1cfaba72dc05c0caf483d9eba936c5b61175acf3509d80ce7ee1a1312002"
+      "sha256": "030aefccd5ceb3b3c24c32aa9668b5f85918a9ed0d633448af744ad374121ab1"
     },
     {
       "path": "src/features/lia/voiceConversation.css",
-      "sha256": "109181889ce64c8e5c452187fb4c0fe3241771d0092c76f1bdd7a3012ee3dd97"
+      "sha256": "c95bdf5da1c4f461bba1ea2267f1f6aa9c13009faa79aa12a77fe3aca72e0c1b"
     },
     {
       "path": "src/features/lia/VoiceConversation.tsx",
-      "sha256": "2f5453fb971693535f1133fedd6ccd7caa6b18f6ae164316b3efba0e1ec8efb9"
+      "sha256": "de99d50c77edfbc9d469dff24c95a712e420d22b2091478672acf5334d0103d4"
+    },
+    {
+      "path": "src/features/safety/connectedSymptoms.css",
+      "sha256": "fd5fb11cde9da098f8b94879e3c4080086e9ac83d43e1b9bd1580dfafdb23595"
+    },
+    {
+      "path": "src/features/safety/connectedSymptoms.ts",
+      "sha256": "cfafb5dafee5ca3fa3df9fba74366837330d8c47b7d22dd17e426c87c986f419"
+    },
+    {
+      "path": "src/features/safety/ConnectedSymptomStatus.tsx",
+      "sha256": "cfb2e2baf6167cbfcef62eae0af540f78b86533509b3cbffd3f9501b18f085cf"
     },
     {
       "path": "src/features/safety/demoScenarioEngine.ts",
@@ -464,7 +488,7 @@
     },
     {
       "path": "src/i18n/app.en.ts",
-      "sha256": "39d7324424112fa95ec08492f05dbe8abe24f17a2f2ed9e03700db638a042e73"
+      "sha256": "8aa13b93a19071fda842039e8861262496542e47688a699a14a118f4e2e1df77"
     },
     {
       "path": "src/i18n/content.ts",
@@ -492,11 +516,11 @@
     },
     {
       "path": "src/integrations/connectedText.ts",
-      "sha256": "f44f476b090714d1727e6b063ac1b4f1eea449c2344a23765bc378585ce87022"
+      "sha256": "5fdc15718bb6f3193ab9d897f44f9d4e29bb887a81f180c165ee4eb37ccf5d73"
     },
     {
       "path": "src/integrations/hospital/connection.ts",
-      "sha256": "24d4337ae430bcabc636bb43bfeb2f469325433dcb736eb430038cf146d7e8b7"
+      "sha256": "0acde0c255e286b998345b500aec935594e13b207b2a1e396654413cdecbd283"
     },
     {
       "path": "src/integrations/hospital/errors.ts",
@@ -504,11 +528,11 @@
     },
     {
       "path": "src/integrations/hospital/repository.ts",
-      "sha256": "6db7b9edb44f5558db19bf18f7a45427061e6e2ec13c6ed7f7b4b70baf878f42"
+      "sha256": "86c520b4b25b94a7b12b51c80ba2c06f276f8b56de22598d9fa335669a619fc1"
     },
     {
       "path": "src/integrations/hospital/validation.ts",
-      "sha256": "8e1950d49e4f517b0f9009dc0f6aac612be2f45c17957091caee8ce4e465423d"
+      "sha256": "cb585bfe3038d675511d2668cc152b21e2721b8144a8082764c76f44acb1c1d4"
     },
     {
       "path": "src/integrations/nativeHttp.ts",
@@ -536,7 +560,7 @@
     },
     {
       "path": "tests/e2e/connected.spec.ts",
-      "sha256": "c788eec022aa09fcd9ec0c0a6edd11d4e9cd325d6bdefe9faa680dd71b06538a"
+      "sha256": "29b2a16e44eea9789cd06590dc5749ad89052889d6f5a6d403eec92be6cf0d38"
     },
     {
       "path": "tests/e2e/conversation.spec.ts",
@@ -545,6 +569,10 @@
     {
       "path": "tests/e2e/experience.spec.ts",
       "sha256": "91f2f62f1351afd8466508a902dd5dacec2dcc13ed90bb27d3809533dbf2201d"
+    },
+    {
+      "path": "tests/e2e/helpers/connectedAgent.ts",
+      "sha256": "689c5f58e2902db724ef7e46c06cdc2479c73b8e9253e2c73f69854f809f6d7e"
     },
     {
       "path": "tests/e2e/home.spec.ts",
@@ -584,7 +612,11 @@
     },
     {
       "path": "tests/unit/connectedPatient.test.ts",
-      "sha256": "1b77ea316f6f5955328ff74e7027142c03e4d72f943db18567f8a32b96e7559b"
+      "sha256": "460c3afe4ca962af54452c623a396a74f3b0957c2e8a28331b78228eda479600"
+    },
+    {
+      "path": "tests/unit/connectedSymptoms.test.ts",
+      "sha256": "7b66fd107647c58a73c0c1f8eba3f521930ba5ca4f6bd081a13e65e10234ec8a"
     },
     {
       "path": "tests/unit/conversationController.test.ts",
@@ -593,6 +625,10 @@
     {
       "path": "tests/unit/hospitalIntegration.test.ts",
       "sha256": "c9ca36863d728b320da1a7aa0a24145dc2163fca70a9a686441be39c5140e32a"
+    },
+    {
+      "path": "tests/unit/hospitalSymptoms.test.ts",
+      "sha256": "928178d793a5b2ed0efe7b54fa65435438770f4794e1914be25521716098cb80"
     },
     {
       "path": "tests/unit/i18n.test.ts",
@@ -608,7 +644,7 @@
     },
     {
       "path": "tests/unit/liaAppBridge.test.ts",
-      "sha256": "acbdb4eb09b6477a76a1b9abbe403987e190244940ce63fd9fe0d5ea0d4a3086"
+      "sha256": "5e0c806cd4cd44ba0dba43fa85530caae6f0c2f29e1d2bcedc9255a856c20fa7"
     },
     {
       "path": "tests/unit/liaProvider.test.ts",

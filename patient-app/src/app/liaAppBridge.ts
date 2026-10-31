@@ -11,12 +11,16 @@ import {
   type LiaAppSnapshot,
   type LiaExecution,
   type LiaPageId,
+  type LiaSymptomReportInput,
 } from "../../shared/liaActions";
 import { DEMO_TIMEZONE } from "../demo/fixtures";
 import { isCurrent } from "./session";
 import { requestStatusLabel } from "../integrations/connectedText";
+import { HospitalIntegrationError } from "../integrations/hospital/errors";
+import type { HospitalCareContext } from "../../shared/hospitalContracts";
 
 export type ConnectedLiaActions = {
+  reportSymptoms?: NonNullable<LiaAppBridge["reportSymptoms"]>;
   saveMood(
     feeling: string,
     operationId: string,
@@ -86,6 +90,38 @@ const rejected = (
   ),
 ): LiaExecution => ({ status: "rejected", text });
 
+function careProfileText(care: HospitalCareContext | undefined): string {
+  if (!care) return "";
+  const facts = [
+    translate("Diagnóstico informado pelo hospital: {value}.", {
+      value: care.diagnosisLabel,
+    }),
+    ...(care.treatmentLabel
+      ? [
+          translate("Tratamento ou etapa informada: {value}.", {
+            value: care.treatmentLabel,
+          }),
+        ]
+      : []),
+    ...(care.cycleLabel
+      ? [translate("Ciclo informado: {value}.", { value: care.cycleLabel })]
+      : []),
+    translate("Fonte: {value}.", { value: care.sourceLabel }),
+  ];
+  const complete = [...facts, ...care.patientInstructions].join(" ");
+  // Do not split a published instruction or overflow the native speech contract.
+  return (
+    (complete.length <= 1800
+      ? complete
+      : [
+          ...facts,
+          translate(
+            "As orientações completas estão no Perfil e nos documentos publicados.",
+          ),
+        ].join(" ")) + " "
+  );
+}
+
 /** The only action side effects use the same state and data port as the visible app. */
 type SyncLiaAppBridge = Omit<LiaAppBridge, "execute"> & {
   execute(
@@ -102,6 +138,28 @@ export function createLiaAppBridge(options: Options): SyncLiaAppBridge;
 export function createLiaAppBridge(options: Options): LiaAppBridge {
   return {
     getSnapshot: options.getSnapshot,
+    get reportSymptoms() {
+      const snapshot = options.getSnapshot();
+      const remote = options.connected?.();
+      if (
+        !snapshot.connected ||
+        !remote?.reportSymptoms ||
+        snapshot.persona.id !== snapshot.context.personaId
+      )
+        return undefined;
+      const expected = { ...snapshot.context };
+      const reporter = remote.reportSymptoms;
+      return async (input: LiaSymptomReportInput, signal?: AbortSignal) => {
+        const current = () =>
+          !signal?.aborted &&
+          isCurrent(expected) &&
+          options.getSnapshot().context.sessionId === expected.sessionId;
+        if (!current()) throw new HospitalIntegrationError("aborted");
+        const result = await reporter(input, signal);
+        if (!current()) throw new HospitalIntegrationError("aborted");
+        return result;
+      };
+    },
     execute(proposal, operationId, expectedContext, signal) {
       try {
         if (signal?.aborted || !isCurrent(expectedContext))
@@ -484,22 +542,23 @@ export function createLiaAppBridge(options: Options): LiaAppBridge {
             );
           case "profile":
             return readCompleted(
-              translate(
-                "O tamanho das letras está em {size}%. A voz está {speed} e as explicações estão {explanation}. Posso ajustar isso para você.",
-                {
-                  size: s.prefs.textScale * 100,
-                  speed: translate(
-                    s.prefs.speechRate < 1
-                      ? "mais devagar"
-                      : s.prefs.speechRate > 1
-                        ? "mais rápida"
-                        : "na velocidade normal",
-                  ),
-                  explanation: translate(
-                    s.prefs.explanation === "short" ? "curtas" : "em passos",
-                  ),
-                },
-              ),
+              careProfileText(s.careContext) +
+                translate(
+                  "O tamanho das letras está em {size}%. A voz está {speed} e as explicações estão {explanation}. Posso ajustar isso para você.",
+                  {
+                    size: s.prefs.textScale * 100,
+                    speed: translate(
+                      s.prefs.speechRate < 1
+                        ? "mais devagar"
+                        : s.prefs.speechRate > 1
+                          ? "mais rápida"
+                          : "na velocidade normal",
+                    ),
+                    explanation: translate(
+                      s.prefs.explanation === "short" ? "curtas" : "em passos",
+                    ),
+                  },
+                ),
             );
           case "help":
             return readCompleted(

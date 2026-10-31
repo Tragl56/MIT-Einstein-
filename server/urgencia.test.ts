@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { detectarUrgencia } from './urgencia';
+import { detectarRelatoAfirmativo, detectarUrgencia } from './urgencia';
 
 test('fictional service terms detect Portuguese and English reports without assigning clinical priority', () => {
   for (const report of [
@@ -36,4 +36,36 @@ test('simple Portuguese and English negations do not create a textual hypothesis
     'Without severe pain.',
     'Feverishness is not a whole-word match.',
   ]) assert.equal(detectarUrgencia(report), undefined, report);
+});
+
+test('current self reports after independent clauses are not suppressed by earlier question, history or another person', () => {
+  for (const report of [
+    'O que fazer se tiver febre? Estou vomitando agora.',
+    'Tive febre ontem, hoje estou vomitando.',
+    'Ontem eu estava com febre. Hoje estou vomitando.',
+    'Não tenho febre mas estou vomitando.',
+    'Não tenho febre e estou vomitando.',
+    'Tive febre ontem e hoje estou vomitando.',
+    'Minha mãe está com febre, eu estou vomitando.',
+    'What should I do if I get fever? I am vomiting now.',
+    'I had a fever yesterday, and now I am vomiting.',
+    'My mother has a fever and I am vomiting now.',
+    'Não estou vomitando, mas agora estou com febre.',
+    'Não tenho febre. Não consigo parar de vomitar.',
+  ]) assert.ok(detectarRelatoAfirmativo(report), report);
+});
+
+test('clause boundaries preserve hypothetical questions, simple denial, historical and third party controls', () => {
+  for (const report of [
+    'O que fazer se tiver febre?',
+    'Se eu tiver febre e eu estiver vomitando, o que devo fazer?',
+    'If I have a fever and I am vomiting, what should I do?',
+    'Febre?',
+    'Vômitos?',
+    'Tive febre ontem, hoje estou bem.',
+    'My mother had a fever yesterday, and she is vomiting now.',
+    'Não tenho febre e não estou vomitando.',
+    'I do not have a fever and I am not vomiting.',
+    'Estou sem febre, sem vômitos.',
+  ]) assert.equal(detectarRelatoAfirmativo(report), undefined, report);
 });

@@ -23,6 +23,11 @@ export interface ConfigServico {
   // Comparação por palavra inteira, sem acento, ignorando negações simples ("sem febre").
   termosUrgencia: string[];
   termosUrgenciaExemplo: boolean;
+  relatoAutomaticoDemo: {
+    exemplo: true;
+    fontes: string[];
+    orientacao: Record<'pt-BR' | 'en-US', string>;
+  };
   avisoUrgencia: AvisoUrgencia;
   quemVe: string;
   prazoHorasPorTipo: Record<TipoPendencia, number>;
@@ -53,6 +58,9 @@ export const CONFIG_SERVICO: ConfigServico = {
     'hard to breathe',
     'bleeding',
     'vomiting blood',
+    'vomiting',
+    'vomit',
+    'throwing up',
     'coughing blood',
     'coughing up blood',
     'blood in my urine',
@@ -86,6 +94,11 @@ export const CONFIG_SERVICO: ConfigServico = {
     'sangramento',
     'sangrando',
     'vomitando sangue',
+    'vomitando',
+    'vômitos',
+    'vômito',
+    'vomitar',
+    'vomitado',
     'vômito com sangue',
     'tossindo sangue',
     'sangue na urina',
@@ -103,6 +116,17 @@ export const CONFIG_SERVICO: ConfigServico = {
     'não aguento mais',
   ],
   termosUrgenciaExemplo: true,
+  // Texto de demonstração, não protocolo aprovado de um serviço real. Sem limiar clínico
+  // no código. A lista só produz hipótese para revisão humana, nunca diagnóstico/prioridade.
+  // Fontes verificadas em 01/11/2026: febre no tratamento oncológico requer avaliação rápida.
+  relatoAutomaticoDemo: {
+    exemplo: true,
+    fontes: ['https://www.cdc.gov/cancer-preventing-infections/patients/fever.html', 'https://www.cancer.gov/about-cancer/treatment/side-effects/infection'],
+    orientacao: {
+      'pt-BR': 'Seu relato foi registrado e há uma pendência para revisão da equipe. Procure avaliação agora pelo seu serviço de oncologia. Se não conseguir contato, procure pronto atendimento. Não espere uma resposta pelo aplicativo. Esta orientação é uma configuração da demonstração, a validar com o serviço.',
+      'en-US': 'Your report was recorded and a team review is pending. Seek assessment now from your oncology service. If you cannot reach them, seek urgent care. Do not wait for an app reply. This guidance is a demo configuration, subject to service validation.',
+    },
+  },
   avisoUrgencia: {
     titulo: 'This channel is not for emergencies',
     texto:
