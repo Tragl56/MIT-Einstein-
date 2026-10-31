@@ -1,116 +1,173 @@
 ---
 name: oncoflow-experiencia
-description: Experiência e frontend do OncoFlow AI — telas do app do paciente (Início, Minha jornada, Como me sinto, Assistente, Minha saúde, Minha agenda, Meu apoio) e do painel OncoFlow Care (lista de pacientes, detalhe, fila de validação da IA, alertas, indicadores), sistema visual de proveniência (fala literal, extraído, hipótese, confirmado), textos em português acolhedor e claro, acessibilidade WCAG AA e estados de carregamento, vazio, erro e offline. Use sempre que for criar ou alterar tela, componente React, layout, texto de interface, microcopy, cores, PWA ou acessibilidade do OncoFlow, ou quando pedirem "fazer a tela X", "deixar mais bonito", "melhorar o texto do app", "como mostrar o que a IA sugeriu" — mesmo sem citar o OncoFlow.
+description: Experiência, marca e frontend do OncoFlow — app OncoFlow Paciente híbrido (visual + voz com a Lia; tela inicial com próxima consulta, Minha jornada, Como estou?, Minha agenda, Meus documentos, Falar com a assistente), portal OncoFlow Pro (visão geral, perfil do paciente, gestão de tarefas, check-ins, copiloto, indicadores), sistema visual de proveniência (fala literal, extração, hipótese, confirmado), identidade de marca (paleta azul profundo #123B56, verde-água #167C70, turquesa #55B9B0, gelo #EAF3F4; Inter/Manrope/Sora; assinatura "Cada etapa do cuidado, conectada."), textos em PT-BR acolhedores sem infantilizar, acessibilidade WCAG AA para pessoas idosas e estados de tela. Use sempre que for criar ou alterar tela, componente React, layout, texto de interface, cores, logo, tipografia, PWA ou acessibilidade do OncoFlow, ou quando pedirem "fazer a tela X", "deixar mais bonito", "aplicar a marca".
 ---
 
-# OncoFlow — experiência do paciente e da equipe
+# OncoFlow — experiência do paciente, da equipe e marca
 
-Duas superfícies com necessidades opostas. O **paciente** está assustado, muitas vezes cansado, às vezes
-mais velho ou com pouca familiaridade digital: precisa de pouca informação por tela, linguagem simples e a
-sensação de que não está sozinho. A **equipe** precisa de densidade: ver muitos pacientes, achar o que está
-atrasado e validar sugestões da IA rápido, sem confundir sugestão com fato.
+Duas experiências com necessidades opostas, sobre a mesma plataforma (documento "Conceito de produto",
+seção 2). O **paciente** quer simplicidade, orientação, acolhimento e autonomia: pouca informação por tela,
+linguagem simples e a escolha entre tocar e falar. A **equipe** quer produtividade, rastreabilidade e visão
+operacional: densidade, achar o que está atrasado e validar sugestões da IA sem confundir sugestão com fato.
+**Não adapte a mesma tela para os dois públicos.**
 
-## Stack de frontend
+## Marca (documento, seção 11)
 
-React + TypeScript (Vite), React Router (`/paciente/*` mobile-first, `/care/*` desktop), TanStack Query,
-Tailwind com tokens em `tailwind.config` (cores semânticas, não hex espalhado), Recharts para a tendência de
-check-in, `vite-plugin-pwa` (instalável, ícone, tela offline). Componentes compartilhados em `src/shared/`.
+- **Nome:** OncoFlow (nome de trabalho; marca e domínio ainda precisam ser verificados). **Assinatura
+  sugerida:** "Cada etapa do cuidado, conectada."
+- **Personalidade:** humana, confiável, inovadora, fluida, premium (contemporânea, limpa, profissional).
+- **Símbolo:** caminho contínuo ou linhas conectadas, com referência abstrata à letra O e à ideia de fluxo.
+  Evite cruz médica genérica, laço de conscientização como símbolo principal, coração literal, excesso de
+  detalhe e aparência infantil.
+- **Tipografia:** sans-serif moderna e legível. Use **Inter** na interface (melhor legibilidade em tamanhos
+  pequenos e números tabulares no Pro). Manrope ou Sora só em títulos de marketing, se quiser.
 
-## App do paciente (mobile-first, 360–430 px)
+### Paleta e contraste (medido, WCAG 2.2)
 
-Telas do documento do produto, nesta ordem de prioridade para o MVP:
+| Token | Hex | Uso permitido |
+|---|---|---|
+| `azul-profundo` | #123B56 | Texto principal, cabeçalhos, fundo de destaque com texto branco (11,8:1) |
+| `verde-agua` | #167C70 | Botão primário com texto branco (5,1:1), links e ícones sobre branco. **Sobre gelo dá 4,49:1, abaixo do mínimo: use texto ≥ 24 px (ou 19 px em negrito) ou troque para azul.** |
+| `turquesa` | #55B9B0 | **Só decorativo** (orbe da Lia, ilustrações, fundo com texto azul por cima: 5,0:1). Sobre branco dá 2,35:1: reprovado para texto e para borda de componente (mínimo 3:1). |
+| `gelo` | #EAF3F4 | Fundo de seções e cards. Texto sobre ele sempre em azul-profundo (10,4:1) |
 
-1. **Início:** saudação com o nome de exibição; frase de apoio; card "Sua jornada" com `X%` e o rótulo
-   literal **"Etapas cadastradas concluídas"**; card "Próximo compromisso" (o quê, quando, onde, como se
-   preparar); lista curta das próximas etapas.
-2. **Minha jornada:** linha do tempo vertical com os estados *Concluído*, *Em andamento*, *Próxima etapa*,
-   *Aguardando*, *Futuro*. Cada estado tem ícone + texto, nunca só cor. Ao tocar numa etapa: explicação simples,
-   serviço responsável e o que o paciente precisa fazer, se houver.
-3. **Como me sinto:** escala de 5 opções (Muito bem, Bem, Mais ou menos, Mal, Muito mal) com rótulo em texto
-   em cada uma; emoji ou ícone é decorativo (`aria-hidden`). Campo opcional "Quer contar mais?" com os
-   exemplos do documento como placeholder. Botão "Enviar atualização". **`AvisoUrgencia` sempre visível
-   nesta tela.** Depois de enviar: "Recebemos sua atualização. Sua equipe vai ver conforme o combinado com o
-   serviço." Nunca escreva "um profissional já foi avisado".
-4. **Assistente:** chat com uma faixa fixa "Posso ajudar com as informações disponibilizadas pela sua equipe.
-   Para dúvidas clínicas, converse com seu profissional de saúde." Sugestões de pergunta em chips (ex.: "O que
-   preciso levar?"). `AvisoUrgencia` acima da conversa quando a intenção for urgência.
-5. **Minha agenda**, **Minha saúde** (documentos e orientações validadas) e **Meu apoio** (contato da
-   navegação, conteúdo educativo): páginas simples no MVP.
+Estados funcionais (erro, atenção, sucesso) têm tokens próprios com contraste aprovado e **sempre ícone +
+texto**. A marca não comunica estado sozinha. Defina tudo em `packages/shared/tokens` e no `tailwind.config`;
+nada de hex espalhado nos componentes.
 
-Nunca aparece no app do paciente: transcrição, item de IA não confirmado, nota interna, nome do modelo de
-IA, indicador da equipe.
+## OncoFlow Paciente: experiência híbrida
 
-## Painel OncoFlow Care (desktop ≥ 1280 px)
+Decisão do documento: navegação visual tradicional + agente de IA por voz (Lia; ver
+`oncoflow-assistente-lia`). **Tudo o que puder ser feito visualmente deve, quando fizer sentido e for seguro,
+também poder ser pedido por voz.** Ao criar uma tela, crie a ação de voz correspondente ou registre por que
+não.
 
-1. **Lista de pacientes:** tabela com paciente, linha de cuidado, etapa atual, pendências abertas
-   (vencidas em destaque com ícone e texto "vencida há 3 dias"), último check-in e alertas abertos com o
-   prazo. Filtros: "meus pacientes", "com pendência vencida", "com alerta aberto".
-2. **Detalhe do paciente:** coluna esquerda com a jornada e as pendências; coluna direita com abas *Consultas*,
-   *Check-ins* (gráfico de tendência da escala + relatos) e *Histórico* (auditoria resumida).
-3. **Fila de validação da IA:** é o coração da demo; veja o padrão abaixo.
-4. **Alertas:** lista por prazo de resposta, com ações "Assumir", "Resolver" (desfecho obrigatório).
-5. **Indicadores:** cards com período, numerador/denominador e selo "dados fictícios" (ver
-   `oncoflow-arquitetura` → indicadores).
+| Necessidade | Pelo visual | Por voz |
+|---|---|---|
+| Consultar agenda | Abrir "Minha agenda" | "Quando é minha próxima consulta?" |
+| Registrar bem-estar | Preencher check-in | "Hoje estou muito cansado." |
+| Ver documento | Abrir lista de documentos | "Quero ver meu último resultado." |
+| Pedir apoio | Área de suporte | "Preciso falar com minha enfermeira." |
+| Lembrete | Configurar na agenda | "Me lembre um dia antes." |
 
-## Sistema de proveniência (obrigatório em todo conteúdo vindo da consulta)
+### Tela inicial (nesta ordem)
 
-Componente único `SeloProveniencia` em `src/shared/proveniencia/`. Não recrie variações por tela.
+1. **Próxima consulta:** data, horário, local e "como me preparar" (só orientação institucional validada).
+2. **Minha jornada:** etapas concluídas, em andamento e próximas, com `X%` e o rótulo literal "Etapas
+   cadastradas concluídas".
+3. **Como estou?** Atalho para o check-in.
+4. **Minha agenda:** consultas, exames e lembretes.
+5. **Meus documentos:** resultados e orientações liberados.
+6. **Falar com a assistente:** botão de destaque, com o orbe da Lia e o rótulo "Falar com a Lia" (o nome vem
+   de configuração).
+
+### Outras telas
+
+- **Minha jornada:** linha do tempo vertical com os estados *Concluído*, *Em andamento*, *Próxima etapa*,
+  *Aguardando* e *Futuro*, cada um com ícone + texto. Ao tocar numa etapa: explicação simples, quem é o
+  responsável ou serviço, e o que a pessoa precisa fazer.
+- **Como estou?** Escala de 5 (Muito bem, Bem, Mais ou menos, Mal, Muito mal) como `radiogroup` com texto;
+  ícones são decorativos. Relatos opcionais (dor, cansaço, náusea, preocupações, dificuldades práticas, só os
+  habilitados pelo serviço). Texto livre **ou** botão "Falar em vez de escrever". Mostre "Quem vê e para quê"
+  e o `AvisoUrgencia` sempre visíveis. Ao enviar: "Recebemos sua atualização. Sua equipe vai ver conforme o
+  combinado com o serviço." **Histórico e tendência também para o paciente** ("Meus registros"), não só para
+  a equipe.
+- **Meus documentos:** lista com tipo e data; botão "Ouvir" lê em voz alta orientações e textos autorizados.
+- **Pedir apoio:** contato da navegação, "Quero falar com a equipe" (abre solicitação), conteúdo educativo
+  aprovado e apoio psicossocial quando disponível.
+- **Pessoas que me ajudam:** convidar um familiar ou cuidador, escolher o que ele pode ver ou fazer (escopo a
+  escopo, em linguagem simples), ver os acessos dele e revogar.
+- **Preferências:** tamanho da fonte, modo preferido (visual, voz ou os dois), velocidade do áudio e forma de
+  tratamento.
+
+### Confirmação de ações (visual e voz)
+
+Antes de uma ação importante, mostre **o que foi entendido**. Depois, mostre **o que foi registrado** e o
+**status real**:
+
+```
+Entendi: você não pode ir à consulta de quinta, 10h30 (Oncologia).
+[ Abrir pedido de reagendamento ]   [ Não, voltar ]
+──────────
+✓ Pedido registrado · Aguardando a equipe analisar        ← nunca "Consulta remarcada"
+```
+
+Use os quatro status da plataforma com selos de texto: *Informação consultada*, *Solicitação registrada*,
+*Encaminhado para a equipe* e *Confirmado*.
+
+## OncoFlow Pro (portal web, desktop ≥ 1280 px)
+
+1. **Visão geral:** pacientes acompanhados, etapa atual, tarefas abertas (vencidas em destaque: "vencida há
+   3 dias"), check-ins aguardando revisão com o prazo e alertas operacionais. Filtros: meus pacientes, com
+   tarefa vencida, com check-in aguardando revisão.
+2. **Perfil do paciente:** linha do tempo, equipe responsável, informações relevantes confirmadas e
+   histórico autorizado; abas *Consultas*, *Check-ins* (tendência + relatos + status de revisão),
+   *Solicitações* e *Histórico*.
+3. **Gestão de tarefas:** encaminhamentos, exames, consultas, solicitações e prazos, em lista e quadro por
+   responsável.
+4. **Check-ins:** fila de revisão por prazo; ações "Assumir" e "Concluir revisão" (desfecho obrigatório).
+5. **Copiloto de consulta:** transcrição, itens extraídos e a fila de validação (padrão abaixo).
+6. **Indicadores:** tempo entre etapas, tarefas vencidas, tempo entre relato e revisão, check-ins revisados no
+   prazo, com período, n e o selo "dados fictícios". O perfil gestão vê só este módulo.
+
+## Sistema de proveniência (todo conteúdo vindo da consulta)
+
+Princípio 3: **toda informação importante tem origem, status e responsável claros.** Use um componente único,
+`SeloProveniencia` (`packages/shared`). Não recrie variações por tela.
 
 | Tipo | Visual | Texto do selo |
 |---|---|---|
-| Fala literal | Citação com barra lateral, fonte normal, interlocutor e tempo ("Paciente · 04:12") | "Fala literal" |
-| Dado extraído (pendente) | Card com **borda tracejada**, fundo neutro, ícone de lápis | "Extraído pela IA · aguardando revisão" |
-| Hipótese da IA (pendente) | Borda tracejada + ícone de interrogação, texto em forma de pergunta | "Hipótese da IA · aguardando revisão" |
-| Confirmado | Borda sólida, ícone de check | "Confirmado por Dr(a). <nome> em <dd/mm>" |
+| Fala literal | Citação com barra lateral, interlocutor e tempo ("Paciente · 04:12") | "Fala literal" |
+| Extração da IA (pendente) | Card com **borda tracejada**, fundo neutro, ícone de lápis | "Extraído pela IA · aguardando revisão" |
+| Hipótese do sistema (pendente) | Borda tracejada + ícone de interrogação, texto em forma de pergunta | "Hipótese do sistema · aguardando revisão" |
+| Confirmado | Borda sólida, ícone de check | "Confirmado por <nome> em <dd/mm>" |
 
-Regras: o selo sempre tem texto (daltonismo, leitor de tela); item pendente não tem botão "copiar para o
-paciente"; a citação literal fica visível sem clique extra na fila de validação.
+Regras: o selo sempre tem texto; item pendente não tem ação que o leve ao paciente; a citação literal fica
+visível sem clique extra.
 
-### Padrão da fila de validação
+### Fila de validação
 
-Para cada item: categoria, selo, texto da IA, citação literal clicável (abre a transcrição no segmento) e as
-ações **Confirmar**, **Editar e confirmar** e **Rejeitar** (pede motivo em lista curta: "não foi dito",
-"interpretação errada", "não relevante", "outro"). Item confirmado de categoria `necessidade_possivel` ou
-`pendencia_operacional` mostra o botão "Criar pendência", que abre um formulário com responsável e prazo
-**vazios**: o humano preenche. Atalhos de teclado (C, E, R) ajudam a validar rápido.
+Para cada item: categoria, selo, texto da IA, citação literal clicável e as ações **Confirmar**, **Editar e
+confirmar** e **Rejeitar** (motivo: "não foi dito", "interpretação errada", "não relevante", "outro"). Para
+necessidades e pendências, o diálogo de aprovação traz "Gerar tarefa para a navegação" com responsável e prazo
+**preenchidos pela configuração do serviço e editáveis**, e opcionalmente "Mostrar ao paciente como etapa",
+com título em linguagem simples escrito pelo profissional. Atalhos de teclado: C, E, R.
 
 ## Textos (PT-BR)
 
-- Use "você" e frases curtas. Diga o próximo passo concreto ("Leve seus exames anteriores").
-- Prefira linguagem neutra em gênero no texto padrão ("Você tem apoio em cada etapa"). Use concordância de
-  gênero só se `forma_tratamento` estiver preenchida.
-- Sem jargão no app do paciente: "exame de sangue", não "hemograma completo com plaquetas", a menos que o
-  nome venha da equipe.
-- Nada de promessa: nunca escreva "monitoramos você 24 h", "resposta imediata" ou "seu tratamento vai ser
-  mais rápido".
-- Nada de alarme: em vez de "ALERTA: sintoma grave", na equipe use "Alerta aberto · responder até 14h". O
-  paciente não vê alerta.
+- "Você", frases curtas e o próximo passo concreto ("Leve seus exames anteriores").
+- **Simples sem infantilizar** e sem presumir incapacidade digital de pessoas idosas. Nada de diminutivos
+  ("consultinha"), exclamações em excesso ou tom de URA.
+- Linguagem neutra em gênero por padrão. Concordância só se `forma_tratamento` estiver preenchida.
+- Nada de promessa ("monitoramos você 24 h", "resposta imediata", "seu tratamento vai ser mais rápido").
+- Nada de alarme para o paciente. Na equipe: "Check-in aguardando revisão · até 14h".
 
 | Evite | Prefira |
 |---|---|
 | "Erro 500" | "Não conseguimos carregar agora. Tente de novo em instantes." |
 | "Seu médico foi notificado." | "Sua equipe vai ver sua atualização conforme o combinado com o serviço." |
-| "A IA identificou que você precisa de avaliação de fertilidade." | (o paciente só vê a etapa já validada) "Avaliação de fertilidade · Em andamento" |
+| "Sua consulta foi remarcada." (sem confirmação) | "Pedido de reagendamento registrado. Aguardando a equipe." |
 | "Progresso do tratamento: 65%" | "65% · Etapas cadastradas concluídas" |
 
-## Acessibilidade (WCAG 2.2 AA)
+## Acessibilidade (WCAG 2.2 AA + documento, seção 3)
 
-- Fonte base de 18 px no app do paciente e 14–16 px no Care. Respeite o zoom do sistema; nada de altura fixa
-  que corte texto.
-- Alvo de toque ≥ 44×44 px. Contraste ≥ 4,5:1 para texto.
-- Estado nunca só por cor (etapas, selos, vencida).
-- Escala de bem-estar como `radiogroup` com rótulos; gráfico com resumo textual ("Últimos 7 dias: 4 × Bem,
-  2 × Mal").
-- `prefers-reduced-motion` respeitado. Foco visível. Navegação completa por teclado no Care.
+- Tipografia grande e **ajustável no app** (padrão 18 px, opções grande e muito grande), além de respeitar o
+  zoom do sistema. Nenhuma altura fixa que corte texto.
+- Contraste elevado (veja a paleta). Hierarquia visual clara.
+- Botões grandes (≥ 48×48 px no app), bem separados e com rótulo explícito. Evite menus profundos: no máximo
+  dois níveis.
+- Estado nunca só por cor.
+- Áudio com velocidade ajustável, opção de repetir e leitura em voz alta.
+- Compatível com TalkBack, VoiceOver e leitores de tela no Pro: rótulos, `aria-live` para status, foco
+  visível, navegação por teclado no Pro.
+- `prefers-reduced-motion` respeitado (inclusive no orbe).
 
 ## Estados de toda tela
 
-Carregando (skeleton, não spinner infinito), vazio (texto que orienta: "Nenhuma pendência aberta"), erro
-(com "tentar de novo") e offline no app do paciente (mostra o último dado em cache com "atualizado em…" e
-deixa o check-in na fila de envio).
+Carregando (skeleton), vazio (texto que orienta: "Nenhuma tarefa aberta"), erro ("tentar de novo") e offline
+no app (último dado em cache com "atualizado em…" e check-in na fila de envio).
 
 ## Modo demo
 
-Em `DEMO_MODE`, uma barra discreta no topo permite trocar de usuário (Médico · Navegação · Paciente) e
-resetar os dados. Isso deixa a demo fluir sem login entre as telas (ver `oncoflow-demo-hackathon`). A barra não
-existe fora do modo demo.
+Em `DEMO_MODE`, uma barra discreta permite trocar de usuário (Médica · Navegação · Enfermagem · Paciente) e
+resetar os dados (ver `oncoflow-demo-hackathon`). Ela não existe fora do modo demo.

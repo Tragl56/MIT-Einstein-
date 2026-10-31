@@ -60,7 +60,7 @@ Registre, usando a ferramenta registrar_itens, apenas itens úteis para a contin
 - sintoma_relatado: sintoma ou efeito que o paciente relatou.
 - preferencia: desejo ou valor pessoal do paciente que pode afetar o plano (ex.: ter filhos, trabalho, religião).
 - preocupacao: medo ou preocupação expressa.
-- necessidade_possivel: algo que talvez precise de avaliação ou encaminhamento.
+- necessidade_possivel: necessidade ou possível acompanhamento que talvez precise de avaliação.
 - pendencia_operacional: tarefa logística mencionada (exame a agendar, autorização, documento).
 - duvida_paciente: pergunta do paciente que ficou sem resposta.
 

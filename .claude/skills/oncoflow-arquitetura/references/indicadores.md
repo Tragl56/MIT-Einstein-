@@ -1,30 +1,33 @@
 # Indicadores do OncoFlow (definições operacionais)
 
-São indicadores de processo, definidos no documento do produto e a validar com o Cancer Center no piloto.
-**Nunca exiba ou descreva um indicador como evidência de melhora de desfecho.** Todo card mostra o período, o
-numerador, o denominador e, no MVP, o selo "dados fictícios".
+Os documentos do produto listam estes indicadores de sucesso, a definir com o Cancer Center e medir num piloto.
+**Nunca exiba nem descreva um indicador como resultado já obtido.** Todo card mostra o período, o numerador,
+o denominador e, no MVP, o selo "dados fictícios".
 
-| Indicador | Definição | Fonte |
+| Indicador | Definição operacional | Fonte |
 |---|---|---|
-| Tempo entre etapas | Mediana e P90 de `concluida_em(etapa N+1) − concluida_em(etapa N)` por linha de cuidado. Use mediana, nunca média: a distribuição é assimétrica. | `etapa_jornada` |
-| Pendências vencidas | Quantidade de pendências abertas com `prazo < agora` e idade do atraso (mediana e máximo), por responsável. | `pendencia` |
-| Continuidade | `etapas concluídas / etapas planejadas não canceladas`, por paciente e agregado. | `etapa_jornada` |
-| Check-ins revisados no prazo | `alertas resolvidos com resolvido_em ≤ prazo_resposta / alertas criados` no período. | `alerta` |
-| Tempo até validação da IA | Mediana de `validado_em − criado_em` dos itens extraídos, mais a taxa de rejeição por categoria (qualidade da IA). | `item_extraido` |
-| Coordenação de visitas | Pares de compromissos do mesmo paciente em dias diferentes, com menos de 7 dias de intervalo, que poderiam ser agrupados (oportunidade, não erro). | `compromisso` |
-| Experiência do paciente | Questionário curto no app (clareza dos próximos passos, acesso à informação, percepção de apoio). No MVP é só o desenho: não há dado. | — |
+| Tempo entre etapas da jornada | Mediana e P90 de `concluida_em(etapa N+1) − concluida_em(etapa N)` por linha de cuidado. Use mediana, nunca média: a distribuição é assimétrica. | `etapa_jornada` |
+| Tarefas pendentes ou vencidas | Quantidade e proporção de tarefas abertas com `prazo < agora` sobre as abertas, e idade do atraso, por responsável. | `tarefa` |
+| Tempo entre relato e revisão | Mediana de `revisado_em − checkin.enviado_em` (revisões) e de `atendida_em − criada_em` (solicitações de relato ou contato). | `revisao_checkin`, `solicitacao` |
+| Check-ins revisados no prazo | `revisões com revisado_em ≤ prazo_resposta / revisões criadas` no período. | `revisao_checkin` |
+| Compreensão dos próximos passos | Pergunta curta no app ("Você sabe qual é o seu próximo passo?" sim/em parte/não), de forma periódica e opcional. | questionário |
+| Experiência e facilidade de uso, incluindo acessibilidade | Questionário curto (ex.: SUS adaptado) + uso de voz × visual + uso de fonte grande. No MVP, só o desenho. | questionário, telemetria sem conteúdo |
+| Retrabalho e falhas de coordenação | Proxy: tarefas canceladas por duplicidade, solicitações de reagendamento por falta de preparo e exames repetidos registrados manualmente. Definição a fechar com o hospital. | `tarefa`, `solicitacao` |
+| Qualidade da IA (interno) | Mediana de `validado_em − criado_em` dos itens extraídos e taxa de rejeição por categoria e motivo. | `item_extraido` |
+| Coordenação de visitas (secundário) | Compromissos do mesmo paciente em dias diferentes, com menos de 7 dias de intervalo, que poderiam ser agrupados. | `compromisso` |
 
 ## SQL de referência
 
 ```sql
--- Pendências vencidas por responsável
-select coalesce(u.nome, p.responsavel_papel) as responsavel,
-       count(*)                                         as vencidas,
-       percentile_cont(0.5) within group (order by now() - p.prazo) as atraso_mediano,
-       max(now() - p.prazo)                             as atraso_maximo
-from pendencia p
-left join usuario u on u.id = p.responsavel_usuario_id
-where p.estado in ('aberta', 'em_andamento') and p.prazo < now()
+-- Tarefas vencidas por responsável (proporção sobre as abertas)
+select coalesce(u.nome, t.responsavel_papel) as responsavel,
+       count(*) filter (where t.prazo < now())                       as vencidas,
+       count(*)                                                       as abertas,
+       round(100.0 * count(*) filter (where t.prazo < now()) / count(*), 1) as pct_vencidas,
+       max(now() - t.prazo) filter (where t.prazo < now())            as atraso_maximo
+from tarefa t
+left join usuario u on u.id = t.responsavel_usuario_id
+where t.estado in ('aberta', 'em_andamento') and t.instituicao_id = :instituicao
 group by 1
 order by vencidas desc;
 
@@ -33,7 +36,7 @@ with ordenadas as (
   select paciente_id, ordem, concluida_em,
          lag(concluida_em) over (partition by paciente_id order by ordem) as anterior
   from etapa_jornada
-  where estado = 'concluida'
+  where estado = 'concluida' and instituicao_id = :instituicao
 )
 select percentile_cont(0.5) within group (order by concluida_em - anterior) as mediana,
        percentile_cont(0.9) within group (order by concluida_em - anterior) as p90,
@@ -41,13 +44,14 @@ select percentile_cont(0.5) within group (order by concluida_em - anterior) as m
 from ordenadas
 where anterior is not null;
 
--- Alertas resolvidos dentro do prazo
-select count(*) filter (where estado = 'resolvido' and resolvido_em <= prazo_resposta)::float
-       / nullif(count(*), 0) as taxa_no_prazo,
-       count(*) as alertas
-from alerta
-where criado_em >= :inicio and criado_em < :fim;
+-- Tempo entre relato (check-in) e revisão, e taxa no prazo
+select percentile_cont(0.5) within group (order by r.revisado_em - c.enviado_em) as mediana_ate_revisao,
+       count(*) filter (where r.revisado_em <= r.prazo_resposta)::float / nullif(count(*), 0) as taxa_no_prazo,
+       count(*) as revisoes
+from revisao_checkin r
+join checkin c on c.id = r.checkin_id
+where c.instituicao_id = :instituicao and c.enviado_em >= :inicio and c.enviado_em < :fim;
 ```
 
-Com n pequeno (menos de 10 intervalos ou alertas), mostre o número absoluto e o aviso "amostra pequena" no
+Com n pequeno (menos de 10 intervalos ou revisões), mostre o número absoluto e o aviso "amostra pequena" no
 lugar do percentual.

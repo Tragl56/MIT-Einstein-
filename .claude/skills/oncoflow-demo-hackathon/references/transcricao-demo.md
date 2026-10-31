@@ -30,11 +30,14 @@ decide conduta na transcrição, para a demo não parecer recomendação médica
 | sintoma_relatado | dado_extraido | Paciente relata cansaço maior, principalmente no fim da tarde. | s02 "Ando mais cansada, principalmente no fim da tarde." |
 | preferencia | dado_extraido | Paciente relata desejo de ter filhos com o parceiro. | s06 "Eu e meu marido queremos ter filhos." |
 | preocupacao | dado_extraido | Paciente relata medo de o tratamento afetar a fertilidade. | s07 "Tenho medo de o tratamento afetar minha fertilidade." |
-| necessidade_possivel | **hipotese_ia** | Avaliar necessidade de encaminhamento para avaliação de fertilidade antes do tratamento? | s06, s07 |
+| necessidade_possivel | **hipotese_ia** (opcional) | Avaliar necessidade de acompanhamento relacionado à fertilidade? | s06, s07 |
 | pendencia_operacional | dado_extraido | Médica informa necessidade de exames pré-tratamento; alguns precisam de autorização do convênio. | s09, s11 "Alguns sim." |
 | preferencia | dado_extraido | Paciente mora longe e prefere concentrar os exames no mesmo dia. | s12 "Se der para fazer os exames no mesmo dia, me ajuda muito." |
 | preocupacao | dado_extraido | Paciente relata preocupação em manter o emprego durante o tratamento. | s14 "Não sei se vou conseguir manter o emprego durante o tratamento." |
 | necessidade_possivel | dado_extraido | Paciente aceitou ser apresentada ao apoio psicossocial do serviço. | s15, s16 "Quero sim, obrigada." |
 
-Na demo, valide ao vivo **a hipótese de fertilidade** (o caso do documento). A preferência por concentrar
-exames (s12) é um bom segundo exemplo se sobrar tempo: ela liga direto ao indicador "coordenação de visitas".
+Na demo, aprove ao vivo **a preocupação com a fertilidade (relato, s07)**, marcando "Gerar tarefa para a
+navegação", como no exemplo do documento: a IA destaca a preocupação como relato, sem inferir decisão
+clínica, e a profissional confirma a necessidade de acompanhamento. A hipótese é opcional e não entra no
+roteiro. A preferência por concentrar exames (s12) é um bom segundo exemplo se sobrar tempo: ela liga direto
+ao indicador "coordenação de visitas".

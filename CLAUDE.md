@@ -1,38 +1,55 @@
-# OncoFlow AI
+# OncoFlow
 
-Plataforma de coordenação da jornada oncológica (MVP para o MIT Hacking Medicine, trilha de Oncologia).
-Três superfícies: **OncoFlow Care** (painel da equipe: médicos, enfermagem, navegação), **OncoFlow Patient**
-(PWA do paciente) e **OncoFlow Intelligence** (camada de IA com revisão humana). Fonte do conceito: documento
-"OncoFlow AI — Proposta de produto" (10 páginas). As funcionalidades são propostas para validação, não
-requisitos confirmados pelo hospital.
+Plataforma de coordenação da jornada oncológica, com MVP para o MIT Hacking Medicine (trilha de Oncologia).
+Assinatura sugerida: "Cada etapa do cuidado, conectada." Uma única plataforma, com serviços e dados
+compartilhados, e duas experiências distintas:
 
-Stack: React + TypeScript (Vite, PWA) · Python + FastAPI · PostgreSQL · LLM (Claude) para extração e resumo ·
-speech-to-text atrás de uma interface. Detalhes em `.claude/skills/oncoflow-arquitetura`.
+- **OncoFlow Pro:** portal web para médicos, enfermagem, navegação e gestão hospitalar.
+- **OncoFlow Paciente:** app mobile para pacientes e cuidadores autorizados, **híbrido**: navegação visual + a
+  assistente de voz **Lia** (nome de trabalho).
+- **Camada de inteligência:** copiloto de consulta, busca contextual e automação controlada, com revisão
+  humana.
+
+Fontes, em ordem de precedência quando divergirem:
+1. "OncoFlow — Conceito de produto, experiência do paciente e identidade da assistente virtual" (31/10/2026),
+   que consolida as decisões.
+2. "OncoFlow AI — Proposta de produto" (10 páginas), que traz a base de problema, stack e roadmap.
+
+As duas são propostas para validação, não requisitos confirmados pelo hospital.
+
+Stack: React + TypeScript (dois apps Vite: Pro e Paciente/PWA) · Python + FastAPI · PostgreSQL · Claude para
+extração e para a Lia · STT/TTS atrás de interfaces. Detalhes em `.claude/skills/oncoflow-arquitetura`.
 
 ## Regras que nunca se quebram
 
-1. **A IA sugere, o humano valida.** Nenhuma saída de IA (resumo, item extraído, sugestão de encaminhamento)
-   chega ao paciente, vira pendência ou entra em registro sem status `confirmado` dado por um profissional.
-2. **Proveniência explícita.** Todo conteúdo tem um destes tipos, visível na interface e no banco: fala literal,
-   dado extraído, hipótese da IA ou informação confirmada. Hipótese nunca é gravada nem exibida como fato.
-3. **A IA não diagnostica, não prescreve e não prioriza condutas clínicas.** Ela também não responde dúvida
-   clínica do paciente: encaminha à equipe.
-4. **Check-in não é emergência.** Toda tela de check-in e do assistente diz isso e mostra as instruções de
-   urgência aprovadas pelo hospital. Alertas seguem regras configuradas pelo serviço, com responsável e prazo,
-   e nunca limiares clínicos inventados no código.
-5. **Só dados fictícios.** Nenhum dado real de paciente no repositório, nos seeds, nos prompts, nos logs ou nas
-   capturas de tela. Gravação de áudio depende de consentimento ativo e pode ser interrompida a qualquer momento.
-6. **Não presumir integrações.** Prontuário, agenda, laboratório e autorização são simulados até haver validação
-   técnica e institucional. O OncoFlow complementa o prontuário, não o substitui.
-7. **Não prometer desfecho.** Indicadores medem o processo (tempo entre etapas, pendências vencidas,
-   check-ins revisados), não prometem redução de tempo ou melhora clínica.
+1. **A IA sugere, o profissional aprova.** Nenhuma saída de IA chega ao paciente, vira tarefa ou entra em
+   registro sem status `confirmado` dado por um profissional.
+2. **Origem, status e responsável claros.** Todo conteúdo distingue fala literal, extração da IA, hipótese do
+   sistema e informação confirmada. Hipótese nunca é exibida como fato.
+3. **A IA não diagnostica, não prescreve, não altera tratamento e não decide prioridade clínica.** Nem o
+   copiloto nem a Lia.
+4. **A Lia só executa ações permitidas, confirma quando necessário e nunca diz que algo foi concluído sem
+   confirmação do sistema.** Ela distingue informação consultada, solicitação registrada, tarefa encaminhada e
+   ação confirmada.
+5. **O paciente escolhe como interagir.** O que dá para fazer visualmente também deve dar para pedir por voz,
+   quando for seguro. A voz nunca é obrigatória. Simples sem infantilizar.
+6. **Check-in não é monitoramento em tempo real nem emergência.** Toda tela de check-in e da Lia diz isso,
+   mostra as instruções de urgência do hospital e informa quem vê os dados. As regras de revisão são do
+   serviço, nunca limiares clínicos no código.
+7. **Acesso por perfil, instituição, equipe e finalidade.** Cuidador só com delegação explícita, granular e
+   revogável. Tudo auditado.
+8. **Só dados fictícios** em repositório, seeds, prompts, logs e capturas de tela. Gravação só com
+   consentimento, sempre interrompível.
+9. **Não presumir integrações nem prometer desfecho.** Prontuário, agenda e laboratório são simulados.
+   Indicadores são medidos no piloto.
 
 ## Qual skill usar
 
 | Tarefa | Skill |
 |---|---|
 | Backend, banco, API, modelo de domínio, máquinas de estado, indicadores, testes | `oncoflow-arquitetura` |
-| Transcrição, extração por LLM, resumo de consulta, assistente do paciente, avaliações da IA | `oncoflow-copiloto-ia` |
-| Permissões, consentimento, auditoria, LGPD, revisão antes de merge | `oncoflow-seguranca-lgpd` |
-| Telas do app do paciente e do painel Care, textos, acessibilidade | `oncoflow-experiencia` |
-| Dados de demonstração, roteiro de 3–5 min, pitch, ensaio | `oncoflow-demo-hackathon` |
+| Copiloto de consulta: transcrição, extração por LLM, resumo, fila de validação, avaliação | `oncoflow-copiloto-ia` |
+| Lia: voz, persona, orbe, ferramentas, confirmação de ações, memória contextual | `oncoflow-assistente-lia` |
+| Acesso, cuidador, consentimento, auditoria, LGPD, fornecedores, revisão antes de merge | `oncoflow-seguranca-lgpd` |
+| Telas do Paciente e do Pro, marca, paleta, textos, acessibilidade | `oncoflow-experiencia` |
+| Seed, roteiro de 3–5 min, pitch, ensaio, perguntas do júri | `oncoflow-demo-hackathon` |
