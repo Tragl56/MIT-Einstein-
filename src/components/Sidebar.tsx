@@ -28,8 +28,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
   >
     <div className="space-y-9">
       <div className="flex items-center gap-2.5 px-2">
-        <LogoOncoFlow className="w-10 h-10" />
-        <span className="text-2xl font-bold text-azul tracking-tight">OncoFlow</span>
+        <LogoOncoFlow className="w-40 h-auto" />
+        <span className="pro-brand-badge">Pro</span>
       </div>
       <nav aria-label="Sections" className="space-y-1">
         {ITENS.map(({ pagina: p, rotulo, Icone }) => {

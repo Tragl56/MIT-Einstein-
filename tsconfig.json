@@ -23,5 +23,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["node_modules", "dist", "frontend", "backend", "oncoflow-casa", "work"]
+  "exclude": ["node_modules", "dist", "frontend", "backend", "oncoflow-casa", "work", "patient-app", "public/app"]
 }

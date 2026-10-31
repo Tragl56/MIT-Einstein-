@@ -1,7 +1,7 @@
 // Estado da demo em memória, compartilhado pelo OncoFlow Pro (equipe) e pelo OncoFlow Paciente.
 // No IRIS esse estado vivia dentro do React; aqui ele fica no servidor para que a equipe e a
-// paciente vejam os mesmos dados em abas ou aparelhos diferentes. Reiniciar o servidor ou chamar
-// POST /api/demo/reset volta ao seed.
+// paciente vejam os mesmos dados em abas ou aparelhos diferentes. A persistência da demonstração
+// é instalada pelo servidor; somente POST /api/demo/reset volta ao seed.
 
 import type {
   Checkin,
@@ -64,6 +64,27 @@ const estado = {
   auditoria: [] as EventoAuditoria[],
 };
 
+type EstadoSalvo = Pick<typeof estado, 'versao' | 'pacientes' | 'pendencias' | 'auditoria'>;
+const aoResetar = new Set<() => void>();
+export function observarReset(callback: () => void): () => void {
+  aoResetar.add(callback);
+  return () => aoResetar.delete(callback);
+}
+export function exportarEstado(): EstadoSalvo {
+  return { versao: estado.versao, pacientes: estado.pacientes, pendencias: estado.pendencias, auditoria: estado.auditoria };
+}
+export function importarEstado(salvo: EstadoSalvo): void {
+  if (!salvo || !Array.isArray(salvo.pacientes) || !salvo.pacientes.length || !Array.isArray(salvo.pendencias) || !Array.isArray(salvo.auditoria)) {
+    throw new Error('Invalid saved fictional demo state. Restore the file or reset it explicitly.');
+  }
+  estado.versao = salvo.versao;
+  estado.pacientes = salvo.pacientes;
+  estado.pendencias = salvo.pendencias;
+  estado.auditoria = salvo.auditoria;
+  estado.propostas.clear();
+}
+export function marcarAlteracao(): void { mudou(); }
+
 export function resetar(): void {
   const seed = criarSeed();
   estado.pacientes = seed.pacientes;
@@ -71,6 +92,7 @@ export function resetar(): void {
   estado.propostas.clear();
   estado.auditoria = [];
   estado.versao += 1;
+  for (const callback of aoResetar) callback();
 }
 
 resetar();
@@ -185,6 +207,11 @@ export function devolverParaLia(
 }
 
 export function mensagemDoProfissional(pacienteId: string, usuario: UsuarioEquipe, texto: string): void {
+  // Validate before assuming the conversation or appending its team-joined marker.
+  // The native strict contract accepts at most 4,000 characters per message.
+  if (texto.length > 4000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(texto)) {
+    throw new ErroDominio(400, 'mensagem_invalida', 'Use a message with up to 4,000 characters and no invalid control characters.');
+  }
   const limpo = texto.trim();
   if (!limpo) throw new ErroDominio(400, 'texto_vazio', 'Type a message.');
   // Como no IRIS: enviar uma mensagem com a Lia ativa faz o profissional assumir a conversa.

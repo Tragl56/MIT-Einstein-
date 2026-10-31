@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Pill,
   Stethoscope,
+  Smartphone,
   UserCheck,
 } from 'lucide-react';
 import type { Desfecho, PacientePro, UsuarioEquipe } from '../types';
@@ -25,8 +26,9 @@ import { PlanoTerapeuticoModal } from './PlanoTerapeuticoModal';
 import { UploadPlanoButton } from './UploadPlanoButton';
 import { OrbeMini } from './OrbeMini';
 import { dataCompromisso, dataHoraCurta, diagnosticoCurto, iniciais } from './proUtil';
+import { MobileIntegrationPanel } from './MobileIntegrationPanel';
 
-type Aba = 'jornada' | 'agenda' | 'exames' | 'comunicacao' | 'resumo';
+type Aba = 'jornada' | 'agenda' | 'exames' | 'comunicacao' | 'resumo' | 'aplicativo';
 
 const ABAS: [Aba, string][] = [
   ['jornada', 'Journey'],
@@ -34,6 +36,7 @@ const ABAS: [Aba, string][] = [
   ['exames', 'Tests'],
   ['comunicacao', 'Messages'],
   ['resumo', 'Summary'],
+  ['aplicativo', 'Aplicativo do paciente'],
 ];
 
 interface DetalhePacienteProps {
@@ -130,6 +133,10 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
             </div>
           </div>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => setAba('aplicativo')} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gelo text-sm font-semibold text-verde hover:bg-gelo-forte cursor-pointer">
+          <Smartphone className="w-4 h-4" aria-hidden />Aplicativo do paciente
+        </button>
         <button
           type="button"
           onClick={() => setPlanoAberto(true)}
@@ -138,6 +145,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
           See treatment plan
           <FileSearch className="w-4 h-4" aria-hidden />
         </button>
+        </div>
       </div>
 
       <div role="tablist" aria-label="Patient information" className="mt-6 flex overflow-x-auto overflow-y-hidden border-b border-linha">
@@ -161,6 +169,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
       </div>
 
       <div className="pt-6" role="tabpanel">
+        {aba === 'aplicativo' && <MobileIntegrationPanel key={`${paciente.id}:${usuarioAtual.id}`} paciente={paciente} usuario={usuarioAtual} />}
         {aba === 'jornada' && (
           <div className="space-y-6">
             <JornadaHorizontal paciente={paciente} />

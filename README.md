@@ -10,13 +10,34 @@ O repositório tem dois projetos lado a lado:
 
 | Projeto | Onde | Para quê |
 |---|---|---|
-| **MVP da demo** (base IRIS) | raiz: `server.ts`, `server/`, `src/` | O que roda na apresentação. Node/Express, estado em memória |
+| **MVP da demo** (base IRIS) | raiz: `server.ts`, `server/`, `src/` | O que roda na apresentação. Node/Express, estado compartilhado e persistência local |
 | **Arquitetura-alvo** | `backend/` + `frontend/` | Versão com FastAPI, PostgreSQL, autenticação e auditoria, em construção |
 
 Outros diretórios: `oncoflow-casa/` (protótipo com painel web e ESP32), `fixtures/` (dados fictícios),
 `outputs/` (capturas da demo) e `work/` (scripts de verificação).
 
 ---
+
+## Plataforma conectada: Pro + aplicativo Android
+
+O código do aplicativo existente está incluído em `patient-app/`. Para preparar as duas experiências e a
+API de demonstração no mesmo servidor (Node.js 22.12+):
+
+```sh
+npm ci
+npm run build:platform
+npm run start:platform
+```
+
+Abra o Pro em `http://localhost:3000/` e o app web em `http://localhost:3000/app/`. Para o Android, gere o
+código em **Aplicativo do paciente**, use o endereço do computador na mesma rede e marque a opção de rede
+local para HTTP. O terminal informa os IPs disponíveis. No Windows, também é possível executar
+`powershell -ExecutionPolicy Bypass -File .\Start-OncoFlow.ps1 -Build`.
+
+Os dados fictícios ficam em arquivo local persistente, ignorado pelo Git. O servidor precisa permanecer
+aberto durante a demonstração. O [guia da plataforma conectada](docs/connected-demo.md) detalha pareamento,
+trocas nos dois sentidos, persistência, atualização do código e Docker com volume. Nenhuma hospedagem
+pública é criada por esses comandos.
 
 ## MVP da demo (raiz)
 
@@ -120,7 +141,7 @@ cd frontend && npm run typecheck && npm run build
 ## Estrutura
 
 ```
-server.ts, server/   MVP: Express, estado em memória, Lia, detector de urgência, rotas, seed e config do serviço
+server.ts, server/   MVP: Express, estado compartilhado persistido, Lia, regras de sinais, rotas, seed e config do serviço
 src/                 MVP: OncoFlow Pro (src/App.tsx, src/components/) e Paciente (src/paciente/)
 backend/app/         alvo: acesso, auditoria somente-inserção, domínio, demo
 backend/alembic/     alvo: migrações (reversíveis)

@@ -3,13 +3,13 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
-import { criarRotas } from './server/rotas';
+import { criarApi } from './server/api';
 import { pacienteDaSessao, verificarInatividade, ErroDominio } from './server/estado';
 
 dotenv.config();
 
 async function startServer() {
-  const app = express();
+  const { app, persist } = criarApi();
   const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: '25mb' }));
@@ -85,10 +85,14 @@ async function startServer() {
     }
   });
 
-  app.use(criarRotas());
-
   // Herdado do IRIS: depois de N minutos sem atividade do profissional, a Lia volta a atender.
-  setInterval(verificarInatividade, 30_000);
+  setInterval(() => { verificarInatividade(); persist(); }, 30_000).unref();
+
+  // The built mobile experience can be served alongside Pro on the private demo network.
+  // This path is server configuration, never supplied by a patient request.
+  const patientWebPath = path.resolve(process.env.ONCOFLOW_PATIENT_WEB_DIR || '../oncoflow-patient/dist');
+  app.use('/app', express.static(patientWebPath));
+  app.get(['/app', '/app/*'], (_req, res) => res.sendFile(path.join(patientWebPath, 'index.html')));
 
   // Vite middleware for development vs Static serving for production
   if (process.env.NODE_ENV !== 'production') {

@@ -1,23 +1,29 @@
 @import "tailwindcss";
 
-/* Tokens da marca OncoFlow, medidos no mockup de desktop do time (31/10/2026). Nada de hex espalhado
-   nos componentes: use as classes geradas (text-azul, bg-gelo, border-linha...). Contraste:
-   - verde (#0E7F79) sobre branco dá 4,8:1: pode ser texto pequeno.
-   - teal (#13A09A) dá 3,2:1: só ícones, passos da jornada, linhas e sublinhados, nunca texto pequeno.
-   - turquesa e logo-* são decorativos (logo, orbe da Lia). */
+@font-face {
+  font-family: "Manrope";
+  src: url("/brand/Manrope.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+/* A mesma identidade do app Android: Manrope, petróleo e turquesa sobre superfícies claras.
+   Os estados operacionais mantêm tokens próprios e rótulos; marca não significa prioridade clínica.
+   Turquesa e logo-* são decorativos (logo, orbe da Lia). */
 @theme {
-  --color-azul: #10233A;
-  --color-azul-escuro: #0A1726;
-  --color-verde: #0E7F79;
-  --color-verde-escuro: #0A6863;
-  --color-teal: #13A09A;
+  --color-azul: #103B4B;
+  --color-azul-escuro: #06576A;
+  --color-verde: #06576A;
+  --color-verde-escuro: #103B4B;
+  --color-teal: #087B80;
   --color-turquesa: #2BC3C6;
   --color-ardosia: #557887;
-  --color-gelo: #E8F6F7;
-  --color-gelo-forte: #CDEDEF;
-  --color-fundo: #F2F7FA;
-  --color-tinta-suave: #4B5966;
-  --color-linha: #DFE8EC;
+  --color-gelo: #E5F2F4;
+  --color-gelo-forte: #D8EBEE;
+  --color-fundo: #F6F9FA;
+  --color-tinta-suave: #5A6B73;
+  --color-linha: #D8E7E9;
   --color-logo-claro: #A6EAE8;
   --color-logo-medio: #2BBFC4;
   --color-logo-escuro: #1C9DB5;
@@ -28,7 +34,7 @@
   --color-urgente-fundo: #FEF3F2;
   --color-urgente-borda: #F2B8B1;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 @layer base {

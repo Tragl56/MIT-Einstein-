@@ -99,6 +99,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
   onVerPlano,
 }) => {
   const [novoTexto, setNovoTexto] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [erroEnvio, setErroEnvio] = useState('');
+  const bloqueioEnvio = useRef(false);
   const fimRef = useRef<HTMLDivElement>(null);
   const comLia = paciente.modoConversa === 'lia';
 
@@ -109,9 +112,14 @@ export const ChatView: React.FC<ChatViewProps> = ({
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
     const texto = novoTexto.trim();
-    if (!texto) return;
-    setNovoTexto('');
-    await acoes.enviar(paciente.id, texto);
+    if (!texto || bloqueioEnvio.current) return;
+    bloqueioEnvio.current = true;
+    setEnviando(true); setErroEnvio('');
+    try {
+      await acoes.enviar(paciente.id, texto);
+      setNovoTexto('');
+    } catch (error) { setErroEnvio((error as Error).message); }
+    finally { bloqueioEnvio.current = false; setEnviando(false); }
   };
 
   const handleVideochamada = async () => {
@@ -301,12 +309,13 @@ export const ChatView: React.FC<ChatViewProps> = ({
             </>
           )}
         </div>
-        <a href="/paciente" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold text-verde hover:text-verde-escuro underline">
+        <a href="/app/" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold text-verde hover:text-verde-escuro underline">
           <Smartphone className="w-3 h-3" aria-hidden />
           Open patient app (demo)
         </a>
       </div>
 
+      {erroEnvio && <p role="alert" className="px-4 py-3 bg-urgente-fundo text-urgente text-sm">{erroEnvio}</p>}
       <form onSubmit={handleEnviar} className="p-3 bg-white border-t border-linha flex items-center gap-2">
         <label htmlFor={`input-msg-${paciente.id}`} className="sr-only">
           Message to {paciente.nome}
@@ -314,7 +323,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
         <input
           id={`input-msg-${paciente.id}`}
           type="text"
+          maxLength={4000}
           value={novoTexto}
+          disabled={enviando}
           onChange={(e) => setNovoTexto(e.target.value)}
           placeholder={comLia ? 'Type a message (sending takes over the conversation)…' : 'Type your message to the patient…'}
           className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm border border-linha rounded-lg focus:outline-none focus:ring-2 focus:ring-verde text-azul bg-fundo"
@@ -322,7 +333,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
         <button
           type="submit"
           id={`btn-enviar-msg-${paciente.id}`}
-          disabled={!novoTexto.trim()}
+          disabled={!novoTexto.trim() || enviando}
           aria-label="Send message"
           className="flex items-center justify-center w-10 h-10 rounded-lg bg-verde hover:bg-verde-escuro disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer shrink-0"
         >

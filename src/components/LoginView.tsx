@@ -11,7 +11,7 @@ const ICONE_PAPEL = { medico: Stethoscope, enfermagem: HeartPulse, navegacao: Ro
 export const LoginView: React.FC<LoginViewProps> = ({ usuarios, onLogin }) => (
   <main className="login-page">
     <section className="login-story" aria-labelledby="titulo-oncoflow">
-      <div className="login-brand"><LogoOncoFlow className="w-11 h-11" /><span>OncoFlow <small>Pro</small></span></div>
+      <div className="login-brand"><LogoOncoFlow className="login-brand-logo" /><span className="pro-brand-badge">Pro</span></div>
       <div className="login-story-content">
         <h1 id="titulo-oncoflow">Every step of care, connected.</h1>
         <p>A space for the care team to follow the journey, organize next steps and stay closer to the patient.</p>
@@ -41,7 +41,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ usuarios, onLogin }) => (
           })}
         </div>
         <div className="login-disclosure"><Info size={18} aria-hidden /><p><strong>Demo with fictional data.</strong> No real authentication at this stage. Access by role, institution, team and purpose comes before any pilot.</p></div>
-        <a href="/paciente" className="login-patient-link"><Smartphone size={17} aria-hidden />See the patient app<ArrowRight size={16} aria-hidden /></a>
+        <a href="/app/" className="login-patient-link"><Smartphone size={17} aria-hidden />See the patient app<ArrowRight size={16} aria-hidden /></a>
       </div>
     </section>
   </main>
