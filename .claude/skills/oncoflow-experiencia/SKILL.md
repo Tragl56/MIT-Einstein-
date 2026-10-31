@@ -97,10 +97,11 @@ Use os quatro status da plataforma com selos de texto: *Informação consultada*
 
 ## OncoFlow Pro (portal web, desktop ≥ 1280 px)
 
-No MVP, o Pro é o painel do IRIS adaptado (`src/components/`): aba **Equipe** (contadores de pacientes,
-"Aguardando revisão" e "Possíveis sinais de urgência", sub-abas Pacientes/Pendências, perfil do paciente com
-pendências, check-ins e plano terapêutico) e aba **Interno** (conversas, "Assumir conversa", "Devolver para a
-Lia"). A cor do paciente é a situação operacional derivada das pendências (`infoSituacao`), nunca prioridade
+No MVP (`src/App.tsx`, `src/components/`), o Pro segue o mockup de desktop do time: barra lateral (Início,
+Pacientes, Pendências, Comunicação), cabeçalho com saudação, busca, sino de pendências e menu do usuário, quatro
+indicadores calculados dos dados (nunca números fixos), lista "Pacientes em acompanhamento" e detalhe com abas
+Jornada (etapas em linha horizontal + próximo compromisso), Agenda, Exames, Comunicação (chat do IRIS, "Assumir
+conversa") e Resumo (diagnóstico, pendências, check-ins, plano terapêutico). A cor do paciente é a situação operacional derivada das pendências (`infoSituacao`), nunca prioridade
 clínica. Os itens abaixo são o alvo completo.
 
 1. **Visão geral:** pacientes acompanhados, etapa atual, tarefas abertas (vencidas em destaque: "vencida há
