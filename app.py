@@ -6,7 +6,6 @@ As abas de modelos funcionam offline; só a aba do agente precisa de ANTHROPIC_A
 
 from __future__ import annotations
 
-import json
 import os
 
 import anthropic
