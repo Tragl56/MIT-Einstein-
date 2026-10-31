@@ -59,7 +59,7 @@ export function TelaVozLia(props: Props) {
   return <section className="lia-voice-screen" aria-label="Voice conversation">
     <header className="lia-voice-header">
       <button type="button" className="lia-icon-button" onClick={props.onVoltar} aria-label="Back"><ArrowLeft size={23} aria-hidden /></button>
-      <div className="lia-voice-brand"><LogoOncoFlow className="w-8 h-8" /><div><strong>{nome}</strong><span>OncoFlow Assistant</span></div></div>
+      <div className="lia-voice-brand"><LogoOncoFlow className="w-8 h-8" decorativo /><div><strong>{nome}</strong><span>OncoFlow Assistant</span></div></div>
       <button type="button" className="lia-icon-button" onClick={props.onTexto} aria-label="Chat by text" title="Chat by text"><MessageSquare size={21} aria-hidden /></button>
     </header>
 

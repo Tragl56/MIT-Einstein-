@@ -2,7 +2,7 @@
 import React from 'react';
 import { ArrowRight, Info, Stethoscope, HeartPulse, Route, Smartphone, Check } from 'lucide-react';
 import type { UsuarioEquipe } from '../types';
-import { LogoOncoFlow } from './LogoOncoFlow';
+import { AssinaturaOncoFlow } from './LogoOncoFlow';
 import { ROTULO_PAPEL } from './Pendencias';
 
 interface LoginViewProps { usuarios: UsuarioEquipe[]; onLogin: (usuario: UsuarioEquipe) => void; }
@@ -11,7 +11,7 @@ const ICONE_PAPEL = { medico: Stethoscope, enfermagem: HeartPulse, navegacao: Ro
 export const LoginView: React.FC<LoginViewProps> = ({ usuarios, onLogin }) => (
   <main className="login-page">
     <section className="login-story" aria-labelledby="titulo-oncoflow">
-      <div className="login-brand"><LogoOncoFlow className="w-11 h-11" /><span>OncoFlow <small>Pro</small></span></div>
+      <div className="login-brand"><AssinaturaOncoFlow versao="fundo-escuro" className="h-11 w-auto" /><small>Pro</small></div>
       <div className="login-story-content">
         <h1 id="titulo-oncoflow">Every step of care, connected.</h1>
         <p>A space for the care team to follow the journey, organize next steps and stay closer to the patient.</p>
