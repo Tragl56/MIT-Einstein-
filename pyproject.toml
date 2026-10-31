@@ -1,0 +1,10 @@
+[project]
+name = "pancreas-identificador"
+version = "1.0.0"
+description = "Apoio à decisão em câncer de pâncreas: modelos, skills e agente de consulta oncológica"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = ["ignore::FutureWarning", "ignore::DeprecationWarning"]

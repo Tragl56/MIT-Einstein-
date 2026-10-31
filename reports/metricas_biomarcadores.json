@@ -1,0 +1,1151 @@
+{
+  "painel_urinario": {
+    "modelo": "painel_urinario",
+    "features": [
+      "idade",
+      "creatinina",
+      "lyve1",
+      "reg1b",
+      "tff1"
+    ],
+    "familia_vencedora": "ensemble",
+    "familia_vencedora_nome": "Ensemble (votação suave dos 3 melhores)",
+    "selecao_vc_desenvolvimento": {
+      "regressao_logistica": {
+        "auroc_vc": 0.8947957659588286,
+        "auroc_vc_dp": 0.029384327337362497,
+        "brier_vc": 0.12278492247899696,
+        "auprc_vc": 0.8219481743679513,
+        "hiperparametros": {
+          "modelo__C": 1
+        }
+      },
+      "rl_splines": {
+        "auroc_vc": 0.8963978180401326,
+        "auroc_vc_dp": 0.03329847546725543,
+        "brier_vc": 0.12416568098559641,
+        "auprc_vc": 0.8214705581050079,
+        "hiperparametros": {
+          "modelo__C": 1,
+          "splines__n_knots": 4
+        }
+      },
+      "rl_interacoes": {
+        "auroc_vc": 0.8887512176115332,
+        "auroc_vc_dp": 0.03235745289026404,
+        "brier_vc": 0.12696737988980425,
+        "auprc_vc": 0.8247285073270448,
+        "hiperparametros": {
+          "modelo__C": 0.3
+        }
+      },
+      "svm_rbf": {
+        "auroc_vc": 0.8889317488148581,
+        "auroc_vc_dp": 0.02986639228103627,
+        "brier_vc": 0.12527447100941086,
+        "auprc_vc": 0.8186693971196134,
+        "hiperparametros": {
+          "modelo__estimator__C": 3,
+          "modelo__estimator__gamma": 0.03
+        }
+      },
+      "random_forest": {
+        "auroc_vc": 0.8950672121566335,
+        "auroc_vc_dp": 0.03426705769136902,
+        "brier_vc": 0.12524748544320802,
+        "auprc_vc": 0.8215785782005105,
+        "hiperparametros": {
+          "modelo__min_samples_leaf": 3,
+          "modelo__max_features": 0.5,
+          "modelo__max_depth": 5,
+          "eng__razoes_creatinina": false
+        }
+      },
+      "extra_trees": {
+        "auroc_vc": 0.8978427170595494,
+        "auroc_vc_dp": 0.02934943671592965,
+        "brier_vc": 0.1235718136405542,
+        "auprc_vc": 0.8281827785955571,
+        "hiperparametros": {
+          "modelo__min_samples_leaf": 5,
+          "modelo__max_features": 1.0,
+          "modelo__max_depth": 8,
+          "eng__razoes_creatinina": false
+        }
+      },
+      "gradient_boosting": {
+        "auroc_vc": 0.8873693096954348,
+        "auroc_vc_dp": 0.03368443060294631,
+        "brier_vc": 0.12853753303949017,
+        "auprc_vc": 0.8154661297571745,
+        "hiperparametros": {
+          "modelo__min_samples_leaf": 10,
+          "modelo__max_leaf_nodes": 4,
+          "modelo__max_iter": 200,
+          "modelo__learning_rate": 0.02,
+          "modelo__l2_regularization": 1.0,
+          "eng__razoes_creatinina": false
+        }
+      },
+      "ensemble": {
+        "auroc_vc": 0.8997181635171114,
+        "auroc_vc_dp": 0.031611252373005494,
+        "brier_vc": 0.12287033768499635,
+        "auprc_vc": 0.82879187571055,
+        "hiperparametros": {
+          "componentes": [
+            "extra_trees",
+            "rl_splines",
+            "random_forest"
+          ]
+        }
+      }
+    },
+    "n_desenvolvimento": 442,
+    "n_teste": 148,
+    "teste": {
+      "n": 148,
+      "n_pdac": 50,
+      "auroc": {
+        "auc": 0.8883673469387755,
+        "ic95": [
+          0.8310204081632653,
+          0.9363265306122449
+        ]
+      },
+      "auprc": 0.7985521860039126,
+      "calibracao_no_geral": -0.001664502559850567,
+      "inclinacao": 0.9332970903207928,
+      "brier": 0.13021601343381511,
+      "limiares_escolhidos_no_desenvolvimento": {
+        "triagem": 0.17337698198823423,
+        "equilibrio": 0.34238647697552044,
+        "confirmacao": 0.71702646287812
+      },
+      "pontos_operacionais": {
+        "triagem": {
+          "limiar": 0.17337698198823423,
+          "sensibilidade": 0.84,
+          "sensibilidade_ic95": [
+            0.7148551903823401,
+            0.9166267863791231
+          ],
+          "especificidade": 0.7142857142857143,
+          "especificidade_ic95": [
+            0.6180914698303978,
+            0.7943136769858347
+          ],
+          "vpp_no_estudo": 0.6,
+          "vpn_no_estudo": 0.8974358974358975,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.02884049440847557,
+              "vpn": 0.9977424816576634,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.08334908334908334,
+              "vpn": 0.9931198296338766,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.3415956622773044,
+              "vpn": 0.961973743775464,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 42,
+            "fp": 28,
+            "vn": 70,
+            "fn": 8
+          }
+        },
+        "equilibrio": {
+          "limiar": 0.34238647697552044,
+          "sensibilidade": 0.78,
+          "sensibilidade_ic95": [
+            0.6475818431054045,
+            0.8724621377569771
+          ],
+          "especificidade": 0.8061224489795918,
+          "especificidade_ic95": [
+            0.716929944546576,
+            0.8722202651908988
+          ],
+          "vpp_no_estudo": 0.6724137931034483,
+          "vpn_no_estudo": 0.8777777777777778,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.03905100539480138,
+              "vpn": 0.9972508976660682,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.11065858554663374,
+              "vpn": 0.9916300882024099,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.415194090382387,
+              "vpn": 0.9540520572857467,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 39,
+            "fp": 19,
+            "vn": 79,
+            "fn": 11
+          }
+        },
+        "confirmacao": {
+          "limiar": 0.71702646287812,
+          "sensibilidade": 0.52,
+          "sensibilidade_ic95": [
+            0.3851151225880844,
+            0.6520308760449429
+          ],
+          "especificidade": 0.9489795918367347,
+          "especificidade_ic95": [
+            0.8860739614476197,
+            0.97801301283401
+          ],
+          "vpp_no_estudo": 0.8387096774193549,
+          "vpn_no_estudo": 0.7948717948717948,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.09334017144113131,
+              "vpn": 0.9949168147101157,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.23966890324198928,
+              "vpn": 0.9845974512449084,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.6426769799899111,
+              "vpn": 0.9180544909762386,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 26,
+            "fp": 5,
+            "vn": 93,
+            "fn": 24
+          }
+        }
+      },
+      "subgrupos": {
+        "pdac_vs_controles": {
+          "auroc": 0.943913043478261,
+          "n": 96,
+          "n_pdac": 50
+        },
+        "pdac_vs_benignos": {
+          "auroc": 0.8392307692307692,
+          "n": 102,
+          "n_pdac": 50
+        },
+        "pdac_I_II_vs_nao_pdac": {
+          "auroc": 0.903061224489796,
+          "n": 124,
+          "n_pdac": 26
+        },
+        "pdac_vs_pancreatite": {
+          "auroc": 0.798235294117647,
+          "n": 84,
+          "n_pdac": 50
+        },
+        "sensibilidade_por_estadio": {
+          "I-II": {
+            "triagem": {
+              "sensibilidade": 0.9230769230769231,
+              "n": 26
+            },
+            "equilibrio": {
+              "sensibilidade": 0.8461538461538461,
+              "n": 26
+            },
+            "confirmacao": {
+              "sensibilidade": 0.5384615384615384,
+              "n": 26
+            }
+          },
+          "III-IV": {
+            "triagem": {
+              "sensibilidade": 0.75,
+              "n": 24
+            },
+            "equilibrio": {
+              "sensibilidade": 0.7083333333333334,
+              "n": 24
+            },
+            "confirmacao": {
+              "sensibilidade": 0.5,
+              "n": 24
+            }
+          }
+        }
+      }
+    },
+    "linhas_de_base_teste": {
+      "lyve1_isolado": {
+        "auroc": {
+          "auc": 0.8437755102040816,
+          "ic95": [
+            0.7767244897959183,
+            0.9024591836734693
+          ]
+        }
+      },
+      "regressao_logistica_simples_tipo_pancrisk": {
+        "auroc": {
+          "auc": 0.8765306122448979,
+          "ic95": [
+            0.8179489795918367,
+            0.9291836734693877
+          ]
+        }
+      },
+      "ca19_9_maior_igual_37": {
+        "limiar": 37.0,
+        "sensibilidade": 0.9166666666666666,
+        "sensibilidade_ic95": [
+          0.7817298972308114,
+          0.9712519107287082
+        ],
+        "especificidade": 0.9230769230769231,
+        "especificidade_ic95": [
+          0.8182618931787533,
+          0.9696811457026542
+        ],
+        "vpp_no_estudo": 0.8918918918918919,
+        "vpn_no_estudo": 0.9411764705882353,
+        "vpp_vpn_por_prevalencia": {
+          "populacao_alto_risco_vigilancia": {
+            "vpp": 0.10743801652892568,
+            "vpn": 0.9990889340528418,
+            "prevalencia": 0.01
+          },
+          "sintomaticos_atencao_primaria": {
+            "vpp": 0.2693032015065914,
+            "vpn": 0.9972156778753481,
+            "prevalencia": 0.03
+          },
+          "encaminhados_gastro_oncologia": {
+            "vpp": 0.6777251184834124,
+            "vpn": 0.9843184559710495,
+            "prevalencia": 0.15
+          }
+        },
+        "contagens": {
+          "vp": 33,
+          "fp": 4,
+          "vn": 48,
+          "fn": 3
+        }
+      },
+      "ca19_9_continuo": {
+        "auroc": {
+          "auc": 0.952991452991453,
+          "ic95": [
+            0.8878004807692308,
+            0.9978632478632478
+          ]
+        }
+      }
+    },
+    "ablacao": {
+      "sem_idade": {
+        "auroc_teste": {
+          "auc": 0.8626530612244898,
+          "ic95": [
+            0.7983571428571429,
+            0.9163367346938773
+          ]
+        }
+      }
+    },
+    "validacao_por_coorte": {
+      "n": 258,
+      "n_pdac": 37,
+      "auroc": {
+        "auc": 0.8981288981288982,
+        "ic95": [
+          0.8357527210468387,
+          0.947168888345359
+        ]
+      },
+      "auprc": 0.6665342577413322,
+      "calibracao_no_geral": -0.14796715527841006,
+      "inclinacao": 1.2659103611716798,
+      "brier": 0.10109332365269615,
+      "pontos_operacionais": {
+        "triagem": {
+          "limiar": 0.30619665009159136,
+          "sensibilidade": 0.8648648648648649,
+          "sensibilidade_ic95": [
+            0.7202227252929444,
+            0.9408679273749238
+          ],
+          "especificidade": 0.8144796380090498,
+          "especificidade_ic95": [
+            0.7580126683264167,
+            0.8602003314031709
+          ],
+          "vpp_no_estudo": 0.4383561643835616,
+          "vpn_no_estudo": 0.972972972972973,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.04497154303519761,
+              "vpn": 0.9983268856604259,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.12601193834823152,
+              "vpn": 0.9948947769641249,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.4513562386980109,
+              "vpn": 0.9715536105032823,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 32,
+            "fp": 41,
+            "vn": 180,
+            "fn": 5
+          }
+        },
+        "equilibrio": {
+          "limiar": 0.6443763590835031,
+          "sensibilidade": 0.6756756756756757,
+          "sensibilidade_ic95": [
+            0.5146336850482394,
+            0.8036692217918453
+          ],
+          "especificidade": 0.9321266968325792,
+          "especificidade_ic95": [
+            0.8910467044739486,
+            0.9584402232120314
+          ],
+          "vpp_no_estudo": 0.625,
+          "vpn_no_estudo": 0.944954128440367,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.09136762030759056,
+              "vpn": 0.9964977615783844,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.23540690242863233,
+              "vpn": 0.9893535307578049,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.6372549019607844,
+              "vpn": 0.942150803461063,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 25,
+            "fp": 15,
+            "vn": 206,
+            "fn": 12
+          }
+        },
+        "confirmacao": {
+          "limiar": 0.7916311524797941,
+          "sensibilidade": 0.43243243243243246,
+          "sensibilidade_ic95": [
+            0.2867148684035131,
+            0.5908609366579929
+          ],
+          "especificidade": 0.9638009049773756,
+          "especificidade_ic95": [
+            0.9302074796010995,
+            0.9815455056116016
+          ],
+          "vpp_no_estudo": 0.6666666666666666,
+          "vpn_no_estudo": 0.9102564102564102,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.10767356881851406,
+              "vpn": 0.9940868435134927,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.2697863682604274,
+              "vpn": 0.9821128497648963,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.6782608695652175,
+              "vpn": 0.9058620689655172,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 16,
+            "fp": 8,
+            "vn": 213,
+            "fn": 21
+          }
+        }
+      }
+    },
+    "fora_da_dobra_todas_amostras": {
+      "n": 590,
+      "n_pdac": 199,
+      "auroc": {
+        "auc": 0.892647380123122,
+        "ic95": [
+          0.8655168425246438,
+          0.9181926255317507
+        ]
+      },
+      "auprc": 0.8035125524328266,
+      "calibracao_no_geral": -8.425181914412105e-05,
+      "inclinacao": 1.022095908933685,
+      "brier": 0.12579081323885105,
+      "subgrupos": {
+        "pdac_vs_controles": {
+          "auroc": 0.9412087761210424,
+          "n": 382,
+          "n_pdac": 199
+        },
+        "pdac_vs_benignos": {
+          "auroc": 0.8499226903749517,
+          "n": 407,
+          "n_pdac": 199
+        },
+        "pdac_I_II_vs_nao_pdac": {
+          "auroc": 0.889273356401384,
+          "n": 493,
+          "n_pdac": 102
+        },
+        "pdac_vs_pancreatite": {
+          "auroc": 0.8175330433681011,
+          "n": 318,
+          "n_pdac": 199
+        },
+        "sensibilidade_por_estadio": {
+          "I-II": {
+            "triagem": {
+              "sensibilidade": 0.9215686274509803,
+              "n": 102
+            },
+            "equilibrio": {
+              "sensibilidade": 0.803921568627451,
+              "n": 102
+            },
+            "confirmacao": {
+              "sensibilidade": 0.43137254901960786,
+              "n": 102
+            }
+          },
+          "III-IV": {
+            "triagem": {
+              "sensibilidade": 0.8865979381443299,
+              "n": 97
+            },
+            "equilibrio": {
+              "sensibilidade": 0.845360824742268,
+              "n": 97
+            },
+            "confirmacao": {
+              "sensibilidade": 0.4536082474226804,
+              "n": 97
+            }
+          }
+        }
+      }
+    },
+    "limiares_publicados": {
+      "triagem": 0.18202810417916307,
+      "equilibrio": 0.31960137535899785,
+      "confirmacao": 0.7440723604167845
+    }
+  },
+  "painel_urinario_ca19_9": {
+    "modelo": "painel_urinario_ca19_9",
+    "features": [
+      "idade",
+      "creatinina",
+      "lyve1",
+      "reg1b",
+      "tff1",
+      "ca19_9"
+    ],
+    "familia_vencedora": "ensemble",
+    "familia_vencedora_nome": "Ensemble (votação suave dos 3 melhores)",
+    "selecao_vc_desenvolvimento": {
+      "regressao_logistica": {
+        "auroc_vc": 0.9539920948616599,
+        "auroc_vc_dp": 0.022867241305819245,
+        "brier_vc": 0.08375463468773697,
+        "auprc_vc": 0.9408918184243705,
+        "hiperparametros": {
+          "modelo__C": 0.3
+        }
+      },
+      "rl_splines": {
+        "auroc_vc": 0.9630961791831357,
+        "auroc_vc_dp": 0.0190617433962646,
+        "brier_vc": 0.07739987131353403,
+        "auprc_vc": 0.9470610180031069,
+        "hiperparametros": {
+          "modelo__C": 1,
+          "splines__n_knots": 4
+        }
+      },
+      "rl_interacoes": {
+        "auroc_vc": 0.9651119894598155,
+        "auroc_vc_dp": 0.013804427073199968,
+        "brier_vc": 0.07313959211591571,
+        "auprc_vc": 0.9463509325883721,
+        "hiperparametros": {
+          "modelo__C": 1
+        }
+      },
+      "svm_rbf": {
+        "auroc_vc": 0.956161616161616,
+        "auroc_vc_dp": 0.01859831878328062,
+        "brier_vc": 0.07855790030040644,
+        "auprc_vc": 0.9397259958011394,
+        "hiperparametros": {
+          "modelo__estimator__C": 10,
+          "modelo__estimator__gamma": 0.03
+        }
+      },
+      "random_forest": {
+        "auroc_vc": 0.9627887571365831,
+        "auroc_vc_dp": 0.020316684955194522,
+        "brier_vc": 0.07591323199916672,
+        "auprc_vc": 0.9451293415178214,
+        "hiperparametros": {
+          "modelo__min_samples_leaf": 5,
+          "modelo__max_features": 0.5,
+          "modelo__max_depth": 5,
+          "eng__razoes_creatinina": true
+        }
+      },
+      "extra_trees": {
+        "auroc_vc": 0.9674835309617918,
+        "auroc_vc_dp": 0.019254339228233712,
+        "brier_vc": 0.0732017159261026,
+        "auprc_vc": 0.9540297685605144,
+        "hiperparametros": {
+          "modelo__min_samples_leaf": 1,
+          "modelo__max_features": 1.0,
+          "modelo__max_depth": 5,
+          "eng__razoes_creatinina": false
+        }
+      },
+      "gradient_boosting": {
+        "auroc_vc": 0.9645542380324988,
+        "auroc_vc_dp": 0.02186488251352199,
+        "brier_vc": 0.07131921962099728,
+        "auprc_vc": 0.9474861436269914,
+        "hiperparametros": {
+          "modelo__min_samples_leaf": 10,
+          "modelo__max_leaf_nodes": 16,
+          "modelo__max_iter": 100,
+          "modelo__learning_rate": 0.05,
+          "modelo__l2_regularization": 0.0,
+          "eng__razoes_creatinina": true
+        }
+      },
+      "ensemble": {
+        "auroc_vc": 0.9700614844093104,
+        "auroc_vc_dp": 0.017177032492823978,
+        "brier_vc": 0.06638142285835752,
+        "auprc_vc": 0.955925060178299,
+        "hiperparametros": {
+          "componentes": [
+            "extra_trees",
+            "rl_interacoes",
+            "gradient_boosting"
+          ]
+        }
+      }
+    },
+    "n_desenvolvimento": 262,
+    "n_teste": 88,
+    "teste": {
+      "n": 88,
+      "n_pdac": 38,
+      "auroc": {
+        "auc": 0.9331578947368422,
+        "ic95": [
+          0.876828947368421,
+          0.976842105263158
+        ]
+      },
+      "auprc": 0.9173306307264166,
+      "calibracao_no_geral": 0.04134083149293222,
+      "inclinacao": 0.8963689558584716,
+      "brier": 0.10505989298431938,
+      "limiares_escolhidos_no_desenvolvimento": {
+        "triagem": 0.4381289295517948,
+        "equilibrio": 0.400253893472813,
+        "confirmacao": 0.7262633603981491
+      },
+      "pontos_operacionais": {
+        "triagem": {
+          "limiar": 0.4381289295517948,
+          "sensibilidade": 0.8157894736842105,
+          "sensibilidade_ic95": [
+            0.6658083165848865,
+            0.907783515467425
+          ],
+          "especificidade": 0.9,
+          "especificidade_ic95": [
+            0.7863950966521162,
+            0.956524876008429
+          ],
+          "vpp_no_estudo": 0.8611111111111112,
+          "vpn_no_estudo": 0.8653846153846154,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.07612966601178783,
+              "vpn": 0.9979368073567555,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.201473136915078,
+              "vpn": 0.9937095614665707,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.5901015228426397,
+              "vpn": 0.9651394422310756,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 31,
+            "fp": 5,
+            "vn": 45,
+            "fn": 7
+          }
+        },
+        "equilibrio": {
+          "limiar": 0.400253893472813,
+          "sensibilidade": 0.8157894736842105,
+          "sensibilidade_ic95": [
+            0.6658083165848865,
+            0.907783515467425
+          ],
+          "especificidade": 0.9,
+          "especificidade_ic95": [
+            0.7863950966521162,
+            0.956524876008429
+          ],
+          "vpp_no_estudo": 0.8611111111111112,
+          "vpn_no_estudo": 0.8653846153846154,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.07612966601178783,
+              "vpn": 0.9979368073567555,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.201473136915078,
+              "vpn": 0.9937095614665707,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.5901015228426397,
+              "vpn": 0.9651394422310756,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 31,
+            "fp": 5,
+            "vn": 45,
+            "fn": 7
+          }
+        },
+        "confirmacao": {
+          "limiar": 0.7262633603981491,
+          "sensibilidade": 0.7105263157894737,
+          "sensibilidade_ic95": [
+            0.5524256173381024,
+            0.8299689373634387
+          ],
+          "especificidade": 0.96,
+          "especificidade_ic95": [
+            0.8653966212204534,
+            0.9889613473391734
+          ],
+          "vpp_no_estudo": 0.9310344827586207,
+          "vpn_no_estudo": 0.8135593220338984,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.15212981744421894,
+              "vpn": 0.9969634398153772,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.3545788828576429,
+              "vpn": 0.9907603400194873,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.7581430175964057,
+              "vpn": 0.949476391695756,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 27,
+            "fp": 2,
+            "vn": 48,
+            "fn": 11
+          }
+        }
+      },
+      "subgrupos": {
+        "pdac_vs_controles": {
+          "auroc": 0.9885583524027459,
+          "n": 61,
+          "n_pdac": 38
+        },
+        "pdac_vs_benignos": {
+          "auroc": 0.8859649122807018,
+          "n": 65,
+          "n_pdac": 38
+        },
+        "pdac_I_II_vs_nao_pdac": {
+          "auroc": 0.9060000000000001,
+          "n": 70,
+          "n_pdac": 20
+        },
+        "pdac_vs_pancreatite": {
+          "auroc": 0.8270676691729323,
+          "n": 52,
+          "n_pdac": 38
+        },
+        "sensibilidade_por_estadio": {
+          "I-II": {
+            "triagem": {
+              "sensibilidade": 0.75,
+              "n": 20
+            },
+            "equilibrio": {
+              "sensibilidade": 0.75,
+              "n": 20
+            },
+            "confirmacao": {
+              "sensibilidade": 0.6,
+              "n": 20
+            }
+          },
+          "III-IV": {
+            "triagem": {
+              "sensibilidade": 0.8888888888888888,
+              "n": 18
+            },
+            "equilibrio": {
+              "sensibilidade": 0.8888888888888888,
+              "n": 18
+            },
+            "confirmacao": {
+              "sensibilidade": 0.8333333333333334,
+              "n": 18
+            }
+          }
+        }
+      }
+    },
+    "linhas_de_base_teste": {
+      "lyve1_isolado": {
+        "auroc": {
+          "auc": 0.8123684210526315,
+          "ic95": [
+            0.7197368421052631,
+            0.8913355263157894
+          ]
+        }
+      },
+      "regressao_logistica_simples_tipo_pancrisk": {
+        "auroc": {
+          "auc": 0.9510526315789474,
+          "ic95": [
+            0.9026184210526316,
+            0.986842105263158
+          ]
+        }
+      },
+      "ca19_9_maior_igual_37": {
+        "limiar": 37.0,
+        "sensibilidade": 0.8947368421052632,
+        "sensibilidade_ic95": [
+          0.7586916879980553,
+          0.9582981020673341
+        ],
+        "especificidade": 0.86,
+        "especificidade_ic95": [
+          0.738135428014719,
+          0.9304925473797714
+        ],
+        "vpp_no_estudo": 0.8292682926829268,
+        "vpn_no_estudo": 0.9148936170212766,
+        "vpp_vpn_por_prevalencia": {
+          "populacao_alto_risco_vigilancia": {
+            "vpp": 0.060640650638510395,
+            "vpn": 0.9987651729375301,
+            "prevalencia": 0.01
+          },
+          "sintomaticos_atencao_primaria": {
+            "vpp": 0.16503786162707915,
+            "vpn": 0.9962287395190386,
+            "prevalencia": 0.03
+          },
+          "encaminhados_gastro_oncologia": {
+            "vpp": 0.5300353356890459,
+            "vpn": 0.9788568609486221,
+            "prevalencia": 0.15
+          }
+        },
+        "contagens": {
+          "vp": 34,
+          "fp": 7,
+          "vn": 43,
+          "fn": 4
+        }
+      },
+      "ca19_9_continuo": {
+        "auroc": {
+          "auc": 0.9210526315789473,
+          "ic95": [
+            0.8584013157894737,
+            0.9705328947368421
+          ]
+        }
+      }
+    },
+    "ablacao": {
+      "sem_idade": {
+        "auroc_teste": {
+          "auc": 0.9231578947368421,
+          "ic95": [
+            0.8621052631578947,
+            0.9715921052631578
+          ]
+        }
+      }
+    },
+    "validacao_por_coorte": {
+      "n": 138,
+      "n_pdac": 14,
+      "auroc": {
+        "auc": 0.983294930875576,
+        "ic95": [
+          0.9516129032258065,
+          1.0
+        ]
+      },
+      "auprc": 0.9313492063492064,
+      "calibracao_no_geral": -0.12809240462304264,
+      "inclinacao": 1.6786237932218107,
+      "brier": 0.05951669628536076,
+      "pontos_operacionais": {
+        "triagem": {
+          "limiar": 0.502266659417086,
+          "sensibilidade": 0.9285714285714286,
+          "sensibilidade_ic95": [
+            0.6853073044604219,
+            0.9872781138877085
+          ],
+          "especificidade": 0.9354838709677419,
+          "especificidade_ic95": [
+            0.8778459480394979,
+            0.96694948631051
+          ],
+          "vpp_no_estudo": 0.6190476190476191,
+          "vpn_no_estudo": 0.9914529914529915,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.12692913385826762,
+              "vpn": 0.9992293349906775,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.3080254777070062,
+              "vpn": 0.9976440785307157,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.717507418397626,
+              "vpn": 0.9867047891350965,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 13,
+            "fp": 8,
+            "vn": 116,
+            "fn": 1
+          }
+        },
+        "equilibrio": {
+          "limiar": 0.7659831053531893,
+          "sensibilidade": 0.8571428571428571,
+          "sensibilidade_ic95": [
+            0.600580922361363,
+            0.9599069262620787
+          ],
+          "especificidade": 0.9838709677419355,
+          "especificidade_ic95": [
+            0.9430958652666754,
+            0.9955657284555557
+          ],
+          "vpp_no_estudo": 0.8571428571428571,
+          "vpn_no_estudo": 0.9838709677419355,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 0.3492957746478875,
+              "vpn": 0.9985354907287115,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 0.6217270194986074,
+              "vpn": 0.9955293834875616,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 0.9036437246963563,
+              "vpn": 0.9750167897918065,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 12,
+            "fp": 2,
+            "vn": 122,
+            "fn": 2
+          }
+        },
+        "confirmacao": {
+          "limiar": 0.9164020548209978,
+          "sensibilidade": 0.7142857142857143,
+          "sensibilidade_ic95": [
+            0.4535045882751561,
+            0.882788120898909
+          ],
+          "especificidade": 1.0,
+          "especificidade_ic95": [
+            0.9699503135129722,
+            0.9999999999999999
+          ],
+          "vpp_no_estudo": 1.0,
+          "vpn_no_estudo": 0.96875,
+          "vpp_vpn_por_prevalencia": {
+            "populacao_alto_risco_vigilancia": {
+              "vpp": 1.0,
+              "vpn": 0.9971223021582734,
+              "prevalencia": 0.01
+            },
+            "sintomaticos_atencao_primaria": {
+              "vpp": 1.0,
+              "vpn": 0.9912408759124087,
+              "prevalencia": 0.03
+            },
+            "encaminhados_gastro_oncologia": {
+              "vpp": 1.0,
+              "vpn": 0.9520000000000001,
+              "prevalencia": 0.15
+            }
+          },
+          "contagens": {
+            "vp": 10,
+            "fp": 0,
+            "vn": 124,
+            "fn": 4
+          }
+        }
+      }
+    },
+    "fora_da_dobra_todas_amostras": {
+      "n": 350,
+      "n_pdac": 150,
+      "auroc": {
+        "auc": 0.9595333333333333,
+        "ic95": [
+          0.9388666666666667,
+          0.9776691666666667
+        ]
+      },
+      "auprc": 0.9424708065426609,
+      "calibracao_no_geral": -0.0013820646671884873,
+      "inclinacao": 1.1090808709181954,
+      "brier": 0.0739409715410721,
+      "subgrupos": {
+        "pdac_vs_controles": {
+          "auroc": 0.9916666666666667,
+          "n": 242,
+          "n_pdac": 150
+        },
+        "pdac_vs_benignos": {
+          "auroc": 0.9321604938271605,
+          "n": 258,
+          "n_pdac": 150
+        },
+        "pdac_I_II_vs_nao_pdac": {
+          "auroc": 0.9514374999999999,
+          "n": 280,
+          "n_pdac": 80
+        },
+        "pdac_vs_pancreatite": {
+          "auroc": 0.9139583333333333,
+          "n": 214,
+          "n_pdac": 150
+        },
+        "sensibilidade_por_estadio": {
+          "I-II": {
+            "triagem": {
+              "sensibilidade": 0.9,
+              "n": 80
+            },
+            "equilibrio": {
+              "sensibilidade": 0.925,
+              "n": 80
+            },
+            "confirmacao": {
+              "sensibilidade": 0.8125,
+              "n": 80
+            }
+          },
+          "III-IV": {
+            "triagem": {
+              "sensibilidade": 0.9285714285714286,
+              "n": 70
+            },
+            "equilibrio": {
+              "sensibilidade": 0.9428571428571428,
+              "n": 70
+            },
+            "confirmacao": {
+              "sensibilidade": 0.8571428571428571,
+              "n": 70
+            }
+          }
+        }
+      }
+    },
+    "limiares_publicados": {
+      "triagem": 0.39409280693783216,
+      "equilibrio": 0.33088602957421,
+      "confirmacao": 0.6893925854567887
+    }
+  }
+}
