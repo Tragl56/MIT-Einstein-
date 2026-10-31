@@ -41,7 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
               onClick={() => onNavegar(p)}
               aria-current={ativa ? 'page' : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors ${
-                ativa ? 'bg-gelo text-azul font-semibold' : 'text-azul/80 hover:bg-gelo/60 hover:text-azul'
+                ativa ? 'bg-gelo-forte text-azul font-semibold' : 'text-azul/80 hover:bg-gelo/60 hover:text-azul'
               }`}
             >
               <Icone className="w-5 h-5" aria-hidden />

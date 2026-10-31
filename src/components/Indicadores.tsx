@@ -23,10 +23,10 @@ export const Indicadores: React.FC<IndicadoresProps> = ({ pacientes, onAbrir }) 
   const sinais = abertas.filter((pe) => pe.tipo === 'sinal_urgencia').length;
 
   const cartoes = [
-    { valor: pacientes.length, rotulo: 'Pacientes ativos', Icone: Users, cor: 'text-verde', destino: 'pacientes' as const },
-    { valor: compromissosSemana, rotulo: 'Compromissos em 7 dias', Icone: CalendarDays, cor: 'text-verde', destino: 'pacientes' as const },
-    { valor: abertas.length - sinais, rotulo: 'Aguardando revisão', Icone: ClipboardList, cor: 'text-verde', destino: 'pendencias' as const },
-    { valor: sinais, rotulo: 'Sinais de atenção', Icone: AlertTriangle, cor: sinais > 0 ? 'text-urgente' : 'text-verde', destino: 'sinais' as const },
+    { valor: pacientes.length, rotulo: 'Pacientes ativos', Icone: Users, cor: 'text-teal', destino: 'pacientes' as const },
+    { valor: compromissosSemana, rotulo: 'Compromissos em 7 dias', Icone: CalendarDays, cor: 'text-teal', destino: 'pacientes' as const },
+    { valor: abertas.length - sinais, rotulo: 'Aguardando revisão', Icone: ClipboardList, cor: 'text-teal', destino: 'pendencias' as const },
+    { valor: sinais, rotulo: 'Sinais de atenção', Icone: AlertTriangle, cor: sinais > 0 ? 'text-urgente' : 'text-teal', destino: 'sinais' as const },
   ];
 
   return (

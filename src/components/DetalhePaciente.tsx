@@ -56,20 +56,20 @@ const JornadaHorizontal: React.FC<{ paciente: PacientePro }> = ({ paciente }) =>
             {i > 0 && (
               <span
                 aria-hidden
-                className={`absolute top-[15px] right-1/2 w-full h-[3px] ${i <= atual || concluida ? 'bg-verde' : 'bg-linha'}`}
+                className={`absolute top-[15px] right-1/2 w-full h-[3px] ${i <= atual || concluida ? 'bg-teal' : 'bg-linha'}`}
               />
             )}
             <span
               className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center ${
                 concluida
-                  ? 'bg-verde text-white'
+                  ? 'bg-teal text-white'
                   : corrente
-                  ? 'bg-white border-[3px] border-verde'
+                  ? 'bg-white border-[3px] border-teal'
                   : 'bg-white border-2 border-linha'
               }`}
             >
               {concluida && <Check className="w-4 h-4" strokeWidth={3} aria-hidden />}
-              {corrente && <span className="w-3 h-3 rounded-full bg-verde" />}
+              {corrente && <span className="w-3 h-3 rounded-full bg-teal" />}
             </span>
             <span className={`mt-2 px-1 text-sm leading-tight ${corrente ? 'font-semibold text-azul' : 'text-tinta-suave'}`}>
               {e.titulo}
@@ -149,7 +149,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
             aria-selected={aba === id}
             onClick={() => setAba(id)}
             className={`shrink-0 px-5 py-3 -mb-px border-b-[3px] text-[15px] cursor-pointer ${
-              aba === id ? 'border-verde text-azul font-semibold' : 'border-transparent text-tinta-suave hover:text-azul'
+              aba === id ? 'border-teal text-azul font-semibold' : 'border-transparent text-tinta-suave hover:text-azul'
             }`}
           >
             {rotulo}
@@ -166,7 +166,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
             <JornadaHorizontal paciente={paciente} />
             {proximo ? (
               <div className="flex flex-wrap items-center gap-5 rounded-2xl bg-gelo/70 px-6 py-5">
-                <CalendarDays className="w-9 h-9 text-verde shrink-0" strokeWidth={1.6} aria-hidden />
+                <CalendarDays className="w-9 h-9 text-teal shrink-0" strokeWidth={1.6} aria-hidden />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-tinta-suave">Próximo compromisso</p>
                   <p className="text-lg font-semibold text-azul">{proximo.titulo}</p>

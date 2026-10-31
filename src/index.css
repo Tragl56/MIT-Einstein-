@@ -1,19 +1,26 @@
 @import "tailwindcss";
 
-/* Tokens da marca OncoFlow (skill oncoflow-experiencia). Nada de hex espalhado nos componentes:
-   use as classes geradas (text-azul, bg-gelo, border-linha...). Contraste medido:
-   - verde sobre gelo dá 4,49:1: em texto pequeno sobre gelo use azul.
-   - turquesa é só decorativa (orbe da Lia, ilustrações). */
+/* Tokens da marca OncoFlow, medidos no mockup de desktop do time (31/10/2026). Nada de hex espalhado
+   nos componentes: use as classes geradas (text-azul, bg-gelo, border-linha...). Contraste:
+   - verde (#0E7F79) sobre branco dá 4,8:1: pode ser texto pequeno.
+   - teal (#13A09A) dá 3,2:1: só ícones, passos da jornada, linhas e sublinhados, nunca texto pequeno.
+   - turquesa e logo-* são decorativos (logo, orbe da Lia). */
 @theme {
-  --color-azul: #123B56;
-  --color-azul-escuro: #0B2A3D;
-  --color-verde: #167C70;
-  --color-verde-escuro: #0F5E55;
-  --color-turquesa: #55B9B0;
-  --color-gelo: #EAF3F4;
-  --color-fundo: #F6F9FA;
-  --color-tinta-suave: #46606F;
-  --color-linha: #D3E2E5;
+  --color-azul: #10233A;
+  --color-azul-escuro: #0A1726;
+  --color-verde: #0E7F79;
+  --color-verde-escuro: #0A6863;
+  --color-teal: #13A09A;
+  --color-turquesa: #2BC3C6;
+  --color-ardosia: #557887;
+  --color-gelo: #E8F6F7;
+  --color-gelo-forte: #CDEDEF;
+  --color-fundo: #F2F7FA;
+  --color-tinta-suave: #4B5966;
+  --color-linha: #DFE8EC;
+  --color-logo-claro: #A6EAE8;
+  --color-logo-medio: #2BBFC4;
+  --color-logo-escuro: #1C9DB5;
   --color-atencao: #8A4B08;
   --color-atencao-fundo: #FDF2E3;
   --color-atencao-borda: #EBC58F;

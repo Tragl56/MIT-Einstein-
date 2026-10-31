@@ -69,7 +69,7 @@ export const Topo: React.FC<TopoProps> = ({
         >
           <Bell className="w-6 h-6" aria-hidden />
           {totalPendencias > 0 && (
-            <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 rounded-full bg-turquesa border-2 border-white" />
+            <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 rounded-full bg-teal border-2 border-white" />
           )}
         </button>
 
@@ -81,7 +81,7 @@ export const Topo: React.FC<TopoProps> = ({
             aria-label="Menu do usuário"
             className="flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="w-11 h-11 rounded-full bg-azul/80 text-white flex items-center justify-center font-semibold">
+            <span className="w-11 h-11 rounded-full bg-ardosia text-white flex items-center justify-center font-semibold">
               {iniciais(usuario.nome)}
             </span>
             <ChevronDown className={`w-5 h-5 text-azul transition-transform ${menuAberto ? 'rotate-180' : ''}`} aria-hidden />
