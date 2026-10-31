@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type RefObject } from 'react';
-import { ArrowLeft, Check, MessageSquare, Mic, RotateCcw, Send, Square, Volume2, X } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, MessageSquare, Mic, RotateCcw, Send, Square, Volume2, X } from 'lucide-react';
 import type { AcaoMensagem, Mensagem, PropostaLia } from '../types';
 import { LogoOncoFlow } from '../components/LogoOncoFlow';
 import { OrbeLia, type EstadoOrbe } from './OrbeLia';
@@ -20,6 +20,7 @@ interface Props {
   erro: string | null;
   rascunho: string | null;
   resposta?: Mensagem;
+  avisos: Mensagem[];
   proposta?: PropostaLia;
   atendente?: string;
   avisoUrgencia: Aviso;
@@ -38,7 +39,7 @@ interface Props {
 
 export function TelaVozLia(props: Props) {
   const { nome, estado, nivel, iniciando, gravando, transcrevendo, ocupado, falando,
-    vozDisponivel, erro, rascunho, resposta, proposta, atendente, avisoUrgencia, quemVe } = props;
+    vozDisponivel, erro, rascunho, resposta, avisos, proposta, atendente, avisoUrgencia, quemVe } = props;
   const [segundos, setSegundos] = useState(0);
   useEffect(() => {
     setSegundos(0);
@@ -63,6 +64,16 @@ export function TelaVozLia(props: Props) {
     </header>
 
     {atendente && <p className="lia-human-notice">Sua conversa está com {atendente}.</p>}
+    <div className="space-y-3" aria-live="polite">
+      {avisos.map((aviso) => aviso.tipoSistema === 'urgencia'
+        ? <AvisoUrgencia key={aviso.id} aviso={avisoUrgencia} destaque />
+        : <div key={aviso.id} className="lia-spoken-response">
+            <p>{aviso.texto}</p>
+            {aviso.link && <a href={aviso.link} target="_blank" rel="noopener noreferrer" className="lia-secondary-button mt-3">
+              Entrar na chamada <ExternalLink size={17} aria-hidden />
+            </a>}
+          </div>)}
+    </div>
     <div className="lia-voice-title"><h1 aria-live="polite">{titulo}</h1><p>{gravando ? 'Pode falar, estou aqui para ajudar.' : transcrevendo ? 'Transformando sua fala em texto.' : revisando ? 'Você pode corrigir o texto antes de enviar.' : 'Você escolhe: falar ou escrever.'}</p></div>
 
     <div className={revisando ? 'lia-voice-visual is-reviewing' : 'lia-voice-visual'}>

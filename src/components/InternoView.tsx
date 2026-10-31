@@ -40,10 +40,9 @@ export const InternoView: React.FC<InternoViewProps> = ({
   const pacienteAtivo = pacientes.find((p) => p.id === pacienteSelecionadoId);
 
   return (
-    <div className="pro-content">
-      <header className="pro-page-heading"><div><h1>Conversas com os pacientes</h1><p>Acompanhe os relatos e continue o atendimento com a sua equipe.</p></div></header>
-      <div className="conversation-workspace bg-white border border-linha overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
-        <div className="lg:col-span-5 xl:col-span-4 border-r border-linha flex flex-col bg-fundo">
+    <div>
+      <div className="bg-white rounded-xl border border-linha overflow-hidden grid grid-cols-1 xl:grid-cols-12 min-h-[620px]">
+        <div className="xl:col-span-4 border-b xl:border-b-0 xl:border-r border-linha flex flex-col bg-fundo">
           <div className="p-4 border-b border-linha bg-white">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -70,7 +69,7 @@ export const InternoView: React.FC<InternoViewProps> = ({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-linha">
+          <div className="flex-1 overflow-y-auto max-h-[420px] xl:max-h-none divide-y divide-linha">
             {pacientesFiltrados.length === 0 ? (
               <div className="p-8 text-center text-xs text-tinta-suave">Nenhuma conversa encontrada.</div>
             ) : (
@@ -141,7 +140,7 @@ export const InternoView: React.FC<InternoViewProps> = ({
           </div>
         </div>
 
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col bg-white">
+        <div className="xl:col-span-8 flex flex-col bg-white">
           {pacienteAtivo ? (
             <div className="h-full p-2 sm:p-3 flex flex-col">
               <ChatView

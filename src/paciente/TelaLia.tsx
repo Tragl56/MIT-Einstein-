@@ -149,6 +149,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
     iniciando={gravacao.iniciando} gravando={gravacao.gravando} transcrevendo={gravacao.transcrevendo}
     ocupado={ocupado} falando={fala.falando} vozDisponivel={fala.disponivel} erro={gravacao.erro}
     rascunho={rascunhoVoz} resposta={inicio.conversa.some((m) => m.autor === 'paciente') ? ultimaResposta : undefined} proposta={proposta}
+    avisos={inicio.conversa.filter((m) => m.tipoSistema === 'urgencia' || m.tipoSistema === 'videochamada')}
     atendente={inicio.modoConversa === 'profissional' ? inicio.atendente : undefined}
     avisoUrgencia={inicio.avisoUrgencia} quemVe={inicio.quemVe}
     onRascunho={setRascunhoVoz} onGravar={falarComLia}

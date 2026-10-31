@@ -33,3 +33,7 @@ Final verification: `npm run lint`, `npm run build` and `git diff --check` passe
 Visual review: final login, team and patient screenshots inspected. Existing domain limitations reported in the earlier analysis remain outside this presentation round; voice-provider calls and real hospital integrations were not exercised.
 
 Implementation decisions: import presentation CSS directly from `main.tsx` because the development Tailwind import pipeline omitted the new nested stylesheet. Keep the displayed profile within filtered results (reproduced the previous mismatch and verified the correction); add keyboard navigation to the existing tabs. Backend and dependency manifests unchanged.
+
+## Integration with the team's current main
+
+Before publication, main advanced to `76a896d` with a new Pro layout. Preserve its `App`, sidebar, patient detail, search and communication layout, including the replacement of EquipeView, Navbar and PacienteCard. The earlier Pro layout and its tab verification above describe the original local round, superseded by that team update. Keep this branch's login, patient presentation, shared review/chat styling, cover-inspired logo and Lia voice experience. Remove unused presentation rules for the superseded Pro layout.
