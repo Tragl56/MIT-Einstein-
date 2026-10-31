@@ -44,6 +44,9 @@ export function createTranscriptionEvents(handlers: LiveInputHandlers) {
     handlers.onSpeechStart();
   }
   return {
+    hasPendingTranscript() {
+      return !closed && !!latest?.ended && !latest.delivered;
+    },
     expectManualCommit() {
       if (!closed && !muted) manualCommitPending = true;
     },
@@ -51,7 +54,9 @@ export function createTranscriptionEvents(handlers: LiveInputHandlers) {
       muted = value;
       if (muted) {
         manualCommitPending = false;
-        latest = undefined;
+        // Keep the one utterance already finished before mute. Any utterance
+        // beginning during mute is still ignored by the item-ID routing below.
+        if (!latest?.ended || latest.delivered) latest = undefined;
         handlers.onPartial("");
       }
     },
@@ -100,7 +105,8 @@ export function createTranscriptionEvents(handlers: LiveInputHandlers) {
       }
       if (event.type === "input_audio_buffer.committed")
         manualCommitPending = false;
-      if (muted || latest?.id !== id || latest.delivered) return;
+      if (latest?.id !== id || latest.delivered || (muted && !latest.ended))
+        return;
       if (
         event.type === "input_audio_buffer.speech_stopped" ||
         event.type === "input_audio_buffer.committed"
@@ -113,6 +119,7 @@ export function createTranscriptionEvents(handlers: LiveInputHandlers) {
       }
       if (
         event.type === "conversation.item.input_audio_transcription.delta" &&
+        !muted &&
         typeof event.delta === "string"
       ) {
         latest.partial = (latest.partial + event.delta).slice(0, 4000);
@@ -436,7 +443,7 @@ export async function connectRealtimeInput(
       if (value) {
         clearFinishTimer();
         handlers.onLevel(0);
-        if (channel?.readyState === "open") {
+        if (channel?.readyState === "open" && !router.hasPendingTranscript()) {
           try {
             channel.send(JSON.stringify({ type: "input_audio_buffer.clear" }));
           } catch {

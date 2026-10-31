@@ -41,6 +41,23 @@ const completed = (id: string, transcript = id) =>
   });
 
 describe("transcription item routing", () => {
+  it("keeps a finished pre-mute utterance and rejects all new muted speech", () => {
+    const h = handlers(),
+      router = createTranscriptionEvents(h);
+    router.receive(started("accepted"));
+    router.receive(event("input_audio_buffer.speech_stopped", "accepted"));
+    router.setMuted(true);
+    router.receive(started("muted-noise"));
+    router.receive(completed("muted-noise", "Ignorar"));
+    router.receive(completed("accepted", "Quando é minha consulta?"));
+    router.receive(completed("accepted", "Quando é minha consulta?"));
+    expect(h.onTranscript).toHaveBeenCalledExactlyOnceWith(
+      "Quando é minha consulta?",
+    );
+    router.setMuted(false);
+    router.receive(completed("accepted"));
+    expect(h.onTranscript).toHaveBeenCalledTimes(1);
+  });
   it("accepts a new committed item ID when explicitly ending a provisional speech item", () => {
     const h = handlers(),
       router = createTranscriptionEvents(h);
@@ -262,6 +279,28 @@ describe("realtime input lifecycle", () => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.clearAllMocks();
+  });
+  it("silences capture without clearing an already finished utterance awaiting transcription", async () => {
+    vi.useFakeTimers();
+    const t = transportSetup();
+    const connecting = connectRealtimeInput(t.h, new AbortController().signal);
+    await flush();
+    t.message({ type: "session.created" });
+    const input = await connecting;
+    t.message(started("before-mute"));
+    t.message(event("input_audio_buffer.speech_stopped", "before-mute"));
+    t.channel.send.mockClear();
+    input.setMuted(true);
+    expect(t.track.enabled).toBe(false);
+    expect(t.channel.send).not.toHaveBeenCalledWith(
+      JSON.stringify({ type: "input_audio_buffer.clear" }),
+    );
+    t.message(started("muted-noise"));
+    t.message(completed("muted-noise"));
+    t.message(completed("before-mute", "Minha agenda"));
+    expect(t.h.onTranscript).toHaveBeenCalledExactlyOnceWith("Minha agenda");
+    input.close();
+    expect(vi.getTimerCount()).toBe(0);
   });
   it("waits for session confirmation, keeps capture through turns, and closes everything", async () => {
     vi.useFakeTimers();

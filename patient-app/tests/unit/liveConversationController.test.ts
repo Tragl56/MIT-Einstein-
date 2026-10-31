@@ -49,6 +49,53 @@ function setup(overrides: Partial<Dependencies> = {}) {
 
 describe("live duplex conversation", () => {
   afterEach(() => vi.useRealTimers());
+  it("muting while a finished utterance is transcribing keeps its answer running", async () => {
+    const answer = deferred<{ text: string }>();
+    const playback = deferred<void>();
+    const { controller, deps, sessions } = setup({
+      respond: vi.fn(() => answer.promise),
+      speak: vi.fn(() => playback.promise),
+    });
+    await controller.start();
+    const { handlers } = sessions[0];
+    handlers.onSpeechStart();
+    handlers.onSpeechEnd();
+    await controller.setMuted(true);
+    expect(deps.onState).toHaveBeenLastCalledWith("transcribing");
+    handlers.onTranscript("Minha consulta?");
+    await flush();
+    expect(deps.respond).toHaveBeenCalledTimes(1);
+    const signal = vi.mocked(deps.respond).mock.calls[0][1];
+    await controller.setMuted(false);
+    await controller.setMuted(true);
+    expect(signal.aborted).toBe(false);
+    answer.resolve({ text: "Consulta cadastrada." });
+    await flush();
+    expect(deps.onState).toHaveBeenLastCalledWith("speaking");
+    expect(deps.speak).toHaveBeenCalledWith("Consulta cadastrada.", signal);
+    playback.resolve();
+    await flush();
+    expect(deps.onState).toHaveBeenLastCalledWith("muted");
+    expect(deps.connect).toHaveBeenCalledTimes(1);
+    await controller.stop();
+  });
+  it("keeps a bounded transcription deadline while muted instead of hanging forever", async () => {
+    vi.useFakeTimers();
+    const { controller, deps, sessions } = setup();
+    await controller.start();
+    sessions[0].handlers.onSpeechStart();
+    sessions[0].handlers.onSpeechEnd();
+    await controller.setMuted(true);
+    await vi.advanceTimersByTimeAsync(15000);
+    expect(deps.onError).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        message: expect.stringContaining("transcrição"),
+      }),
+    );
+    expect(deps.onState).toHaveBeenLastCalledWith("error");
+    await controller.stop();
+    expect(vi.getTimerCount()).toBe(0);
+  });
   it("runs a confirmed UI action through the current call without unmuting or reconnecting", async () => {
     const { controller, deps } = setup();
     await controller.start();

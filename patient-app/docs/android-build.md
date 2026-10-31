@@ -1,4 +1,4 @@
-# APK Android — OncoFlow Paciente MVP 0.11.0
+# APK Android — OncoFlow Paciente MVP 0.11.1
 
 Este MVP empacota a interface, os dados fictícios e a Lia por texto e voz. Na 0.6, Silero V5 roda localmente para abrir o envio de áudio somente após confirmar fala. O fluxo filtrado segue por WebRTC para transcrição na OpenAI; GPT‑4o e a voz Sarah da ElevenLabs permanecem. Saudação, interrupção pela fala implementada, símbolo que acompanha a resposta, mute, CC e nova tentativa continuam. A indicação de entrada fica em zero enquanto o filtro estiver fechado. A gravação manual permanece disponível.
 
@@ -12,7 +12,7 @@ As conexões aos provedores partem do próprio APK: autenticação e chamadas de
 
 O app não usa `server.url`. Solicita acesso à internet e permissão de microfone após iniciar a conversa ou a gravação manual; não precisa de câmera, notificações ou armazenamento compartilhado para este fluxo. A prévia web não executa a integração de IA nativa.
 
-A 0.10 inclui sessão pareada por paciente, consulta remota e ações assíncronas da Lia. Só o APK de desenvolvimento autoriza HTTP para destinos privados explicitamente selecionados; builds de produção continuam exigindo HTTPS. O transporte hospitalar usa CapacitorHttp sem redirecionamentos ou repetição automática. Chaves de IA não são enviadas ao hospital; tokens hospitalares não entram no contexto da IA. Guia de execução na raiz da plataforma: `docs/connected-demo.md`. Resultados: [verification-v011.md](verification-v011.md).
+A 0.10 inclui sessão pareada por paciente, consulta remota e ações assíncronas da Lia. Só o APK de desenvolvimento autoriza HTTP para destinos privados explicitamente selecionados; builds de produção continuam exigindo HTTPS. O transporte hospitalar usa CapacitorHttp sem redirecionamentos ou repetição automática. Chaves de IA não são enviadas ao hospital; tokens hospitalares não entram no contexto da IA. Guia de execução na raiz da plataforma: `docs/connected-demo.md`. Resultados: [verification-v0111.md](verification-v0111.md).
 
 ## Ambiente de construção
 
@@ -22,7 +22,7 @@ A 0.10 inclui sessão pareada por paciente, consulta remota e ações assíncron
 - Android SDK compile/target 36; mínimo API 24 (Android 7).
 - Android Gradle Plugin 8.13.0; Gradle Wrapper 8.14.3.
 - Detector local: `@ricky0123/vad-web` 0.0.31 e `onnxruntime-web` 1.22.0, modelo Silero V5.
-- App ID `br.com.oncoflow.paciente`, nome `OncoFlow`, versionCode 12, versionName 0.11.0.
+- App ID `br.com.oncoflow.paciente`, nome `OncoFlow`, versionCode 13, versionName 0.11.1.
 
 `android/local.properties` contém o caminho do SDK da máquina e não deve ser versionado. Na raiz `oncoflow-patient`, o `.env` local contém as credenciais e as escolhas de modelo/voz; `.env.example` permanece sem segredos.
 
@@ -45,7 +45,7 @@ Set-Location android
 
 O resultado do Gradle fica em `android/app/build/outputs/apk/debug/app-debug.apk`. Trata-se de APK assinado com chave de desenvolvimento Android, adequado a teste por instalação direta. Não é uma versão de loja e não usa uma chave de publicação do usuário.
 
-No Windows, `npm run apk:debug` ou `powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1` executa build/sync/Gradle, verifica a assinatura e exporta `OncoFlow-Paciente-demo-v0.11.0.apk` e `SHA256SUMS-v0.11.0.txt` para `../output/apk/`. O script usa Android build-tools 36.0.0 para a verificação. A identificação e a validação do artefato final devem ser registradas em [verification-v011.md](verification-v09.md); um APK intermediário não encerra essa verificação. Não inclua o `.env`, arquivos gerados com credenciais ou o APK em repositórios públicos.
+No Windows, `npm run apk:debug` ou `powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1` executa build/sync/Gradle, verifica a assinatura e exporta `OncoFlow-Paciente-demo-v0.11.1.apk` e `SHA256SUMS-v0.11.1.txt` para `../output/apk/`. O script usa Android build-tools 36.0.0 para a verificação. A identificação e a validação do artefato final devem ser registradas em [verification-v0111.md](verification-v09.md); um APK intermediário não encerra essa verificação. Não inclua o `.env`, arquivos gerados com credenciais ou o APK em repositórios públicos.
 
 `predev` e `prebuild` executam `scripts/copy-vad-assets.mjs`. O script copia `silero_vad_v5.onnx`, `vad.worklet.bundle.min.js`, `ort-wasm-simd-threaded.wasm` e seu `.mjs` para `public/vad/`, junto de licenças e proveniência. Modelo e runtime são embarcados no APK, sem CDN em execução. São cerca de 13,6 MB de arquivos antes da compressão do APK. JS e WASM devem vir da mesma versão instalada; não substitua apenas um deles.
 

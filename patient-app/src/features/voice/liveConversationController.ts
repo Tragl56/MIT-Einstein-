@@ -39,6 +39,7 @@ export function createLiveConversationController(
     generation = 0,
     revision = 0;
   let state: ConversationState = "idle";
+  let awaitingMutedTranscript = false;
   let input: LiveInput | undefined,
     lifetime: AbortController | undefined,
     response: AbortController | undefined;
@@ -62,6 +63,7 @@ export function createLiveConversationController(
           translate("Não foi possível continuar a conversa. Tente novamente."),
         );
   function clearWorkTimers() {
+    awaitingMutedTranscript = false;
     clearTimeout(speechTimer);
     clearTimeout(transcriptionTimer);
     clearTimeout(stageTimer);
@@ -250,13 +252,15 @@ export function createLiveConversationController(
                 waitForTranscript(session, revision);
               },
               onTranscript(text) {
-                if (!current(session) || muted) return;
+                if (!current(session) || (muted && !awaitingMutedTranscript))
+                  return;
+                awaitingMutedTranscript = false;
                 clearTimeout(speechTimer);
                 speechTimer = undefined;
                 clearTimeout(transcriptionTimer);
                 transcriptionTimer = undefined;
                 if (!text.trim()) {
-                  emit("listening");
+                  emit(muted ? "muted" : "listening");
                   return;
                 }
                 void answer(text.trim(), session);
@@ -335,18 +339,27 @@ export function createLiveConversationController(
     async setMuted(value) {
       if (!active || state === "error" || muted === value) return;
       const session = generation;
+      // This turn has already been captured. Mute affects future microphone
+      // input, not its pending transcript, model request or output playback.
+      if (value && state === "transcribing") awaitingMutedTranscript = true;
       muted = value;
       input?.setMuted(value);
       if (!current(session)) return;
       if (value) {
         clearTimeout(speechTimer);
         speechTimer = undefined;
-        clearTimeout(transcriptionTimer);
-        transcriptionTimer = undefined;
+        if (!awaitingMutedTranscript) {
+          clearTimeout(transcriptionTimer);
+          transcriptionTimer = undefined;
+        }
         deps.onLevel(0);
         deps.onPartial("");
       }
-      if (state !== "speaking" && state !== "thinking")
+      if (
+        state !== "speaking" &&
+        state !== "thinking" &&
+        !(state === "transcribing" && awaitingMutedTranscript)
+      )
         emit(value ? "muted" : input ? "listening" : "idle");
     },
     finishTurn() {

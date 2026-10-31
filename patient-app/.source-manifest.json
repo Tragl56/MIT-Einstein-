@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "appVersion": "0.11.0",
+  "appVersion": "0.11.1",
   "files": [
     {
       "path": ".env.example",
@@ -20,7 +20,7 @@
     },
     {
       "path": "android/app/build.gradle",
-      "sha256": "130be32fa9a9f47b6a6e5b301c528ec45d5786b009298762907b248a81fed8d4"
+      "sha256": "4dfe2c8e211317a1b0afa05b75198cb6a6af6230bd7079beadaf25f9641894e6"
     },
     {
       "path": "android/app/capacitor.build.gradle",
@@ -276,7 +276,7 @@
     },
     {
       "path": "docs/android-build.md",
-      "sha256": "5df9a19d29104706055b96e72c186ff71e8d8ce7acf2acda2417c3070d717520"
+      "sha256": "c61347607d485bb65f8d5b6286a7ab3ff98c170fd018277043153881512123b2"
     },
     {
       "path": "docs/hospital-integration.md",
@@ -295,16 +295,20 @@
       "sha256": "b5c10ce4b0ec27417dee6f063907c799375114be1d72100a906185f99b6d68c8"
     },
     {
+      "path": "docs/verification-v0111.md",
+      "sha256": "8919cf5dc1529fb143dcce08b151d93c354ba5b58d6467bd7fd2ef04fc912997"
+    },
+    {
       "path": "index.html",
       "sha256": "481aa764e4b3bf3fe3d80256ee7abef688c18121c84a559ffaa1e3b78d506537"
     },
     {
       "path": "package-lock.json",
-      "sha256": "4925ea5d3668cf994d17e7a0e3125a275c1652c80050dca1482b692036af0e86"
+      "sha256": "4a35f5ab06eac007e7f6fadbab135d65620e687a134e3e35225cc20d50ca8ac0"
     },
     {
       "path": "package.json",
-      "sha256": "5bd2c21db3a8b61c9d8d9fcf08d14e7f6510640b35bed42a19753033e7c42aa8"
+      "sha256": "87ad800e8353412d0ddead062741f3919c8324839033adc2b463d4dc2cb73ff1"
     },
     {
       "path": "playwright.config.ts",
@@ -348,11 +352,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "682db857cbfffe3dacdf86c701043b68f12a51d98f54ca79bb8da5c8c4f88030"
+      "sha256": "5ae0a038e69a51230a3c896bfc6a2651341dbea88779b4770843afdfa1477f75"
     },
     {
       "path": "scripts/build-android.ps1",
-      "sha256": "3e80709a26fa6620b210ce91f17b418c6cc6f25b0f0988d3c74af44fbd1062c8"
+      "sha256": "44e4fb54c3d8fa2bf18e82efc9e97a859d97c96c5b5f0d50df57a601edc93dd8"
     },
     {
       "path": "scripts/copy-vad-assets.mjs",
@@ -380,7 +384,7 @@
     },
     {
       "path": "src/app/App.tsx",
-      "sha256": "9def4965eb931a7cb561fe99509831c8eaff7e5e75b2e7dfc77a915cd7fab86e"
+      "sha256": "879c4a28c9afd244356c62fe898c26ca19266a1fe626a7944a63f3d7cb7db188"
     },
     {
       "path": "src/app/liaAppBridge.ts",
@@ -468,7 +472,7 @@
     },
     {
       "path": "src/features/voice/liveConversationController.ts",
-      "sha256": "b6d7d322e914140b8ae926bddba7ebe78364fb837786ecc36a2fcb8da94ecaad"
+      "sha256": "d995be49e034072e70be13087ca256ad52802e38da3ff6de38b51b9664a564cd"
     },
     {
       "path": "src/features/voice/playback.ts",
@@ -476,7 +480,7 @@
     },
     {
       "path": "src/features/voice/realtimeTranscription.ts",
-      "sha256": "e536a77bdf04d20b4d444325e966cab6cf762ddd8f1ef3e9c934646d35b31c2f"
+      "sha256": "e3291766d907ca644af6c2eeed2ac6a12cbc355d4c3ebda8443f67606d591d01"
     },
     {
       "path": "src/features/voice/speechGate.ts",
@@ -488,7 +492,7 @@
     },
     {
       "path": "src/i18n/app.en.ts",
-      "sha256": "8aa13b93a19071fda842039e8861262496542e47688a699a14a118f4e2e1df77"
+      "sha256": "7571f625666fbc0e3d15e18d6c64595e16d789d811f77132830046059111f43d"
     },
     {
       "path": "src/i18n/content.ts",
@@ -564,7 +568,7 @@
     },
     {
       "path": "tests/e2e/conversation.spec.ts",
-      "sha256": "85c568fa5004d32bf5544a57c1119bec9a523a2a9fa8f46a442b9978c4e9b9b4"
+      "sha256": "606ffe92985d9b11108aff981f37e2133b7a6933fde61d0f41eb6f6c121520ea"
     },
     {
       "path": "tests/e2e/experience.spec.ts",
@@ -652,7 +656,7 @@
     },
     {
       "path": "tests/unit/liveConversationController.test.ts",
-      "sha256": "664dad2f9613a976a8f42c0855df3d3b267d4312780fda1e4a763cff9e6f5fb8"
+      "sha256": "ee8a8acaff87fa77dae9e5121d7a6c0ae0f196485fc6f49917f1a9d5a5d87e8d"
     },
     {
       "path": "tests/unit/nativeHospitalHttp.test.ts",
@@ -668,7 +672,7 @@
     },
     {
       "path": "tests/unit/realtimeTranscription.test.ts",
-      "sha256": "e69fa13cedf684c55068376562ded5dbf4b43f16b29689ccbfe431fa7910b67a"
+      "sha256": "00ce9dc05cf979ea12eb2fd8839527a82f5e418ac39153947657666d27e3a0f2"
     },
     {
       "path": "tests/unit/safety-demo.test.ts",

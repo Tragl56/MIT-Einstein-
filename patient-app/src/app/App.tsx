@@ -1454,7 +1454,7 @@ export function App() {
                 <RowButton
                   icon={Info}
                   title={t("Sobre esta versão")}
-                  description={t("OncoFlow Paciente · 0.11.0")}
+                  description={t("OncoFlow Paciente · 0.11.1")}
                   onClick={() => setModal({ type: "help" })}
                 />
                 <p className="footnote">

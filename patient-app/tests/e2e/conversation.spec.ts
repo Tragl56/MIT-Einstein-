@@ -335,6 +335,65 @@ test("mute preserves Lia's response, ignores input and resumes the existing conn
   await endConversation(page);
 });
 
+test("mute preserves pending transcription, reasoning and playback through the same turn", async ({
+  page,
+}) => {
+  await openConversation(page);
+  await startConversation(page);
+  await page.evaluate(
+    "window.testConversation.holdChat=true;window.testConversation.handlers.onSpeechStart();window.testConversation.handlers.onSpeechEnd()",
+  );
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-stage",
+    "transcribing",
+  );
+  const cancels = await page.evaluate<number>("window.testConversation.cancels");
+  await page
+    .getByRole("button", { name: "Silenciar microfone", exact: true })
+    .click();
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-muted",
+    "true",
+  );
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-stage",
+    "transcribing",
+  );
+  await page.evaluate(
+    "window.testConversation.handlers.onTranscript('Quando é minha consulta?')",
+  );
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-stage",
+    "thinking",
+  );
+  await page
+    .getByRole("button", { name: "Ativar microfone", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Silenciar microfone", exact: true })
+    .click();
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-stage",
+    "thinking",
+  );
+  const thinkingCancels = await page.evaluate<number>(
+    "window.testConversation.cancels",
+  );
+  await page.evaluate("window.testConversation.releaseChat()");
+  await expect(page.getByTestId("voice-conversation")).toHaveAttribute(
+    "data-stage",
+    "speaking",
+  );
+  expect(await page.evaluate("window.testConversation.cancels")).toBe(
+    thinkingCancels,
+  );
+  expect(thinkingCancels).toBeGreaterThanOrEqual(cancels);
+  await finishPlayback(page, "muted");
+  expect(await page.evaluate("window.testConversation.chats")).toBe(1);
+  expect(await page.evaluate("window.testConversation.starts")).toBe(1);
+  await endConversation(page);
+});
+
 test("partial transcripts and input bars follow live input; manual finish commits the same turn", async ({
   page,
 }) => {
