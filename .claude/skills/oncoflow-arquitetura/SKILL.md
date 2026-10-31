@@ -24,7 +24,7 @@ foi autorizado.
 
 | Camada | Escolha | Observação |
 |---|---|---|
-| Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 (async), Alembic | Regras na camada `service`, nunca no router |
+| Backend | Python 3.12+ (imagem Docker em 3.14), FastAPI, Pydantic v2, SQLAlchemy 2.1 (async, asyncpg), Alembic | Regras na camada `service`, nunca no router. Versões fixadas em `backend/requirements.txt` |
 | Banco | PostgreSQL 16 | `uuid` como PK, `timestamptz` em UTC, enums do Postgres para estados |
 | Front Pro | React 18 + TypeScript, Vite, React Router, TanStack Query, Tailwind, Recharts | Desktop ≥ 1280 px |
 | Front Paciente | React 18 + TypeScript, Vite, `vite-plugin-pwa`, Tailwind | Mobile-first, instalável; app nativo só depois do piloto |
