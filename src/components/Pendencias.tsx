@@ -110,7 +110,7 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
 
   return (
     <article
-      className={`rounded-lg border p-3.5 text-xs space-y-2.5 ${
+      className={`review-item border p-3.5 text-xs space-y-2.5 ${
         concluida ? 'bg-fundo border-linha opacity-80' : ehHipotese ? 'bg-white border-dashed border-urgente-borda' : 'bg-white border-linha'
       }`}
     >

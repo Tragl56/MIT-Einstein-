@@ -57,7 +57,7 @@ export const PacienteCard: React.FC<PacienteCardProps> = ({
   const etapaAtual = paciente.jornada.find((e) => e.estado === 'em_andamento');
 
   return (
-    <div id={`card-paciente-${paciente.id}`} className="bg-white rounded-xl border border-linha overflow-hidden">
+    <div id={`card-paciente-${paciente.id}`} className="patient-record-card">
       <div className="p-5 border-b border-linha bg-gradient-to-r from-white to-gelo/40">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">

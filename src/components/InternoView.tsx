@@ -40,8 +40,9 @@ export const InternoView: React.FC<InternoViewProps> = ({
   const pacienteAtivo = pacientes.find((p) => p.id === pacienteSelecionadoId);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="bg-white rounded-xl border border-linha overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
+    <div className="pro-content">
+      <header className="pro-page-heading"><div><h1>Conversas com os pacientes</h1><p>Acompanhe os relatos e continue o atendimento com a sua equipe.</p></div></header>
+      <div className="conversation-workspace bg-white border border-linha overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
         <div className="lg:col-span-5 xl:col-span-4 border-r border-linha flex flex-col bg-fundo">
           <div className="p-4 border-b border-linha bg-white">
             <div className="flex items-center justify-between mb-3">

@@ -74,7 +74,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-fundo flex flex-col font-sans text-azul">
+    <div className="pro-shell font-sans text-azul">
       <Navbar
         abaAtiva={abaAtiva}
         onTrocarAba={setAbaAtiva}
@@ -84,6 +84,7 @@ export default function App() {
         onResetarDemo={acoes.resetarDemo}
       />
 
+      <div className="pro-workspace">
       {erro && (
         <div role="alert" className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-atencao-fundo border border-atencao-borda text-atencao text-sm">
@@ -93,7 +94,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="flex-1 pb-10">
+      <main id="conteudo-principal" className="pro-main">
         {!estado ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-sm text-tinta-suave">
             Carregando pacientes…
@@ -118,6 +119,7 @@ export default function App() {
           />
         )}
       </main>
+      </div>
     </div>
   );
 }

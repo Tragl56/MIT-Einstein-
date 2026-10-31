@@ -1,65 +1,48 @@
-// Entrada da equipe na demo (base: LoginView do IRIS). Mantém os "perfis rápidos" do IRIS e tira
-// o campo de senha simulado: na demo não existe autenticação real.
-// [PONTO DE INTEGRAÇÃO]: autenticação institucional com acesso por perfil, instituição, equipe e
-// finalidade (skill oncoflow-seguranca-lgpd).
-
+// Seleção de perfis fictícios. Esta tela não representa autenticação institucional.
 import React from 'react';
-import { ArrowRight, Info } from 'lucide-react';
+import { ArrowRight, Info, Stethoscope, HeartPulse, Route, Smartphone, Check } from 'lucide-react';
 import type { UsuarioEquipe } from '../types';
 import { LogoOncoFlow } from './LogoOncoFlow';
 import { ROTULO_PAPEL } from './Pendencias';
 
-interface LoginViewProps {
-  usuarios: UsuarioEquipe[];
-  onLogin: (usuario: UsuarioEquipe) => void;
-}
+interface LoginViewProps { usuarios: UsuarioEquipe[]; onLogin: (usuario: UsuarioEquipe) => void; }
+const ICONE_PAPEL = { medico: Stethoscope, enfermagem: HeartPulse, navegacao: Route };
 
 export const LoginView: React.FC<LoginViewProps> = ({ usuarios, onLogin }) => (
-  <div className="min-h-screen bg-fundo flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-      <LogoOncoFlow className="w-16 h-16 mx-auto mb-4" />
-      <h1 className="text-2xl sm:text-3xl font-bold text-azul tracking-tight">OncoFlow Pro</h1>
-      <p className="mt-1 text-sm font-medium text-verde">Cada etapa do cuidado, conectada.</p>
-      <p className="mt-2 text-xs text-tinta-suave max-w-xs mx-auto">
-        Painel da equipe para acompanhar pacientes, pendências e conversas.
-      </p>
-    </div>
-
-    <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div className="bg-white py-8 px-6 sm:px-10 border border-linha rounded-xl space-y-5">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-tinta-suave">Entrar como (perfis da demo)</h2>
-        {usuarios.length === 0 ? (
-          <p className="text-sm text-tinta-suave">Carregando perfis…</p>
-        ) : (
-          <div className="grid gap-2">
-            {usuarios.map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                id={`btn-entrar-${u.id}`}
-                onClick={() => onLogin(u)}
-                className="flex items-center justify-between gap-3 text-left p-3 rounded-lg border border-linha hover:border-verde hover:bg-gelo/50 cursor-pointer"
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-azul">{u.nome}</span>
-                  <span className="block text-xs text-tinta-suave">
-                    {ROTULO_PAPEL[u.papel]} · {u.cargo}
-                  </span>
-                </span>
-                <ArrowRight className="w-4 h-4 text-verde shrink-0" aria-hidden />
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="p-3 bg-gelo border border-linha rounded-lg flex items-start gap-2.5 text-xs text-azul">
-          <Info className="w-4 h-4 text-verde shrink-0 mt-0.5" aria-hidden />
-          <div>
-            <span className="font-semibold block">Demonstração com dados fictícios</span>
-            Sem autenticação real nesta fase. O acesso por perfil, instituição, equipe e finalidade entra antes de qualquer piloto.
-          </div>
+  <main className="login-page">
+    <section className="login-story" aria-labelledby="titulo-oncoflow">
+      <div className="login-brand"><LogoOncoFlow className="w-11 h-11" /><span>OncoFlow <small>Pro</small></span></div>
+      <div className="login-story-content">
+        <h1 id="titulo-oncoflow">Cada etapa do cuidado, conectada.</h1>
+        <p>Um espaço para a equipe acompanhar a jornada, organizar os próximos passos e estar mais perto do paciente.</p>
+        <div className="login-journey" aria-label="Consulta, navegação e paciente conectados">
+          <div className="login-journey-line" aria-hidden />
+          <div className="login-journey-step"><span><Stethoscope size={22} aria-hidden /></span><div><strong>Na consulta</strong><small>Escutar e compreender</small></div><Check size={17} aria-hidden /></div>
+          <div className="login-journey-step"><span><Route size={22} aria-hidden /></span><div><strong>Com a equipe</strong><small>Organizar e acompanhar</small></div><Check size={17} aria-hidden /></div>
+          <div className="login-journey-step"><span><Smartphone size={22} aria-hidden /></span><div><strong>Com o paciente</strong><small>Dar clareza ao próximo passo</small></div><ArrowRight size={17} aria-hidden /></div>
         </div>
       </div>
-    </div>
-  </div>
+      <p className="login-story-footer">Tecnologia a serviço de um cuidado mais conectado.</p>
+    </section>
+
+    <section className="login-access" aria-labelledby="titulo-acesso">
+      <div className="login-access-content">
+        <span className="demo-pill"><span className="demo-dot" aria-hidden />Demonstração interativa</span>
+        <h2 id="titulo-acesso">Bem-vindo ao<br />OncoFlow Pro.</h2>
+        <p className="login-description">Escolha um perfil para explorar o espaço da equipe.</p>
+        <div className="login-users">
+          {usuarios.length === 0 ? <p role="status">Carregando perfis…</p> : usuarios.map((u) => {
+            const Icone = ICONE_PAPEL[u.papel];
+            return <button key={u.id} type="button" id={`btn-entrar-${u.id}`} aria-label={`Entrar como ${u.nome}, ${ROTULO_PAPEL[u.papel]}`} onClick={() => onLogin(u)} className="login-user">
+              <span className={`login-user-icon role-${u.papel}`}><Icone size={23} aria-hidden /></span>
+              <span className="login-user-info"><small>{ROTULO_PAPEL[u.papel]}</small><strong>{u.nome}</strong><span>{u.cargo}</span></span>
+              <ArrowRight size={19} className="login-user-arrow" aria-hidden />
+            </button>;
+          })}
+        </div>
+        <div className="login-disclosure"><Info size={18} aria-hidden /><p><strong>Demonstração com dados fictícios.</strong> Sem autenticação real nesta fase. O acesso por perfil, instituição, equipe e finalidade entra antes de qualquer piloto.</p></div>
+        <a href="/paciente" className="login-patient-link"><Smartphone size={17} aria-hidden />Conhecer o app do paciente<ArrowRight size={16} aria-hidden /></a>
+      </div>
+    </section>
+  </main>
 );

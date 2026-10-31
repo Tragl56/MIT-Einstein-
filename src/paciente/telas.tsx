@@ -19,6 +19,8 @@ import {
   Sparkles,
   Users,
   Bell,
+  MapPin,
+  Info,
 } from 'lucide-react';
 import type {
   Compromisso,
@@ -29,6 +31,7 @@ import type {
   SolicitacaoPaciente,
 } from '../types';
 import { ROTULO_OPCAO_CHECKIN } from '../types';
+import { LogoOncoFlow } from '../components/LogoOncoFlow';
 import { AvisoUrgencia } from './AvisoUrgencia';
 import { OrbeLia } from './OrbeLia';
 import { dataCurta, diaDaSemana, diaEHora, porExtenso } from './formato';
@@ -40,7 +43,7 @@ export const Cabecalho: React.FC<{ titulo: string; onVoltar: () => void; direita
   onVoltar,
   direita,
 }) => (
-  <header className="flex items-center justify-between gap-2 py-3">
+  <header className="patient-page-header flex items-center justify-between gap-2">
     <button
       type="button"
       onClick={onVoltar}
@@ -76,110 +79,67 @@ const ROTULO_SOLICITACAO: Record<SolicitacaoPaciente['estado'], string> = {
 };
 
 export const TelaInicio: React.FC<{ inicio: InicioPaciente; irPara: (t: Tela) => void; onPreferencias: () => void }> = ({
-  inicio,
-  irPara,
-  onPreferencias,
+  inicio, irPara, onPreferencias,
 }) => {
   const proxima = inicio.proximoCompromisso;
   const atalhos: [Tela, string, React.ElementType][] = [
-    ['jornada', 'Minha jornada', Route],
-    ['como-estou', 'Como estou?', Heart],
-    ['agenda', 'Minha agenda', CalendarDays],
-    ['documentos', 'Meus documentos', FileText],
+    ['jornada', 'Minha jornada', Route], ['como-estou', 'Como estou?', Heart],
+    ['agenda', 'Minha agenda', CalendarDays], ['documentos', 'Meus documentos', FileText],
   ];
   const pedidosAbertos = inicio.solicitacoes.filter((s) => s.estado !== 'respondida');
+  const dia = proxima ? new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit' }).format(new Date(proxima.dataHora)) : '';
+  const mes = proxima ? new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', month: 'short' }).format(new Date(proxima.dataHora)) : '';
 
   return (
-    <div className="flex flex-col gap-5 pb-28">
-      <header className="flex items-start justify-between pt-5">
-        <div>
-          <h1 className="text-2xl font-bold text-azul">Olá, {inicio.primeiroNome}!</h1>
-          <p className="text-tinta-suave">Como podemos ajudar hoje?</p>
-        </div>
-        <button
-          type="button"
-          onClick={onPreferencias}
-          aria-label="Preferências de leitura e voz"
-          className="min-w-12 min-h-12 rounded-xl border border-linha bg-white text-azul font-bold cursor-pointer"
-        >
-          Aa
-        </button>
+    <div className="patient-home">
+      <header className="patient-home-brand">
+        <div className="patient-brand-lockup"><LogoOncoFlow className="w-9 h-9" /><div><strong>OncoFlow</strong><span>Seu espaço de cuidado</span></div></div>
+        <button type="button" onClick={onPreferencias} aria-label="Preferências de leitura e voz" className="patient-preferences">Aa</button>
       </header>
+      <div className="patient-welcome"><h1>Olá, {inicio.primeiroNome}.</h1><p>Vamos organizar seus próximos passos?</p></div>
 
       {proxima ? (
-        <button
-          type="button"
-          onClick={() => irPara('agenda')}
-          className="text-left rounded-2xl bg-azul text-white p-5 flex items-center gap-4 cursor-pointer"
-        >
-          <CalendarDays className="w-8 h-8 shrink-0 opacity-90" aria-hidden />
-          <span className="flex-1">
-            <span className="block text-sm opacity-85">
-              {proxima.tipo === 'consulta' ? 'Sua próxima consulta' : 'Seu próximo compromisso'}
-            </span>
-            <span className="block text-2xl font-bold">{diaDaSemana(proxima.dataHora)}</span>
-            <span className="block">{diaEHora(proxima.dataHora)}</span>
-            <span className="block text-sm opacity-85">{proxima.local}</span>
+        <button type="button" onClick={() => irPara('agenda')} className="patient-appointment">
+          <span className="patient-appointment-heading"><span>{proxima.tipo === 'consulta' ? 'Sua próxima consulta' : 'Seu próximo compromisso'}</span><ChevronRight size={20} aria-hidden /></span>
+          <span className="patient-appointment-date">
+            <span className="patient-date-tile" aria-hidden><strong>{dia}</strong><small>{mes}</small></span>
+            <span><strong>{diaDaSemana(proxima.dataHora)}</strong><span>{diaEHora(proxima.dataHora)}</span></span>
           </span>
-          <ChevronRight className="w-6 h-6 shrink-0" aria-hidden />
+          <span className="patient-appointment-place"><MapPin size={16} className="shrink-0 mt-1" aria-hidden /><span>{proxima.local}{proxima.profissional && <span className="block">{proxima.profissional}</span>}</span></span>
         </button>
-      ) : (
-        <div className="rounded-2xl bg-gelo p-5 text-azul">Nenhum compromisso marcado.</div>
-      )}
+      ) : <div className="rounded-2xl bg-gelo p-5 text-azul">Nenhum compromisso marcado.</div>}
 
-      <nav aria-label="Atalhos" className="grid grid-cols-2 gap-3">
-        {atalhos.map(([tela, rotulo, Icone]) => (
-          <button
-            key={tela}
-            type="button"
-            onClick={() => irPara(tela)}
-            className="flex flex-col items-start gap-3 rounded-2xl bg-gelo p-4 min-h-28 text-left text-azul font-semibold cursor-pointer hover:ring-2 hover:ring-turquesa"
-          >
-            <Icone className="w-7 h-7 text-verde" aria-hidden />
-            {rotulo}
-          </button>
-        ))}
-      </nav>
+      <section aria-labelledby="titulo-atalhos">
+        <h2 id="titulo-atalhos" className="patient-section-title">Seu acompanhamento</h2>
+        <nav aria-label="Atalhos" className="patient-shortcuts">
+          {atalhos.map(([tela, rotulo, Icone]) => <button key={tela} type="button" onClick={() => irPara(tela)} className="patient-shortcut">
+            <span className="patient-shortcut-icon"><Icone size={23} aria-hidden /></span>
+            <span className="patient-shortcut-label">{rotulo}<ChevronRight size={16} className="shrink-0" aria-hidden /></span>
+          </button>)}
+        </nav>
+      </section>
 
-      {pedidosAbertos.length > 0 && (
-        <section aria-label="Meus pedidos" className="space-y-2">
-          <h2 className="font-bold text-azul">Meus pedidos</h2>
-          {pedidosAbertos.map((s) => (
-            <div key={s.id} className="rounded-xl border border-linha bg-white p-3">
-              <p className="font-semibold text-azul">{s.titulo}</p>
-              <p className="text-sm text-tinta-suave flex items-center gap-1.5">
-                <Clock className="w-4 h-4" aria-hidden />
-                {ROTULO_SOLICITACAO[s.estado]}
-              </p>
-            </div>
-          ))}
-        </section>
-      )}
+      {pedidosAbertos.length > 0 && <section aria-label="Meus pedidos" className="patient-home-requests">
+        <h2 className="patient-section-title">Meus pedidos</h2>
+        {pedidosAbertos.map((s) => <div key={s.id}>
+          <p className="font-semibold text-azul text-sm">{s.titulo}</p>
+          <p className="text-sm text-tinta-suave flex items-center gap-1.5 mt-1"><Clock className="w-4 h-4 shrink-0" aria-hidden />{ROTULO_SOLICITACAO[s.estado]}</p>
+        </div>)}
+      </section>}
 
-      <p className="text-xs text-tinta-suave text-center">Demonstração com dados fictícios.</p>
-
-      <div className="fixed bottom-0 inset-x-0 pb-[max(16px,env(safe-area-inset-bottom))] px-4 bg-gradient-to-t from-fundo via-fundo to-transparent pt-6">
-        <button
-          type="button"
-          onClick={() => irPara('lia')}
-          className="mx-auto max-w-[440px] w-full flex items-center gap-4 rounded-2xl bg-azul text-white px-4 py-3 cursor-pointer"
-        >
-          <OrbeLia estado="espera" tamanho={48} />
-          <span className="flex-1 text-left">
-            <span className="block font-bold text-lg">Falar com a {inicio.assistenteNome}</span>
-            <span className="block text-sm opacity-85">Toque para conversar</span>
-          </span>
-          <Mic className="w-6 h-6" aria-hidden />
+      <p className="patient-demo-note"><Info size={13} aria-hidden />Demonstração com dados fictícios.</p>
+      <div className="patient-lia-dock">
+        <button type="button" onClick={() => irPara('lia')} className="patient-lia-button">
+          <OrbeLia estado="espera" tamanho={47} />
+          <span><strong>Falar com a {inicio.assistenteNome}</strong><small>Converse por texto ou voz</small></span>
+          <Mic size={23} className="text-verde shrink-0" aria-hidden />
         </button>
       </div>
     </div>
   );
 };
 
-// ---------------------------------------------------------------------------
-// Minha jornada
-// ---------------------------------------------------------------------------
-
+// Minha jornada: os mesmos estados e dados da plataforma.
 const ESTADO_ETAPA: Record<EstadoEtapa, { rotulo: string; Icone: React.ElementType; cor: string }> = {
   concluida: { rotulo: 'Concluído', Icone: CheckCircle2, cor: 'text-verde' },
   em_andamento: { rotulo: 'Em andamento', Icone: CircleDot, cor: 'text-azul' },
