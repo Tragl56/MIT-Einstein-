@@ -54,7 +54,7 @@ function pacienteDa(req: Request) {
 
 function textoDo(req: Request, campo = 'texto'): string {
   const valor = req.body?.[campo];
-  if (typeof valor !== 'string') throw new ErroDominio(400, 'campo_invalido', `Campo "${campo}" é obrigatório.`);
+  if (typeof valor !== 'string') throw new ErroDominio(400, 'campo_invalido', `Field "${campo}" is required.`);
   return valor;
 }
 
@@ -127,7 +127,7 @@ export function criarRotas(): express.Router {
     rota((req, res) => {
       const desfecho = req.body?.desfecho as Desfecho;
       if (!DESFECHOS_VALIDOS.includes(desfecho)) {
-        throw new ErroDominio(400, 'desfecho_invalido', 'Escolha o desfecho da revisão.');
+        throw new ErroDominio(400, 'desfecho_invalido', 'Choose the review outcome.');
       }
       concluirPendencia(req.params.id, usuarioDa(req), desfecho);
       res.json({ ok: true });

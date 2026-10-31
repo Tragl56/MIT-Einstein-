@@ -25,10 +25,10 @@ import { BadgeSituacao } from './Pendencias';
 import { OrbeMini } from './OrbeMini';
 
 const SELO_STATUS: Record<StatusResultado, string> = {
-  consultado: 'Informação consultada',
-  registrado: 'Solicitação registrada',
-  encaminhado: 'Encaminhado para a equipe',
-  confirmado: 'Confirmado',
+  consultado: 'Information looked up',
+  registrado: 'Request logged',
+  encaminhado: 'Forwarded to the team',
+  confirmado: 'Confirmed',
 };
 
 interface ChatViewProps {
@@ -47,7 +47,7 @@ const MarcadorSistema: React.FC<{ msg: Mensagem }> = ({ msg }) => {
         <span className="text-[11px] font-semibold text-urgente bg-urgente-fundo border border-dashed border-urgente-borda px-3.5 py-1 rounded-full flex items-center gap-1.5">
           <HelpCircle className="w-3.5 h-3.5" aria-hidden />
           {msg.texto}
-          <span className="font-normal text-tinta-suave">· só a equipe vê</span>
+          <span className="font-normal text-tinta-suave">· team only</span>
         </span>
       </div>
     );
@@ -67,7 +67,7 @@ const MarcadorSistema: React.FC<{ msg: Mensagem }> = ({ msg }) => {
               rel="noopener noreferrer"
               className="px-2.5 py-1 text-xs font-semibold text-white bg-verde hover:bg-verde-escuro rounded-lg inline-flex items-center gap-1"
             >
-              Entrar na chamada
+              Join call
               <ExternalLink className="w-3 h-3" aria-hidden />
             </a>
           )}
@@ -84,7 +84,7 @@ const MarcadorSistema: React.FC<{ msg: Mensagem }> = ({ msg }) => {
       >
         <Info className="w-3 h-3 text-verde" aria-hidden />
         {msg.texto}
-        {!msg.visivelPaciente && <span>· só a equipe vê</span>}
+        {!msg.visivelPaciente && <span>· team only</span>}
       </span>
     </div>
   );
@@ -130,7 +130,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-sm sm:text-base font-bold text-azul tracking-tight">{paciente.nome}</h2>
-                <span className="text-xs text-tinta-suave">({paciente.idade} anos)</span>
+                <span className="text-xs text-tinta-suave">({paciente.idade} y/o)</span>
                 <BadgeSituacao situacao={paciente.situacao} />
               </div>
               <div className="flex items-center gap-2 text-xs text-tinta-suave mt-0.5">
@@ -149,7 +149,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-azul bg-gelo hover:bg-linha border border-linha rounded-lg cursor-pointer"
               >
                 <FileText className="w-3.5 h-3.5 text-verde" aria-hidden />
-                Ver plano
+                See plan
               </button>
             )}
             <button
@@ -159,13 +159,13 @@ export const ChatView: React.FC<ChatViewProps> = ({
               className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-azul bg-gelo hover:bg-linha border border-linha rounded-lg cursor-pointer"
             >
               <Video className="w-3.5 h-3.5 text-verde" aria-hidden />
-              Videochamada
+              Video call
             </button>
             {comLia ? (
               <>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-gelo text-azul border border-linha">
                   <OrbeMini className="w-3.5 h-3.5" />
-                  Lia atendendo
+                  Lia is handling
                 </span>
                 <button
                   type="button"
@@ -174,7 +174,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                   className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-white bg-verde hover:bg-verde-escuro rounded-lg cursor-pointer"
                 >
                   <UserCheck className="w-3.5 h-3.5" aria-hidden />
-                  Assumir conversa
+                  Take over conversation
                 </button>
               </>
             ) : (
@@ -190,7 +190,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                   className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-azul bg-white hover:bg-gelo border border-linha rounded-lg cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-verde" aria-hidden />
-                  Devolver para a Lia
+                  Hand back to Lia
                 </button>
               </>
             )}
@@ -198,7 +198,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
               <button
                 type="button"
                 onClick={onFechar}
-                aria-label="Fechar conversa"
+                aria-label="Close conversation"
                 className="text-xs px-2 py-1 text-tinta-suave hover:text-azul hover:bg-gelo rounded cursor-pointer"
               >
                 ✕
@@ -211,7 +211,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
       <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-3.5 max-h-[520px] min-h-[300px]" aria-live="polite">
         <div className="text-center my-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-linha text-tinta-suave text-[11px] rounded-full">
-            O paciente sabe que a equipe de cuidado vê esta conversa · Não é canal de emergência
+            The patient knows the care team sees this conversation · Not an emergency channel
           </span>
         </div>
 
@@ -229,7 +229,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 {isLia && (
                   <span className="flex items-center gap-1 text-azul">
                     <OrbeMini className="w-3 h-3" />
-                    Lia (assistente)
+                    Lia (assistant)
                   </span>
                 )}
                 {isProfissional && (
@@ -241,10 +241,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 {isPaciente && (
                   <span className="flex items-center gap-1 text-azul">
                     <User className="w-3 h-3 text-tinta-suave" aria-hidden />
-                    {msg.nomeAutor} (paciente)
+                    {msg.nomeAutor} (patient)
                     {msg.origem === 'voz' && (
                       <span className="inline-flex items-center gap-0.5 font-normal text-tinta-suave">
-                        <Mic className="w-3 h-3" aria-hidden /> por voz, transcrito
+                        <Mic className="w-3 h-3" aria-hidden /> by voice, transcribed
                       </span>
                     )}
                   </span>
@@ -265,7 +265,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 {isAviso && (
                   <span className="flex items-center gap-1 text-[11px] font-semibold text-urgente mb-1">
                     <AlertTriangle className="w-3.5 h-3.5" aria-hidden />
-                    Aviso de urgência do hospital mostrado ao paciente
+                    Hospital urgency notice shown to the patient
                   </span>
                 )}
                 <p className="whitespace-pre-wrap">{msg.texto}</p>
@@ -290,40 +290,40 @@ export const ChatView: React.FC<ChatViewProps> = ({
           {comLia ? (
             <>
               <OrbeMini className="w-3.5 h-3.5" />
-              <span className="font-medium text-azul">Lia atende: informa, organiza e encaminha. Não orienta sobre sintomas ou remédios.</span>
+              <span className="font-medium text-azul">Lia handles: informs, organizes and forwards. She does not advise on symptoms or medications.</span>
             </>
           ) : (
             <>
               <UserCheck className="w-3.5 h-3.5 text-verde" aria-hidden />
               <span className="font-medium text-azul">
-                Em atendimento por {paciente.profissionalResponsavel}. Sem atividade por {minutosRetornoLia} min, a Lia volta a atender.
+                Handled by {paciente.profissionalResponsavel}. After {minutosRetornoLia} min without activity, Lia takes over again.
               </span>
             </>
           )}
         </div>
         <a href="/paciente" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] font-semibold text-verde hover:text-verde-escuro underline">
           <Smartphone className="w-3 h-3" aria-hidden />
-          Abrir app da paciente (demo)
+          Open patient app (demo)
         </a>
       </div>
 
       <form onSubmit={handleEnviar} className="p-3 bg-white border-t border-linha flex items-center gap-2">
         <label htmlFor={`input-msg-${paciente.id}`} className="sr-only">
-          Mensagem para {paciente.nome}
+          Message to {paciente.nome}
         </label>
         <input
           id={`input-msg-${paciente.id}`}
           type="text"
           value={novoTexto}
           onChange={(e) => setNovoTexto(e.target.value)}
-          placeholder={comLia ? 'Digite uma mensagem (você assume a conversa ao enviar)…' : 'Digite sua mensagem para o paciente…'}
+          placeholder={comLia ? 'Type a message (sending takes over the conversation)…' : 'Type your message to the patient…'}
           className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm border border-linha rounded-lg focus:outline-none focus:ring-2 focus:ring-verde text-azul bg-fundo"
         />
         <button
           type="submit"
           id={`btn-enviar-msg-${paciente.id}`}
           disabled={!novoTexto.trim()}
-          aria-label="Enviar mensagem"
+          aria-label="Send message"
           className="flex items-center justify-center w-10 h-10 rounded-lg bg-verde hover:bg-verde-escuro disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer shrink-0"
         >
           <Send className="w-4 h-4" aria-hidden />

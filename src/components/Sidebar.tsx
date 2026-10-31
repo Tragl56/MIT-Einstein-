@@ -7,10 +7,10 @@ import { LogoOncoFlow } from './LogoOncoFlow';
 export type PaginaPro = 'inicio' | 'pacientes' | 'pendencias' | 'comunicacao';
 
 const ITENS: { pagina: PaginaPro; rotulo: string; Icone: React.ElementType }[] = [
-  { pagina: 'inicio', rotulo: 'Início', Icone: Home },
-  { pagina: 'pacientes', rotulo: 'Pacientes', Icone: Users },
-  { pagina: 'pendencias', rotulo: 'Pendências', Icone: ClipboardList },
-  { pagina: 'comunicacao', rotulo: 'Comunicação', Icone: MessageSquareText },
+  { pagina: 'inicio', rotulo: 'Home', Icone: Home },
+  { pagina: 'pacientes', rotulo: 'Patients', Icone: Users },
+  { pagina: 'pendencias', rotulo: 'Pending items', Icone: ClipboardList },
+  { pagina: 'comunicacao', rotulo: 'Messages', Icone: MessageSquareText },
 ];
 
 interface SidebarProps {
@@ -31,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
         <LogoOncoFlow className="w-10 h-10" />
         <span className="text-2xl font-bold text-azul tracking-tight">OncoFlow</span>
       </div>
-      <nav aria-label="Seções" className="space-y-1">
+      <nav aria-label="Sections" className="space-y-1">
         {ITENS.map(({ pagina: p, rotulo, Icone }) => {
           const ativa = pagina === p;
           return (
@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
                 <span className="px-1.5 rounded-full bg-atencao text-white text-[11px] font-bold tabular-nums">{totalPendencias}</span>
               )}
               {p === 'comunicacao' && comunicacaoAtiva && (
-                <span className="w-2 h-2 rounded-full bg-verde" title="Pedido de contato aguardando" />
+                <span className="w-2 h-2 rounded-full bg-verde" title="Contact request waiting" />
               )}
             </button>
           );
@@ -63,13 +63,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
         <Building2 className="w-5 h-5 text-verde shrink-0" aria-hidden />
         <span className="leading-tight">{instituicao}</span>
       </div>
-      <p className="px-3 text-[11px] text-tinta-suave">Dados fictícios · demonstração</p>
+      <p className="px-3 text-[11px] text-tinta-suave">Fictional data · demo</p>
     </div>
   </aside>
 );
 
 export const NavegacaoCompacta: React.FC<{ pagina: PaginaPro; onNavegar: (p: PaginaPro) => void }> = ({ pagina, onNavegar }) => (
-  <nav aria-label="Seções" className="md:hidden flex gap-1 overflow-x-auto bg-white border-b border-linha px-4 py-2">
+  <nav aria-label="Sections" className="md:hidden flex gap-1 overflow-x-auto bg-white border-b border-linha px-4 py-2">
     {ITENS.map(({ pagina: p, rotulo, Icone }) => (
       <button
         key={p}

@@ -42,21 +42,21 @@ export const Topo: React.FC<TopoProps> = ({
         <h1 className="text-2xl sm:text-3xl font-bold text-azul tracking-tight">
           {saudacao()}, {nomeCurto(usuario.nome)}
         </h1>
-        <p className="text-tinta-suave">Acompanhamento da sua unidade oncológica.</p>
+        <p className="text-tinta-suave">Follow-up for your oncology unit.</p>
       </div>
 
       <div className="flex items-center gap-3 flex-1 justify-end min-w-[260px]">
         <div className="relative flex-1 max-w-sm">
           <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-tinta-suave" aria-hidden />
           <label htmlFor="busca-paciente" className="sr-only">
-            Buscar paciente
+            Search patient
           </label>
           <input
             id="busca-paciente"
             type="search"
             value={busca}
             onChange={(e) => onBuscar(e.target.value)}
-            placeholder="Buscar paciente…"
+            placeholder="Search patient…"
             className="w-full pl-11 pr-4 py-2.5 rounded-full border border-linha bg-white text-sm text-azul focus:outline-none focus:ring-2 focus:ring-verde"
           />
         </div>
@@ -64,7 +64,7 @@ export const Topo: React.FC<TopoProps> = ({
         <button
           type="button"
           onClick={onAbrirPendencias}
-          aria-label={`${totalPendencias} pendências abertas`}
+          aria-label={`${totalPendencias} open pending items`}
           className="relative w-11 h-11 rounded-full flex items-center justify-center text-azul hover:bg-gelo cursor-pointer"
         >
           <Bell className="w-6 h-6" aria-hidden />
@@ -78,7 +78,7 @@ export const Topo: React.FC<TopoProps> = ({
             type="button"
             onClick={() => setMenuAberto(!menuAberto)}
             aria-expanded={menuAberto}
-            aria-label="Menu do usuário"
+            aria-label="User menu"
             className="flex items-center gap-1.5 cursor-pointer"
           >
             <span className="w-11 h-11 rounded-full bg-ardosia text-white flex items-center justify-center font-semibold">
@@ -99,7 +99,7 @@ export const Topo: React.FC<TopoProps> = ({
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-azul hover:bg-gelo"
               >
                 <Smartphone className="w-4 h-4 text-verde" aria-hidden />
-                Abrir app do paciente (demo)
+                Open patient app (demo)
               </a>
               <button
                 type="button"
@@ -110,7 +110,7 @@ export const Topo: React.FC<TopoProps> = ({
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-azul hover:bg-gelo cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4 text-verde" aria-hidden />
-                Reiniciar dados da demo
+                Reset demo data
               </button>
               <button
                 type="button"
@@ -118,7 +118,7 @@ export const Topo: React.FC<TopoProps> = ({
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-urgente hover:bg-urgente-fundo cursor-pointer"
               >
                 <LogOut className="w-4 h-4" aria-hidden />
-                Sair
+                Sign out
               </button>
             </div>
           )}

@@ -22,18 +22,18 @@ import { Cabecalho, type Tela } from './telas';
 import { TelaVozLia } from './TelaVozLia';
 
 const SELO: Record<StatusResultado, { rotulo: string; Icone: React.ElementType }> = {
-  consultado: { rotulo: 'Informação consultada', Icone: Info },
-  registrado: { rotulo: 'Solicitação registrada', Icone: ClipboardCheck },
-  encaminhado: { rotulo: 'Encaminhado para a equipe', Icone: Forward },
-  confirmado: { rotulo: 'Confirmado', Icone: CheckCircle2 },
+  consultado: { rotulo: 'Information looked up', Icone: Info },
+  registrado: { rotulo: 'Request logged', Icone: ClipboardCheck },
+  encaminhado: { rotulo: 'Forwarded to the team', Icone: Forward },
+  confirmado: { rotulo: 'Confirmed', Icone: CheckCircle2 },
 };
 
 const SUGESTOES = [
-  'Quando é minha próxima consulta?',
-  'Hoje estou muito cansada e preocupada com o trabalho.',
-  'Quero falar com minha enfermeira.',
-  'Não posso ir à consulta.',
-  'Como será meu próximo exame?',
+  'When is my next appointment?',
+  "I'm very tired today and worried about work.",
+  'I want to talk to my nurse.',
+  "I can't go to my appointment.",
+  'How should I prepare for my next test?',
 ];
 
 interface TelaLiaProps {
@@ -186,7 +186,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
             {m.texto}
             {m.link && (
               <a href={m.link} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 font-semibold text-verde underline">
-                Entrar na chamada <ExternalLink className="w-3.5 h-3.5" aria-hidden />
+                Join call <ExternalLink className="w-3.5 h-3.5" aria-hidden />
               </a>
             )}
           </span>
@@ -198,7 +198,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
         <div key={m.id} className="flex flex-col items-end">
           <div className="max-w-[85%] rounded-2xl rounded-br-md bg-azul text-white px-4 py-2.5">{m.texto}</div>
           <span className="text-xs text-tinta-suave mt-1">
-            {m.origem === 'voz' ? 'Falado · ' : ''}
+            {m.origem === 'voz' ? 'Spoken · ' : ''}
             {m.horario}
           </span>
         </div>
@@ -236,7 +236,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
                 className="inline-flex items-center gap-1 text-xs font-semibold text-azul min-h-8 px-2 rounded-full border border-linha bg-white cursor-pointer"
               >
                 <Volume2 className="w-3.5 h-3.5" aria-hidden />
-                Ouvir
+                Listen
               </button>
             )}
             <span className="text-xs text-tinta-suave">{m.horario}</span>
@@ -262,23 +262,23 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
 
   return (
     <div className="flex flex-col min-h-[100dvh] pb-4">
-      <Cabecalho titulo={`${nome} · Assistente OncoFlow`} onVoltar={onVoltar} direita={<OrbeLia estado={estadoOrbe} tamanho={36} />} />
+      <Cabecalho titulo={`${nome} · OncoFlow Assistant`} onVoltar={onVoltar} direita={<OrbeLia estado={estadoOrbe} tamanho={36} />} />
       <p aria-live="polite" className="sr-only">
-        {estadoOrbe === 'processando' ? 'Consultando suas informações' : ''}
+        {estadoOrbe === 'processando' ? 'Looking up your information' : ''}
       </p>
 
       <div className="space-y-2 mb-3">
         {inicio.modoConversa === 'profissional' && inicio.atendente && (
           <div className="rounded-xl bg-verde text-white px-4 py-2.5 flex items-center gap-2">
             <Stethoscope className="w-5 h-5 shrink-0" aria-hidden />
-            Você está conversando com {inicio.atendente}.
+            You are talking with {inicio.atendente}.
           </div>
         )}
         <AvisoUrgencia aviso={inicio.avisoUrgencia} />
         <details className="rounded-xl bg-white border border-linha">
           <summary className="flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold text-azul cursor-pointer">
             <Users className="w-4 h-4 text-verde" aria-hidden />
-            Quem vê esta conversa
+            Who sees this conversation
           </summary>
           <p className="px-3.5 pb-3 text-sm text-azul">{inicio.quemVe}</p>
         </details>
@@ -289,14 +289,14 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
         {ocupado && (
           <div className="flex items-center gap-2 text-tinta-suave">
             <OrbeLia estado="processando" tamanho={28} />
-            Respondendo…
+            Replying…
           </div>
         )}
         {proposta && (
           <div className="rounded-2xl border-2 border-verde bg-white p-4 space-y-3">
-            <p className="text-sm font-semibold text-verde uppercase tracking-wide">Antes de continuar</p>
+            <p className="text-sm font-semibold text-verde uppercase tracking-wide">Before we continue</p>
             <p className="text-azul">
-              <strong>Entendi:</strong> {proposta.resumo}
+              <strong>Here's what I understood:</strong> {proposta.resumo}
             </p>
             <div className="flex flex-col gap-2">
               <button
@@ -328,7 +328,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
       )}
 
       {!proposta && !ocupado && (
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1" aria-label="Sugestões">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1" aria-label="Suggestions">
           {SUGESTOES.map((s) => (
             <button
               key={s}
@@ -352,25 +352,25 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
         <button
           type="button"
           onClick={falarComLia}
-          aria-label="Falar com a Lia"
+          aria-label="Talk to Lia"
           className="w-14 h-14 rounded-full bg-verde text-white flex items-center justify-center shrink-0 cursor-pointer"
         >
           <Mic className="w-6 h-6" aria-hidden />
         </button>
         <label htmlFor="texto-lia" className="sr-only">
-          Mensagem para a {nome}
+          Message to {nome}
         </label>
         <input
           id="texto-lia"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
-          placeholder="Digite ou fale aqui…"
+          placeholder="Type or speak here…"
           className="flex-1 min-w-0 min-h-14 rounded-2xl border border-linha bg-white px-4 text-azul"
         />
         <button
           type="submit"
           disabled={!texto.trim() || ocupado}
-          aria-label="Enviar"
+          aria-label="Send"
           className="w-14 h-14 rounded-2xl bg-azul text-white flex items-center justify-center shrink-0 disabled:opacity-40 cursor-pointer"
         >
           <Send className="w-6 h-6" aria-hidden />

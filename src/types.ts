@@ -96,12 +96,12 @@ export interface Lembrete {
 export type OpcaoCheckin = 'bem' | 'cansaco' | 'dor' | 'nausea' | 'ansiedade' | 'outro';
 
 export const ROTULO_OPCAO_CHECKIN: Record<OpcaoCheckin, string> = {
-  bem: 'Bem',
-  cansaco: 'Cansado(a)',
-  dor: 'Com dor',
-  nausea: 'Náusea',
-  ansiedade: 'Ansioso(a)',
-  outro: 'Outro',
+  bem: 'Well',
+  cansaco: 'Tired',
+  dor: 'In pain',
+  nausea: 'Nauseous',
+  ansiedade: 'Anxious',
+  outro: 'Other',
 };
 
 export interface Checkin {
@@ -130,9 +130,9 @@ export type EstadoPendencia = 'aberta' | 'em_andamento' | 'concluida';
 export type Desfecho = 'sem_acao_necessaria' | 'contato_realizado' | 'encaminhado';
 
 export const ROTULO_DESFECHO: Record<Desfecho, string> = {
-  sem_acao_necessaria: 'Sem ação necessária',
-  contato_realizado: 'Contato realizado',
-  encaminhado: 'Encaminhado',
+  sem_acao_necessaria: 'No action needed',
+  contato_realizado: 'Contact made',
+  encaminhado: 'Referred',
 };
 
 export interface Pendencia {

@@ -15,7 +15,7 @@ export async function chamarApi<T>(caminho: string, usuarioId?: string, corpo?: 
   });
   const dados = await resposta.json().catch(() => ({}));
   if (!resposta.ok) {
-    throw new Error(dados.mensagem || 'Não conseguimos concluir agora. Tente de novo em instantes.');
+    throw new Error(dados.mensagem || "We couldn't finish that right now. Please try again in a moment.");
   }
   return dados as T;
 }
@@ -46,7 +46,7 @@ export function useEstadoPro(usuario: UsuarioEquipe | null) {
         setEstado(novo);
       }
     } catch {
-      setErro('Não conseguimos carregar agora. Tentando de novo…');
+      setErro("We couldn't load right now. Trying again…");
     }
   }, [usuario]);
 

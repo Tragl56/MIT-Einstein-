@@ -25,7 +25,7 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
     const ano = agora.getFullYear();
     const horas = String(agora.getHours()).padStart(2, '0');
     const minutos = String(agora.getMinutes()).padStart(2, '0');
-    return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+    return `${mes}/${dia}/${ano} ${horas}:${minutos}`;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +68,7 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
     };
 
     reader.onerror = () => {
-      console.error('Erro ao ler arquivo do plano terapêutico');
+      console.error('Failed to read the treatment plan file');
       setCarregando(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -99,7 +99,7 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
         id={`btn-atualizar-plano-${pacienteId}`}
         onClick={handleClick}
         disabled={carregando}
-        title="Anexar novo arquivo de plano terapêutico (.txt)"
+        title="Attach a new treatment plan file (.txt)"
         className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer shadow-2xs ${
           sucessoTemporario
             ? 'bg-gelo text-azul border-verde'
@@ -109,17 +109,17 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
         {sucessoTemporario ? (
           <>
             <Check className="w-3.5 h-3.5 text-verde" />
-            <span>Plano Atualizado!</span>
+            <span>Plan updated!</span>
           </>
         ) : carregando ? (
           <>
             <span className="w-3 h-3 border-2 border-verde border-t-transparent rounded-full animate-spin" />
-            <span>Lendo arquivo...</span>
+            <span>Reading file...</span>
           </>
         ) : (
           <>
             <UploadCloud className="w-3.5 h-3.5 text-verde" />
-            <span>Atualizar plano terapêutico</span>
+            <span>Update treatment plan</span>
           </>
         )}
       </button>
