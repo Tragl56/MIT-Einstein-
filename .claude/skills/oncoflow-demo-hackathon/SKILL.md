@@ -16,6 +16,15 @@ check-in por voz e visual; Lia para perguntas limitadas e ações administrativa
 extração e validação humana; painel de navegação com tarefas geradas após aprovação; FAQ restrito a conteúdo
 institucional aprovado.
 
+## Estado atual (31/10/2026)
+
+O código parte do IRIS do time (`npm run dev`; equipe em `/`, paciente em `/paciente`). Já funcionam: seed
+fictício com reset, jornada/agenda/documentos/check-in do paciente, Lia por texto com os quatro status e
+confirmação, painel da equipe com pendências e "Assumir conversa". **Ainda faltam os passos 1 a 4 do roteiro
+(copiloto → aprovação → tarefa → etapa nova no app)**, que são o centro da demo. Usuários do seed: Dra. Camila
+Ribeiro (médica), Enf. Rodrigo Mendes (enfermagem), Carla Menezes (navegação) e Maria Oliveira Costa
+(paciente). A consulta da Maria é na próxima terça, 14h (mockup do conceito), calculada a partir da data do reset.
+
 ## Ordem de construção (corte de baixo para cima se faltar tempo)
 
 | # | Entrega | Por que nesta posição |

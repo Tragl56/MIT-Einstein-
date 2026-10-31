@@ -17,8 +17,17 @@ Fontes, em ordem de precedência quando divergirem:
 
 As duas são propostas para validação, não requisitos confirmados pelo hospital.
 
-Stack: React + TypeScript (dois apps Vite: Pro e Paciente/PWA) · Python + FastAPI · PostgreSQL · Claude para
-extração e para a Lia · STT/TTS atrás de interfaces. Detalhes em `.claude/skills/oncoflow-arquitetura`.
+**Decisão do time (31/10/2026):** a experiência da equipe parte do protótipo **IRIS** (do próprio time, feito no
+Google AI Studio) e a do paciente segue o conceito OncoFlow. O código do MVP usa a base do IRIS.
+
+**Código atual (MVP):** React 19 + TypeScript + Vite + Tailwind 4 · servidor Node/Express (`server.ts`,
+`server/`) com estado em memória compartilhado pelas duas experiências · OncoFlow Pro em `/` (`src/App.tsx`,
+`src/components/`) · OncoFlow Paciente em `/paciente` (`src/paciente/`) · Lia por regras locais
+(`server/lia.ts`) · Gemini só para transcrever a fala · configuração do serviço como dados em
+`server/configServico.ts`. Rodar: `npm install` e `npm run dev`. Antes de entregar: `npm run lint` e `npm run build`.
+
+**Arquitetura-alvo (depois da demo):** Python + FastAPI · PostgreSQL · Claude para extração e para a Lia ·
+STT/TTS atrás de interfaces. Detalhes em `.claude/skills/oncoflow-arquitetura`.
 
 ## Regras que nunca se quebram
 
