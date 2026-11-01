@@ -43,6 +43,7 @@ export const ListaPacientes: React.FC<ListaPacientesProps> = ({
             <li key={p.id} className="py-1">
               <button
                 type="button"
+                data-paciente-id={p.id}
                 onClick={() => onSelecionar(p.id)}
                 aria-current={selecionado}
                 className={`w-full flex items-center gap-4 px-3 py-3 rounded-xl text-left cursor-pointer transition-colors ${

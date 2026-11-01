@@ -16,6 +16,19 @@ dist/
 coverage/
 *.tsbuildinfo
 *.log
+outputs/.oncoflow-demo/
+output/apk/
+public/app/
+patient-app/public/vad/*
+!patient-app/public/vad/LICENSE-*.txt
+patient-app/android/app/src/main/assets/
+patient-app/android/capacitor-cordova-android-plugins/
+**/.gradle/
+**/local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
 
 # Relatórios gerados e artefatos de teste
 reports/avaliacao_*.md
