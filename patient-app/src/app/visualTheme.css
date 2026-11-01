@@ -1,18 +1,20 @@
-/* Patient app adaptation of the approved OncoFlow visual kit. */
+/* Patient app adaptation of the OncoFlow AI brand kit v1.0 (same tokens as the Pro):
+   ink/primary = azul profundo #123B56, teal = verde-agua darkened for text #14776D (5.4:1),
+   mint = turquesa #55B9B0 (decorative only), sky = verde-agua #1D9E91 (accents, never small text). */
 :root {
-  --of-ink: #103b4b;
-  --of-muted: #5a6b73;
-  --of-primary: #06576a;
-  --of-teal: #087b80;
-  --of-mint: #50c6bb;
-  --of-sky: #41b9df;
-  --of-bg: #f6f9fa;
+  --of-ink: #123b56;
+  --of-muted: #4b5966;
+  --of-primary: #123b56;
+  --of-teal: #14776d;
+  --of-mint: #55b9b0;
+  --of-sky: #1d9e91;
+  --of-bg: #f4f8f9;
   --of-surface: #ffffff;
-  --of-soft: #e5f2f4;
-  --of-line: #d8e7e9;
+  --of-soft: #eaf3f4;
+  --of-line: #dce7ea;
   --of-radius-card: 22px;
   --of-radius-button: 28px;
-  --of-shadow: 0 8px 28px #154a5710;
+  --of-shadow: 0 8px 28px #123b5610;
   --navy: var(--of-ink);
   --teal: var(--of-teal);
   --accent: var(--of-teal);
@@ -21,7 +23,7 @@
   --line: var(--of-line);
   --paper: var(--of-bg);
   color: var(--of-ink);
-  background: #eaf2f5;
+  background: #eaf3f4;
 }
 .oncoflow-app {
   background: var(--of-bg);
@@ -58,7 +60,7 @@
 }
 .oncoflow-app .demo-banner {
   background: #edf4f5;
-  color: #4d6871;
+  color: #4b5966;
   border-color: var(--of-line);
   font-size: calc(14px * var(--text-scale));
   line-height: 1.45;
@@ -80,7 +82,7 @@
   background: linear-gradient(110deg, var(--of-primary), var(--of-teal));
   border-radius: var(--of-radius-button);
   min-height: 52px;
-  box-shadow: 0 5px 18px #07637518;
+  box-shadow: 0 5px 18px #123b5618;
   font-size: calc(16px * var(--text-scale));
 }
 .oncoflow-app .secondary {
@@ -97,7 +99,7 @@
   border-radius: 12px;
 }
 .oncoflow-app .tag.green {
-  color: #0b6665;
+  color: #0f5f57;
   background: #def3ef;
 }
 .oncoflow-app .footnote,
@@ -114,7 +116,7 @@
   min-width: 48px;
 }
 .oncoflow-app .bottom-nav {
-  background: #f6f9faf5;
+  background: #f4f8f9f5;
   border-color: var(--of-line);
 }
 .oncoflow-app .bottom-nav .active {
@@ -126,7 +128,7 @@
 .oncoflow-app .bottom-nav .lia-nav .nav-icon {
   background: var(--of-primary);
   color: white;
-  box-shadow: 0 3px 12px #06576a26;
+  box-shadow: 0 3px 12px #123b5626;
 }
 .oncoflow-app .brand-orb {
   background: none;
@@ -138,7 +140,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 6px 12px #2dbbb829);
+  filter: drop-shadow(0 6px 12px #1d9e9129);
 }
 .oncoflow-app .welcome-copy em {
   color: var(--of-teal);
@@ -149,7 +151,7 @@
 }
 .oncoflow-app .info-box {
   border-radius: 18px;
-  background: #eaf3f5;
+  background: #eaf4f5;
   border-color: var(--of-line);
 }
 .oncoflow-app .info-box p,
@@ -187,9 +189,9 @@
   border: 0;
   border-radius: 22px;
   text-align: left;
-  background: linear-gradient(125deg, #075469, #064a5b);
+  background: linear-gradient(125deg, #123b56, #0c2a3e);
   color: white;
-  box-shadow: 0 8px 20px #0754691c;
+  box-shadow: 0 8px 20px #123b561c;
 }
 .home-appointment > svg {
   margin-top: 3px;
@@ -241,7 +243,7 @@
 .home-shortcut {
   border: 0;
   border-radius: 22px;
-  background: #e2f0f3;
+  background: #e2f1f3;
   min-height: 84px;
   padding: 10px 8px;
   display: flex;
@@ -252,10 +254,10 @@
   min-width: 0;
 }
 .home-shortcut:nth-child(n + 3) {
-  background: #e9f2f5;
+  background: #e9f4f5;
 }
 .home-shortcut > svg {
-  color: #147486;
+  color: #14776d;
   width: 26px;
   height: 26px;
 }
@@ -276,14 +278,14 @@
   text-align: left;
   width: 100%;
   min-width: 0;
-  background: linear-gradient(110deg, #066679, #034f61);
+  background: linear-gradient(110deg, #1e5b78, #123b56);
   color: #fff;
   border: 0;
   border-radius: 25px;
   padding: 10px 14px;
   min-height: 72px;
   margin-top: 0;
-  box-shadow: 0 8px 20px #00687a24;
+  box-shadow: 0 8px 20px #123b5624;
 }
 .home-lia-cta .orb-small {
   width: 44px;
@@ -369,7 +371,7 @@
   --face-color: #615297;
 }
 .tone-other {
-  --feeling-bg: #ebf2f5;
+  --feeling-bg: #ebf4f5;
   --face-bg: #fff;
   --face-color: #526b77;
 }

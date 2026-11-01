@@ -143,12 +143,12 @@ function VoiceOrb({
         cy,
         size * 0.49,
       );
-      halo.addColorStop(0, quiet ? "#cce5e424" : "#82dbde30");
+      halo.addColorStop(0, quiet ? "#cce5e424" : "#a6dcd630");
       halo.addColorStop(
         0.72,
-        quiet ? "#cce5e414" : `rgba(110,211,222,${0.08 + energy * 0.13})`,
+        quiet ? "#cce5e414" : `rgba(85,185,176,${0.08 + energy * 0.13})`,
       );
-      halo.addColorStop(1, "#a6e6e600");
+      halo.addColorStop(1, "#a6dcd600");
       context.fillStyle = halo;
       context.fillRect(0, 0, size, size);
       context.save();
@@ -167,9 +167,9 @@ function VoiceOrb({
           size / 3,
           size / 3,
         );
-        fallback.addColorStop(0, "#e0f9f7");
-        fallback.addColorStop(0.45, "#52c2df");
-        fallback.addColorStop(1, "#57bcb8");
+        fallback.addColorStop(0, "#f3fafa");
+        fallback.addColorStop(0.45, "#55b9b0");
+        fallback.addColorStop(1, "#1d9e91");
         context.fillStyle = fallback;
         context.beginPath();
         context.arc(0, 0, size * 0.4, 0, Math.PI * 2);

@@ -1,7 +1,7 @@
 dialog.voice-conversation {
-  --voice-ink: #103b4b;
-  --voice-muted: #5a6b73;
-  --voice-primary: #06576a;
+  --voice-ink: #123b56;
+  --voice-muted: #4b5966;
+  --voice-primary: #123b56;
   --voice-text-scale: 1;
   position: fixed;
   inset: 0;
@@ -13,7 +13,7 @@ dialog.voice-conversation {
   border: 0;
   padding: max(24px, var(--safe-top, env(safe-area-inset-top, 0px))) 24px
     max(26px, var(--safe-bottom, env(safe-area-inset-bottom, 0px)));
-  background: #f6f9fa;
+  background: #f4f8f9;
   color: var(--voice-ink);
   font-family: Manrope, Arial, sans-serif;
   overflow: hidden;
@@ -23,7 +23,7 @@ dialog.voice-conversation[open] {
   flex-direction: column;
 }
 .voice-conversation::backdrop {
-  background: #f6f9fa;
+  background: #f4f8f9;
 }
 .voice-conversation *,
 .voice-conversation *::before,
@@ -157,13 +157,13 @@ dialog.voice-conversation[open] {
   max-width: 3px;
   height: calc(4px + 34px * var(--wave-level) * var(--bar-weight));
   border-radius: 5px;
-  background: #4ca8b4;
+  background: #1d9e91;
 }
 .voice-conversation[data-muted="true"]:not([data-stage="speaking"])
   .voice-input-bars
   i,
 .voice-conversation[data-stage="error"] .voice-input-bars i {
-  background: #b5c6ca;
+  background: #b5c8ca;
 }
 .voice-conversation .voice-hint {
   max-width: 340px;
@@ -180,7 +180,7 @@ dialog.voice-conversation[open] {
 .voice-conversation .voice-finish-turn {
   min-height: 48px;
   padding: 8px 18px;
-  border: 1px solid #d5e6e9;
+  border: 1px solid #d5e7e9;
   border-radius: 28px;
   background: #edf5f6;
   color: var(--voice-primary);
@@ -195,10 +195,10 @@ dialog.voice-conversation[open] {
   min-height: 65px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border: 1px solid #d8e7e9;
+  border: 1px solid #dce7ea;
   border-radius: 22px;
   padding: 16px 18px;
-  background: #eaf3f5;
+  background: #eaf4f5;
   flex: 0 1 auto;
 }
 .voice-conversation .voice-captions > div + div {
@@ -300,9 +300,9 @@ dialog.voice-conversation[open] {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 1px solid #d8e7e9;
+  border: 1px solid #dce7ea;
   color: var(--voice-primary);
-  background: #e5f0f3;
+  background: #e5f2f3;
 }
 .voice-conversation .voice-microphone.is-muted {
   background: #f8e9e4;
@@ -310,8 +310,8 @@ dialog.voice-conversation[open] {
   color: #a84232;
 }
 .voice-conversation .voice-close {
-  background: #dcebef;
-  border-color: #cfe1e7;
+  background: #dcedef;
+  border-color: #cfe5e7;
   color: var(--voice-ink);
 }
 .voice-conversation .voice-caption-toggle.selected {
@@ -328,7 +328,7 @@ dialog.voice-conversation[open] {
   overflow-wrap: anywhere;
 }
 .voice-conversation button:focus-visible {
-  outline: 3px solid #087b80;
+  outline: 3px solid #14776d;
   outline-offset: 4px;
 }
 @media (max-height: 700px) {
@@ -453,18 +453,18 @@ dialog.voice-conversation[open] {
 }
 .voice-conversation .voice-app-link {
   min-height: 48px;
-  border: 1px solid #d5e6e9;
+  border: 1px solid #d5e7e9;
   border-radius: 24px;
   background: transparent;
-  color: #06576a;
+  color: #123b56;
   padding: 8px 18px;
   font-size: calc(14px * var(--voice-text-scale));
   line-height: 1.4;
   flex-shrink: 0;
 }
 .voice-playback-warning {
-  color: #274b59;
-  background: #eef5f7;
+  color: #123b56;
+  background: #eef6f7;
   border-radius: 12px;
   padding: 10px;
   font-size: calc(14px * var(--voice-text-scale, 1));

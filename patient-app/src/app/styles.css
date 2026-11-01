@@ -11,7 +11,7 @@
   font-synthesis: none;
   font-weight: 450;
   --navy: #123b56;
-  --teal: #16766d;
+  --teal: #14776d;
   --accent: #1d9e91;
   --mist: #eaf3f4;
   --muted: #5e707b;
@@ -51,7 +51,7 @@ select {
 }
 button:focus-visible,
 select:focus-visible {
-  outline: 3px solid #167c70;
+  outline: 3px solid #14776d;
   outline-offset: 4px;
 }
 h1:focus {
@@ -209,7 +209,7 @@ button {
 .journey-card {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(120deg, #123b56, #174c59);
+  background: linear-gradient(120deg, #123b56, #1e5b78);
   color: white;
   border-radius: 23px;
   padding: 24px 23px 29px;
@@ -228,7 +228,7 @@ button {
   letter-spacing: -0.7px;
 }
 .journey-card p {
-  color: #c2d4d8;
+  color: #c2d6d8;
   font-size: calc(12px * var(--text-scale));
   max-width: 210px;
 }
@@ -318,7 +318,7 @@ button {
   border: 1px solid var(--line);
   background: #fff;
   border-radius: 19px;
-  box-shadow: 0 3px 9px #183d4b03;
+  box-shadow: 0 3px 9px #123b5603;
 }
 .appointment-card {
   width: 100%;
@@ -416,15 +416,15 @@ button {
   border-radius: 50%;
   background: radial-gradient(
     circle at 35% 25%,
-    #edf9e8 1%,
-    #8dd8c5 28%,
-    #4caaac 57%,
-    #2e686c 90%
+    #f3fafa 1%,
+    #a6dcd6 28%,
+    #1d9e91 57%,
+    #1e5b78 90%
   );
   box-shadow:
-    inset -9px -10px 24px #15495c26,
+    inset -9px -10px 24px #123b5626,
     inset 3px 3px 15px #f2fff8a1,
-    0 16px 33px #397d6c1c;
+    0 16px 33px #1d9e911c;
   overflow: hidden;
   animation: breathe 7s ease-in-out infinite;
 }
@@ -600,7 +600,7 @@ button {
   background: #e5f1e9;
 }
 .bottom-nav .lia-nav .nav-icon {
-  background: #143f51;
+  background: #123b56;
   color: #e2f7ed;
   border-radius: 16px;
   width: 43px;
@@ -609,7 +609,7 @@ button {
   box-shadow: 0 4px 12px #123b5626;
 }
 .bottom-nav .lia-nav.active .nav-icon {
-  background: #16766d;
+  background: #14776d;
 }
 .page-title {
   margin-bottom: 25px;
@@ -792,7 +792,7 @@ button {
   gap: 10px;
   align-items: flex-start;
   margin: 13px 0;
-  color: #596f79;
+  color: #4b5966;
   font-size: calc(13px * var(--text-scale));
   line-height: 1.6;
 }
@@ -820,7 +820,7 @@ button {
 }
 .secondary {
   background: #fff;
-  color: #315969;
+  color: #1e5b78;
   border: 1px solid #dbe5df;
 }
 .full {
@@ -1170,7 +1170,7 @@ button {
   box-shadow: 0 -20px 80px #123b5626;
 }
 .sheet::backdrop {
-  background: #12314066;
+  background: #0c2a3e66;
   backdrop-filter: blur(4px);
 }
 .sheet-inner {

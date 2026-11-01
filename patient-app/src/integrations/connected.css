@@ -24,14 +24,14 @@
   box-sizing: border-box;
   border: 1px solid #b9d6d9;
   background: #fff;
-  color: #163f49;
+  color: #123b56;
   border-radius: 12px;
   padding: 13px;
   font: inherit;
 }
 .hospital-pair-form input:focus-visible,
 .hospital-message-form textarea:focus-visible {
-  outline: 3px solid #51b9b2;
+  outline: 3px solid #55b9b0;
   outline-offset: 2px;
 }
 .hospital-local-option {
@@ -52,7 +52,7 @@
   margin-bottom: 18px;
   display: grid;
   gap: 9px;
-  color: #174951;
+  color: #123b56;
 }
 .hospital-status p {
   margin: 0;
@@ -135,7 +135,7 @@
 .message-review blockquote {
   margin: 0;
   padding: 12px;
-  border-left: 3px solid #43a49d;
+  border-left: 3px solid #1d9e91;
   background: #f1f8f7;
 }
 .hospital-connection-actions {
