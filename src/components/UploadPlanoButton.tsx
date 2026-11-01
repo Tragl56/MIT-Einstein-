@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { UploadCloud, FileText, Check, AlertCircle } from 'lucide-react';
+import { tr } from '../idioma';
 
 interface UploadPlanoButtonProps {
   pacienteId: string;
@@ -25,7 +26,7 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
     const ano = agora.getFullYear();
     const horas = String(agora.getHours()).padStart(2, '0');
     const minutos = String(agora.getMinutes()).padStart(2, '0');
-    return `${mes}/${dia}/${ano} ${horas}:${minutos}`;
+    return tr(`${dia}/${mes}/${ano} ${horas}:${minutos}`, `${mes}/${dia}/${ano} ${horas}:${minutos}`);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +69,7 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
     };
 
     reader.onerror = () => {
-      console.error('Failed to read the treatment plan file');
+      console.error(tr('Erro ao ler arquivo do plano terapêutico', 'Failed to read the treatment plan file'));
       setCarregando(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -99,7 +100,7 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
         id={`btn-atualizar-plano-${pacienteId}`}
         onClick={handleClick}
         disabled={carregando}
-        title="Attach a new treatment plan file (.txt)"
+        title={tr("Anexar novo arquivo de plano terapêutico (.txt)", "Attach a new treatment plan file (.txt)")}
         className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer shadow-2xs ${
           sucessoTemporario
             ? 'bg-gelo text-azul border-verde'
@@ -109,17 +110,17 @@ export const UploadPlanoButton: React.FC<UploadPlanoButtonProps> = ({
         {sucessoTemporario ? (
           <>
             <Check className="w-3.5 h-3.5 text-verde" />
-            <span>Plan updated!</span>
+            <span>{tr('Plano Atualizado!', 'Plan updated!')}</span>
           </>
         ) : carregando ? (
           <>
             <span className="w-3 h-3 border-2 border-verde border-t-transparent rounded-full animate-spin" />
-            <span>Reading file...</span>
+            <span>{tr('Lendo arquivo...', 'Reading file...')}</span>
           </>
         ) : (
           <>
             <UploadCloud className="w-3.5 h-3.5 text-verde" />
-            <span>Update treatment plan</span>
+            <span>{tr('Atualizar plano terapêutico', 'Update treatment plan')}</span>
           </>
         )}
       </button>

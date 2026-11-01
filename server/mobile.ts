@@ -12,6 +12,7 @@ import {
 import { CONFIG_SERVICO } from './configServico';
 import { detectarRelatoAfirmativo, detectarUrgencia } from './urgencia';
 import { agoraISO, gerarId } from './util';
+import { tr } from '../src/idioma';
 
 type Scope = { tenantId: string; hospitalId: string; patientId: string };
 type RecordBase = Scope & { id: string };
@@ -270,7 +271,7 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
     if (appointmentId && !p.agenda.some(a => a.id === appointmentId)) throw new ErroDominio(404, 'compromisso_nao_encontrado', 'Compromisso não encontrado para esta sessão.');
     const key = id(item.idempotencyKey); confirmation(item.confirmation);
     const result = idempotent(req, p, 'request', key, item, () => {
-      const pend = criarPendencia(p, { tipo: type === 'contact' ? 'contato_equipe' : 'reagendamento', origem: 'solicitacao_paciente', titulo: type === 'contact' ? 'Patient requested team contact · mobile demo' : `Rescheduling request · ${p.agenda.find(a => a.id === appointmentId)!.titulo}`, confirmadaPeloPaciente: true });
+      const pend = criarPendencia(p, { tipo: type === 'contact' ? 'contato_equipe' : 'reagendamento', origem: 'solicitacao_paciente', titulo: type === 'contact' ? tr('Paciente pediu contato com a equipe · demo mobile', 'Patient requested team contact · mobile demo') : `${tr('Pedido de reagendamento', 'Rescheduling request')} · ${p.agenda.find(a => a.id === appointmentId)!.titulo}`, confirmadaPeloPaciente: true });
       extras.requests[pend.id] = { patientId: p.id, type, ...(appointmentId ? { appointmentId } : {}), idempotencyKey: key };
       auditar(p.id, 'registrou_solicitacao_mobile_demo', pend.id);
       return pend;

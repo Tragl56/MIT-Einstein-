@@ -20,20 +20,21 @@ import { AvisoUrgencia } from './AvisoUrgencia';
 import { OrbeLia, type EstadoOrbe } from './OrbeLia';
 import { Cabecalho, type Tela } from './telas';
 import { TelaVozLia } from './TelaVozLia';
+import { tr } from '../idioma';
 
 const SELO: Record<StatusResultado, { rotulo: string; Icone: React.ElementType }> = {
-  consultado: { rotulo: 'Information looked up', Icone: Info },
-  registrado: { rotulo: 'Request logged', Icone: ClipboardCheck },
-  encaminhado: { rotulo: 'Forwarded to the team', Icone: Forward },
-  confirmado: { rotulo: 'Confirmed', Icone: CheckCircle2 },
+  consultado: { rotulo: tr('Informação consultada', 'Information looked up'), Icone: Info },
+  registrado: { rotulo: tr('Solicitação registrada', 'Request logged'), Icone: ClipboardCheck },
+  encaminhado: { rotulo: tr('Encaminhado para a equipe', 'Forwarded to the team'), Icone: Forward },
+  confirmado: { rotulo: tr('Confirmado', 'Confirmed'), Icone: CheckCircle2 },
 };
 
 const SUGESTOES = [
-  'When is my next appointment?',
-  "I'm very tired today and worried about work.",
-  'I want to talk to my nurse.',
-  "I can't go to my appointment.",
-  'How should I prepare for my next test?',
+  tr('Quando é minha próxima consulta?', 'When is my next appointment?'),
+  tr('Hoje estou muito cansada e preocupada com o trabalho.', "I'm very tired today and worried about work."),
+  tr('Quero falar com minha enfermeira.', 'I want to talk to my nurse.'),
+  tr('Não posso ir à consulta.', "I can't go to my appointment."),
+  tr('Como será meu próximo exame?', 'How should I prepare for my next test?'),
 ];
 
 interface TelaLiaProps {
@@ -186,7 +187,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
             {m.texto}
             {m.link && (
               <a href={m.link} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 font-semibold text-verde underline">
-                Join call <ExternalLink className="w-3.5 h-3.5" aria-hidden />
+                {tr('Entrar na chamada', 'Join call')} <ExternalLink className="w-3.5 h-3.5" aria-hidden />
               </a>
             )}
           </span>
@@ -198,7 +199,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
         <div key={m.id} className="flex flex-col items-end">
           <div className="max-w-[85%] rounded-2xl rounded-br-md bg-azul text-white px-4 py-2.5">{m.texto}</div>
           <span className="text-xs text-tinta-suave mt-1">
-            {m.origem === 'voz' ? 'Spoken · ' : ''}
+            {m.origem === 'voz' ? tr('Falado · ', 'Spoken · ') : ''}
             {m.horario}
           </span>
         </div>
@@ -236,7 +237,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
                 className="inline-flex items-center gap-1 text-xs font-semibold text-azul min-h-8 px-2 rounded-full border border-linha bg-white cursor-pointer"
               >
                 <Volume2 className="w-3.5 h-3.5" aria-hidden />
-                Listen
+                {tr('Ouvir', 'Listen')}
               </button>
             )}
             <span className="text-xs text-tinta-suave">{m.horario}</span>
@@ -262,23 +263,23 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
 
   return (
     <div className="flex flex-col min-h-[100dvh] pb-4">
-      <Cabecalho titulo={`${nome} · OncoFlow Assistant`} onVoltar={onVoltar} direita={<OrbeLia estado={estadoOrbe} tamanho={36} />} />
+      <Cabecalho titulo={tr(`${nome} · Assistente OncoFlow`, `${nome} · OncoFlow Assistant`)} onVoltar={onVoltar} direita={<OrbeLia estado={estadoOrbe} tamanho={36} />} />
       <p aria-live="polite" className="sr-only">
-        {estadoOrbe === 'processando' ? 'Looking up your information' : ''}
+        {estadoOrbe === 'processando' ? tr('Consultando suas informações', 'Looking up your information') : ''}
       </p>
 
       <div className="space-y-2 mb-3">
         {inicio.modoConversa === 'profissional' && inicio.atendente && (
           <div className="rounded-xl bg-verde text-white px-4 py-2.5 flex items-center gap-2">
             <Stethoscope className="w-5 h-5 shrink-0" aria-hidden />
-            You are talking with {inicio.atendente}.
+            {tr('Você está conversando com', 'You are talking with')} {inicio.atendente}.
           </div>
         )}
         <AvisoUrgencia aviso={inicio.avisoUrgencia} />
         <details className="rounded-xl bg-white border border-linha">
           <summary className="flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold text-azul cursor-pointer">
             <Users className="w-4 h-4 text-verde" aria-hidden />
-            Who sees this conversation
+            {tr('Quem vê esta conversa', 'Who sees this conversation')}
           </summary>
           <p className="px-3.5 pb-3 text-sm text-azul">{inicio.quemVe}</p>
         </details>
@@ -289,14 +290,14 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
         {ocupado && (
           <div className="flex items-center gap-2 text-tinta-suave">
             <OrbeLia estado="processando" tamanho={28} />
-            Replying…
+            {tr('Respondendo…', 'Replying…')}
           </div>
         )}
         {proposta && (
           <div className="rounded-2xl border-2 border-verde bg-white p-4 space-y-3">
-            <p className="text-sm font-semibold text-verde uppercase tracking-wide">Before we continue</p>
+            <p className="text-sm font-semibold text-verde uppercase tracking-wide">{tr('Antes de continuar', 'Before we continue')}</p>
             <p className="text-azul">
-              <strong>Here's what I understood:</strong> {proposta.resumo}
+              <strong>{tr('Entendi:', 'Here\'s what I understood:')}</strong> {proposta.resumo}
             </p>
             <div className="flex flex-col gap-2">
               <button
@@ -328,7 +329,7 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
       )}
 
       {!proposta && !ocupado && (
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1" aria-label="Suggestions">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1" aria-label={tr("Sugestões", "Suggestions")}>
           {SUGESTOES.map((s) => (
             <button
               key={s}
@@ -352,25 +353,25 @@ export const TelaLia: React.FC<TelaLiaProps> = ({
         <button
           type="button"
           onClick={falarComLia}
-          aria-label="Talk to Lia"
+          aria-label={tr("Falar com a Lia", "Talk to Lia")}
           className="w-14 h-14 rounded-full bg-verde text-white flex items-center justify-center shrink-0 cursor-pointer"
         >
           <Mic className="w-6 h-6" aria-hidden />
         </button>
         <label htmlFor="texto-lia" className="sr-only">
-          Message to {nome}
+          {tr('Mensagem para a', 'Message to')} {nome}
         </label>
         <input
           id="texto-lia"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
-          placeholder="Type or speak here…"
+          placeholder={tr("Digite ou fale aqui…", "Type or speak here…")}
           className="flex-1 min-w-0 min-h-14 rounded-2xl border border-linha bg-white px-4 text-azul"
         />
         <button
           type="submit"
           disabled={!texto.trim() || ocupado}
-          aria-label="Send"
+          aria-label={tr("Enviar", "Send")}
           className="w-14 h-14 rounded-2xl bg-azul text-white flex items-center justify-center shrink-0 disabled:opacity-40 cursor-pointer"
         >
           <Send className="w-6 h-6" aria-hidden />

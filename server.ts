@@ -5,6 +5,7 @@ import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import { criarApi } from './server/api';
 import { pacienteDaSessao, verificarInatividade, ErroDominio } from './server/estado';
+import { tr } from './src/idioma';
 
 dotenv.config();
 
@@ -48,10 +49,10 @@ async function startServer() {
 
     const { audioBase64, mimeType } = req.body ?? {};
     if (!audioBase64) {
-      return res.status(400).json({ error: 'audioBase64 is required', sucesso: false });
+      return res.status(400).json({ error: tr('audioBase64 é obrigatório', 'audioBase64 is required'), sucesso: false });
     }
     if (!process.env.GEMINI_API_KEY) {
-      return res.status(503).json({ error: 'Transcription unavailable: Gemini key not configured', sucesso: false });
+      return res.status(503).json({ error: tr('Transcrição indisponível: chave do Gemini não configurada', 'Transcription unavailable: Gemini key not configured'), sucesso: false });
     }
 
     const ai = getAiClient();
@@ -62,7 +63,7 @@ async function startServer() {
         parts: [
           { inlineData: { mimeType: cleanMimeType, data: audioBase64 } },
           {
-            text: 'Transcribe the following audio in US English. Return only the transcribed text, with no extra comments, no formatting and no quotes.',
+            text: tr('Transcreva o áudio a seguir em português do Brasil. Retorne apenas o texto transcrito, sem nenhum comentário adicional, sem formatação, sem aspas.', 'Transcribe the following audio in US English. Return only the transcribed text, with no extra comments, no formatting and no quotes.'),
           },
         ],
       },
@@ -80,8 +81,8 @@ async function startServer() {
       const transcricao = (response.text || '').trim().replace(/^["']|["']$/g, '');
       return res.json({ transcricao, sucesso: true });
     } catch (apiErr: any) {
-      console.error('Gemini audio transcription failed:', apiErr?.message);
-      return res.status(502).json({ error: 'Failed to transcribe audio', sucesso: false });
+      console.error(tr('Erro na transcrição de áudio via Gemini API:', 'Gemini audio transcription failed:'), apiErr?.message);
+      return res.status(502).json({ error: tr('Falha ao transcrever áudio', 'Failed to transcribe audio'), sucesso: false });
     }
   });
 

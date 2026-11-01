@@ -19,6 +19,8 @@ import { criarSeed, SESSOES_PACIENTE, USUARIOS_EQUIPE } from './seed';
 import { detectarUrgencia } from './urgencia';
 import { agoraISO, gerarId, horarioDe, somarHoras } from './util';
 import { iniciarVideochamada as gerarSalaVideochamada } from '../src/services/chamadaService';
+import { definirIdioma, ehIdioma, idiomaAtual, type Idioma } from '../src/idioma';
+import { tr } from '../src/idioma';
 
 export class ErroDominio extends Error {
   constructor(
@@ -64,19 +66,24 @@ const estado = {
   auditoria: [] as EventoAuditoria[],
 };
 
-type EstadoSalvo = Pick<typeof estado, 'versao' | 'pacientes' | 'pendencias' | 'auditoria'>;
+// `idioma` é opcional: estados salvos antes da demo bilíngue não têm o campo e foram gerados em inglês.
+type EstadoSalvo = Pick<typeof estado, 'versao' | 'pacientes' | 'pendencias' | 'auditoria'> & { idioma?: Idioma };
 const aoResetar = new Set<() => void>();
 export function observarReset(callback: () => void): () => void {
   aoResetar.add(callback);
   return () => aoResetar.delete(callback);
 }
 export function exportarEstado(): EstadoSalvo {
-  return { versao: estado.versao, pacientes: estado.pacientes, pendencias: estado.pendencias, auditoria: estado.auditoria };
+  return { versao: estado.versao, idioma: idiomaAtual(), pacientes: estado.pacientes, pendencias: estado.pendencias, auditoria: estado.auditoria };
 }
 export function importarEstado(salvo: EstadoSalvo): void {
   if (!salvo || !Array.isArray(salvo.pacientes) || !salvo.pacientes.length || !Array.isArray(salvo.pendencias) || !Array.isArray(salvo.auditoria)) {
     throw new Error('Invalid saved fictional demo state. Restore the file or reset it explicitly.');
   }
+  if (salvo.idioma !== undefined && !ehIdioma(salvo.idioma)) {
+    throw new Error('Invalid language in the saved fictional demo state. Restore the file or reset it explicitly.');
+  }
+  definirIdioma(salvo.idioma ?? 'en-US');
   estado.versao = salvo.versao;
   estado.pacientes = salvo.pacientes;
   estado.pendencias = salvo.pendencias;
@@ -85,6 +92,7 @@ export function importarEstado(salvo: EstadoSalvo): void {
 }
 export function marcarAlteracao(): void { mudou(); }
 
+/** Recria o seed no idioma atual da demo. */
 export function resetar(): void {
   const seed = criarSeed();
   estado.pacientes = seed.pacientes;
@@ -96,6 +104,12 @@ export function resetar(): void {
 }
 
 resetar();
+
+/** Troca o idioma da demo e recria os dados fictícios nesse idioma. */
+export function trocarIdiomaDemo(idioma: Idioma): void {
+  definirIdioma(idioma);
+  resetar();
+}
 
 export function versaoAtual(): number {
   return estado.versao;
@@ -115,19 +129,19 @@ export function todasPendencias(): Pendencia[] {
 
 export function obterPaciente(id: string): Paciente {
   const paciente = estado.pacientes.find((p) => p.id === id);
-  if (!paciente) throw new ErroDominio(404, 'paciente_nao_encontrado', 'Patient not found.');
+  if (!paciente) throw new ErroDominio(404, 'paciente_nao_encontrado', tr('Paciente não encontrado.', 'Patient not found.'));
   return paciente;
 }
 
 export function pacienteDaSessao(token: string | undefined): Paciente {
   const id = token ? SESSOES_PACIENTE[token] : undefined;
-  if (!id) throw new ErroDominio(401, 'sessao_invalida', 'Invalid patient session.');
+  if (!id) throw new ErroDominio(401, 'sessao_invalida', tr('Sessão do paciente inválida.', 'Invalid patient session.'));
   return obterPaciente(id);
 }
 
 export function usuarioPorId(id: string | undefined): UsuarioEquipe {
   const usuario = USUARIOS_EQUIPE.find((u) => u.id === id);
-  if (!usuario) throw new ErroDominio(401, 'usuario_invalido', 'Team user not identified.');
+  if (!usuario) throw new ErroDominio(401, 'usuario_invalido', tr('Usuário da equipe não identificado.', 'Team user not identified.'));
   return usuario;
 }
 
@@ -146,7 +160,7 @@ export function adicionarMensagem(
   const em = agoraISO();
   const mensagem: Mensagem = { id: gerarId('msg'), em, horario: horarioDe(em), ...parcial };
   paciente.mensagens.push(mensagem);
-  paciente.ultimaInteracao = `Today, ${mensagem.horario}`;
+  paciente.ultimaInteracao = tr(`Hoje, ${mensagem.horario}`, `Today, ${mensagem.horario}`);
   mudou();
   return mensagem;
 }
@@ -154,7 +168,7 @@ export function adicionarMensagem(
 function marcadorEquipe(paciente: Paciente, texto: string, tipoSistema: Mensagem['tipoSistema']): void {
   adicionarMensagem(paciente, {
     autor: 'sistema',
-    nomeAutor: 'System',
+    nomeAutor: tr('Sistema', 'System'),
     texto,
     sistema: true,
     tipoSistema,
@@ -165,7 +179,7 @@ function marcadorEquipe(paciente: Paciente, texto: string, tipoSistema: Mensagem
 function marcadorParaTodos(paciente: Paciente, texto: string): void {
   adicionarMensagem(paciente, {
     autor: 'sistema',
-    nomeAutor: 'System',
+    nomeAutor: tr('Sistema', 'System'),
     texto,
     sistema: true,
     tipoSistema: 'info',
@@ -183,7 +197,7 @@ export function assumirConversa(pacienteId: string, usuario: UsuarioEquipe): voi
   paciente.profissionalResponsavel = usuario.nome;
   paciente.ultimaAtividadeProfissional = agoraISO();
   estado.propostas.delete(pacienteId);
-  marcadorParaTodos(paciente, `${usuario.nome} joined the conversation`);
+  marcadorParaTodos(paciente, tr(`${usuario.nome} entrou na conversa`, `${usuario.nome} joined the conversation`));
   auditar(usuario.nome, 'assumiu_conversa', pacienteId);
 }
 
@@ -200,8 +214,8 @@ export function devolverParaLia(
   marcadorParaTodos(
     paciente,
     motivo === 'inatividade'
-      ? `${CONFIG_SERVICO.assistenteNome} took the conversation back after a period without team activity`
-      : `${usuario?.nome ?? 'The team'} handed the conversation back to ${CONFIG_SERVICO.assistenteNome}`
+      ? tr(`A ${CONFIG_SERVICO.assistenteNome} voltou a atender após um período sem atividade da equipe`, `${CONFIG_SERVICO.assistenteNome} took the conversation back after a period without team activity`)
+      : tr(`${usuario?.nome ?? 'A equipe'} devolveu o atendimento para a ${CONFIG_SERVICO.assistenteNome}`, `${usuario?.nome ?? 'The team'} handed the conversation back to ${CONFIG_SERVICO.assistenteNome}`)
   );
   auditar(usuario?.nome ?? 'sistema', `devolveu_conversa_${motivo}`, pacienteId);
 }
@@ -210,10 +224,10 @@ export function mensagemDoProfissional(pacienteId: string, usuario: UsuarioEquip
   // Validate before assuming the conversation or appending its team-joined marker.
   // The native strict contract accepts at most 4,000 characters per message.
   if (texto.length > 4000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(texto)) {
-    throw new ErroDominio(400, 'mensagem_invalida', 'Use a message with up to 4,000 characters and no invalid control characters.');
+    throw new ErroDominio(400, 'mensagem_invalida', tr('Use uma mensagem com até 4.000 caracteres e sem caracteres de controle inválidos.', 'Use a message with up to 4,000 characters and no invalid control characters.'));
   }
   const limpo = texto.trim();
-  if (!limpo) throw new ErroDominio(400, 'texto_vazio', 'Type a message.');
+  if (!limpo) throw new ErroDominio(400, 'texto_vazio', tr('Digite uma mensagem.', 'Type a message.'));
   // Como no IRIS: enviar uma mensagem com a Lia ativa faz o profissional assumir a conversa.
   assumirConversa(pacienteId, usuario);
   const paciente = obterPaciente(pacienteId);
@@ -233,8 +247,8 @@ export function iniciarVideochamada(pacienteId: string, usuario: UsuarioEquipe):
   assumirConversa(pacienteId, usuario);
   adicionarMensagem(paciente, {
     autor: 'sistema',
-    nomeAutor: 'System',
-    texto: `Video call opened by ${usuario.nome}`,
+    nomeAutor: tr('Sistema', 'System'),
+    texto: tr(`Videochamada aberta por ${usuario.nome}`, `Video call opened by ${usuario.nome}`),
     sistema: true,
     tipoSistema: 'videochamada',
     link: sala,
@@ -258,7 +272,7 @@ export function verificarInatividade(): void {
 
 export function atualizarPlano(pacienteId: string, usuario: UsuarioEquipe, texto: string, atualizadoEm: string): void {
   const paciente = obterPaciente(pacienteId);
-  if (!texto.trim()) throw new ErroDominio(400, 'plano_vazio', 'The plan file is empty.');
+  if (!texto.trim()) throw new ErroDominio(400, 'plano_vazio', tr('O arquivo do plano está vazio.', 'The plan file is empty.'));
   paciente.planoTerapeuticoTexto = texto.trim();
   paciente.planoAtualizadoEm = atualizadoEm;
   auditar(usuario.nome, 'atualizou_plano', pacienteId);
@@ -294,14 +308,14 @@ export function criarPendencia(
 
 export function obterPendencia(id: string): Pendencia {
   const pendencia = estado.pendencias.find((p) => p.id === id);
-  if (!pendencia) throw new ErroDominio(404, 'pendencia_nao_encontrada', 'Pending item not found.');
+  if (!pendencia) throw new ErroDominio(404, 'pendencia_nao_encontrada', tr('Pendência não encontrada.', 'Pending item not found.'));
   return pendencia;
 }
 
 export function assumirPendencia(id: string, usuario: UsuarioEquipe): void {
   const pendencia = obterPendencia(id);
   if (pendencia.estado === 'concluida') {
-    throw new ErroDominio(409, 'pendencia_concluida', 'This pending item is already closed.');
+    throw new ErroDominio(409, 'pendencia_concluida', tr('Esta pendência já foi concluída.', 'This pending item is already closed.'));
   }
   pendencia.estado = 'em_andamento';
   pendencia.responsavel = usuario.nome;
@@ -312,7 +326,7 @@ export function assumirPendencia(id: string, usuario: UsuarioEquipe): void {
 export function concluirPendencia(id: string, usuario: UsuarioEquipe, desfecho: Desfecho): void {
   const pendencia = obterPendencia(id);
   if (pendencia.estado === 'concluida') {
-    throw new ErroDominio(409, 'pendencia_concluida', 'This pending item is already closed.');
+    throw new ErroDominio(409, 'pendencia_concluida', tr('Esta pendência já foi concluída.', 'This pending item is already closed.'));
   }
   pendencia.estado = 'concluida';
   pendencia.responsavel = pendencia.responsavel ?? usuario.nome;
@@ -345,13 +359,13 @@ export function registrarSinalUrgencia(paciente: Paciente, falaLiteral: string, 
   const pendencia = criarPendencia(paciente, {
     tipo: 'sinal_urgencia',
     origem: 'hipotese_sistema',
-    titulo: 'Possible urgency sign mentioned',
+    titulo: tr('Possível sinal de urgência mencionado', 'Possible urgency sign mentioned'),
     falaLiteral,
-    motivo: `Term from the service list: "${termo}"`,
+    motivo: tr(`Termo da lista do serviço: "${termo}"`, `Term from the service list: "${termo}"`),
   });
   marcadorEquipe(
     paciente,
-    `Possible urgency sign mentioned ("${termo}") · system hypothesis, awaiting review`,
+    tr(`Possível sinal de urgência mencionado ("${termo}") · hipótese do sistema, aguardando revisão`, `Possible urgency sign mentioned ("${termo}") · system hypothesis, awaiting review`),
     'hipotese'
   );
   return pendencia;
@@ -377,7 +391,7 @@ export function registrarCheckin(
   origem: Checkin['origem']
 ): { checkin: Checkin; urgencia: boolean } {
   if (opcoes.length === 0 && !texto?.trim()) {
-    throw new ErroDominio(400, 'checkin_vazio', 'Pick an option or tell us how you are.');
+    throw new ErroDominio(400, 'checkin_vazio', tr('Escolha uma opção ou conte como você está.', 'Pick an option or tell us how you are.'));
   }
   const checkin: Checkin = {
     id: gerarId('ck'),
@@ -395,13 +409,13 @@ export function registrarCheckin(
     criarPendencia(paciente, {
       tipo: 'checkin',
       origem: 'regra_servico',
-      titulo: 'Check-in awaiting review',
+      titulo: tr('Check-in aguardando revisão', 'Check-in awaiting review'),
       falaLiteral: checkin.texto,
-      motivo: regra.exemplo ? `${regra.descricao} (illustrative criterion, to be defined with the service)` : regra.descricao,
+      motivo: regra.exemplo ? tr(`${regra.descricao} (critério ilustrativo — a definir com o serviço)`, `${regra.descricao} (illustrative criterion, to be defined with the service)`) : regra.descricao,
       papelDestino: regra.papelDestino,
       prazoHoras: regra.prazoHoras,
     });
-    marcadorEquipe(paciente, `Check-in logged · awaiting review (${regra.descricao})`, 'info');
+    marcadorEquipe(paciente, tr(`Check-in registrado · aguardando revisão (${regra.descricao})`, `Check-in logged · awaiting review (${regra.descricao})`), 'info');
   }
 
   const urgencia = checkin.texto ? detectarUrgencia(checkin.texto) : undefined;

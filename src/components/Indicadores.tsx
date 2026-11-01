@@ -3,6 +3,7 @@
 import React from 'react';
 import { AlertTriangle, CalendarDays, ClipboardList, Users } from 'lucide-react';
 import type { PacientePro } from '../types';
+import { tr } from '../idioma';
 
 interface IndicadoresProps {
   pacientes: PacientePro[];
@@ -23,10 +24,10 @@ export const Indicadores: React.FC<IndicadoresProps> = ({ pacientes, onAbrir }) 
   const sinais = abertas.filter((pe) => pe.tipo === 'sinal_urgencia').length;
 
   const cartoes = [
-    { valor: pacientes.length, rotulo: 'Active patients', Icone: Users, cor: 'text-teal', destino: 'pacientes' as const },
-    { valor: compromissosSemana, rotulo: 'Appointments in 7 days', Icone: CalendarDays, cor: 'text-teal', destino: 'pacientes' as const },
-    { valor: abertas.length - sinais, rotulo: 'Awaiting review', Icone: ClipboardList, cor: 'text-teal', destino: 'pendencias' as const },
-    { valor: sinais, rotulo: 'Sinais a revisar', Icone: AlertTriangle, cor: sinais > 0 ? 'text-urgente' : 'text-teal', destino: 'sinais' as const },
+    { valor: pacientes.length, rotulo: tr('Pacientes ativos', 'Active patients'), Icone: Users, cor: 'text-teal', destino: 'pacientes' as const },
+    { valor: compromissosSemana, rotulo: tr('Compromissos em 7 dias', 'Appointments in 7 days'), Icone: CalendarDays, cor: 'text-teal', destino: 'pacientes' as const },
+    { valor: abertas.length - sinais, rotulo: tr('Aguardando revisão', 'Awaiting review'), Icone: ClipboardList, cor: 'text-teal', destino: 'pendencias' as const },
+    { valor: sinais, rotulo: tr('Sinais a revisar', 'Signs to review'), Icone: AlertTriangle, cor: sinais > 0 ? 'text-urgente' : 'text-teal', destino: 'sinais' as const },
   ];
 
   return (
@@ -36,7 +37,7 @@ export const Indicadores: React.FC<IndicadoresProps> = ({ pacientes, onAbrir }) 
           key={rotulo}
           type="button"
           data-testid={`indicator-${destino}`}
-          aria-label={destino === 'sinais' ? `${valor} sinais aguardando revisão` : undefined}
+          aria-label={destino === 'sinais' ? tr(`${valor} sinais aguardando revisão`, `${valor} signs awaiting review`) : undefined}
           onClick={() => onAbrir(destino)}
           className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-2xl border shadow-[0_2px_12px_-6px_rgba(18,59,86,0.15)] px-4 sm:px-6 py-5 text-left cursor-pointer hover:border-verde/50 ${destino === 'sinais' && valor > 0 ? 'bg-urgente-fundo border-urgente-borda' : 'bg-white border-linha/70'}`}
         >

@@ -26,6 +26,12 @@ Google AI Studio) e a do paciente segue o conceito OncoFlow. O código do MVP us
 (`server/lia.ts`) · Gemini só para transcrever a fala · configuração do serviço como dados em
 `server/configServico.ts`. Rodar: `npm install` e `npm run dev`. Antes de entregar: `npm run lint` e `npm run build`.
 
+**Idioma:** português por padrão, inglês pelo seletor PT | EN (login, menu do usuário e preferências do
+paciente). O idioma é único da demo e fica no servidor; trocar recria o seed nesse idioma
+(`POST /api/demo/idioma`). Textos usam `tr('português', 'English')` de `src/idioma.ts`; no servidor, só na
+hora do uso (funções ou getters), nunca em constantes de módulo. A Lia tem duas versões com a mesma lógica,
+`server/lia.pt.ts` e `server/lia.en.ts`: mudança de regra entra nas duas.
+
 **Arquitetura-alvo (depois da demo):** Python + FastAPI · PostgreSQL · Claude para extração e para a Lia ·
 STT/TTS atrás de interfaces. Detalhes em `.claude/skills/oncoflow-arquitetura`.
 

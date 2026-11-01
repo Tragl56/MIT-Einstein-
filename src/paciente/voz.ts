@@ -1,5 +1,6 @@
 // Push-to-talk and local visual activity. The audio meter never sends data anywhere.
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { tr } from '../idioma';
 
 export interface AudioGravado { base64: string; mimeType: string; }
 
@@ -143,9 +144,9 @@ export function useGravador() {
 }
 
 function escolherVoz(): SpeechSynthesisVoice | undefined {
-  const vozes = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith('en'));
-  const preferidas = /aria|jenny|samantha|ava|allison|zira|female|google us english/i;
-  return vozes.find((v) => v.lang === 'en-US' && preferidas.test(v.name)) ?? vozes.find((v) => v.lang === 'en-US') ?? vozes[0];
+  const vozes = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith(tr('pt', 'en')));
+  const preferidas = tr(/francisca|maria|luciana|thalita|vit[oó]ria|female|feminina|google portugu[eê]s do brasil/i, /aria|jenny|samantha|ava|allison|zira|female|google us english/i);
+  return vozes.find((v) => v.lang === tr('pt-BR', 'en-US') && preferidas.test(v.name)) ?? vozes.find((v) => v.lang === tr('pt-BR', 'en-US')) ?? vozes[0];
 }
 
 export function useFala() {
@@ -173,7 +174,7 @@ export function useFala() {
     parar();
     const rodada = geracao.current;
     const fala = new SpeechSynthesisUtterance(texto);
-    fala.lang = 'en-US';
+    fala.lang = tr('pt-BR', 'en-US');
     fala.rate = velocidade;
     const voz = escolherVoz();
     if (voz) fala.voice = voz;

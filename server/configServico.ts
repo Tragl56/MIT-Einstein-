@@ -3,6 +3,7 @@
 // precisam ser definidos com o serviço antes de qualquer uso real.
 
 import type { AvisoUrgencia, OpcaoCheckin, PapelEquipe, TipoPendencia } from '../src/types';
+import { tr } from '../src/idioma';
 
 export interface RegraRevisaoCheckin {
   id: string;
@@ -38,8 +39,9 @@ export interface ConfigServico {
   horaPadraoLembrete: number;
 }
 
+// Textos com idioma são getters: o idioma da demo só é conhecido na hora do uso.
 export const CONFIG_SERVICO: ConfigServico = {
-  instituicao: 'Fictional Oncology Center',
+  get instituicao() { return tr('Centro de Oncologia Fictício', 'Fictional Oncology Center'); },
   assistenteNome: 'Lia',
   termosUrgencia: [
     'fever',
@@ -128,13 +130,15 @@ export const CONFIG_SERVICO: ConfigServico = {
     },
   },
   avisoUrgencia: {
-    titulo: 'This channel is not for emergencies',
-    texto:
-      'If you have severe symptoms or symptoms that get worse quickly, go to the hospital oncology urgent care unit or call emergency services.',
-    contato: 'Oncology urgent care · (000) 000-0000 (fictional number) · Emergency: 911',
+    get titulo() { return tr('Este canal não é para emergências', 'This channel is not for emergencies'); },
+    get texto() {
+      return tr('Se você estiver com sintomas fortes ou que pioram rápido, procure o pronto-atendimento oncológico do hospital ou ligue para o serviço de emergência.', 'If you have severe symptoms or symptoms that get worse quickly, go to the hospital oncology urgent care unit or call emergency services.');
+    },
+    get contato() { return tr('Pronto-atendimento oncológico · (00) 0000-0000 (número fictício) · Emergência: 192', 'Oncology urgent care · (000) 000-0000 (fictional number) · Emergency: 911'); },
   },
-  quemVe:
-    'Your care team (doctor, nursing and navigation) can see this conversation and your check-ins to organize your follow-up. The team replies within the service hours and response times.',
+  get quemVe() {
+    return tr('Sua equipe de cuidado (médica, enfermagem e navegação) pode ver esta conversa e seus check-ins para organizar o seu acompanhamento. As respostas da equipe seguem o horário e os prazos do serviço.', 'Your care team (doctor, nursing and navigation) can see this conversation and your check-ins to organize your follow-up. The team replies within the service hours and response times.');
+  },
   prazoHorasPorTipo: {
     sinal_urgencia: 4,
     checkin: 24,
@@ -152,7 +156,7 @@ export const CONFIG_SERVICO: ConfigServico = {
   regrasRevisao: [
     {
       id: 'regra-dor-nausea',
-      descricao: 'Check-in with pain or nausea → nursing reviews within 24 h',
+      get descricao() { return tr('Check-in com dor ou náusea → enfermagem revisa em até 24 h', 'Check-in with pain or nausea → nursing reviews within 24 h'); },
       exemplo: true,
       seAlgumaOpcao: ['dor', 'nausea'],
       emSeguida: 1,
@@ -161,7 +165,7 @@ export const CONFIG_SERVICO: ConfigServico = {
     },
     {
       id: 'regra-cansaco-ansiedade',
-      descricao: 'Tiredness or anxiety in 2 check-ins in a row → navigation reviews within 48 h',
+      get descricao() { return tr('Cansaço ou ansiedade em 2 check-ins seguidos → navegação revisa em até 48 h', 'Tiredness or anxiety in 2 check-ins in a row → navigation reviews within 48 h'); },
       exemplo: true,
       seAlgumaOpcao: ['cansaco', 'ansiedade'],
       emSeguida: 2,

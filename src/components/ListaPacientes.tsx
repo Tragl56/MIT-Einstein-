@@ -5,6 +5,7 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import type { PacientePro } from '../types';
 import { infoSituacao } from './Pendencias';
 import { diagnosticoCurto, iniciais } from './proUtil';
+import { tr } from '../idioma';
 
 interface ListaPacientesProps {
   pacientes: PacientePro[];
@@ -19,21 +20,21 @@ export const ListaPacientes: React.FC<ListaPacientesProps> = ({
   selecionadoId,
   onSelecionar,
   onVerTodos,
-  titulo = 'Patients under follow-up',
+  titulo = tr('Pacientes em acompanhamento', 'Patients under follow-up'),
 }) => (
   <section className="rounded-2xl bg-white border border-linha/70 shadow-[0_2px_12px_-6px_rgba(18,59,86,0.15)] p-5 sm:p-6">
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-lg font-semibold text-azul">{titulo}</h2>
       {onVerTodos && (
         <button type="button" onClick={onVerTodos} className="flex items-center gap-1 text-sm font-medium text-verde hover:text-verde-escuro cursor-pointer">
-          See all
+          {tr('Ver todos', 'See all')}
           <ArrowRight className="w-4 h-4" aria-hidden />
         </button>
       )}
     </div>
 
     {pacientes.length === 0 ? (
-      <p className="py-8 text-center text-sm text-tinta-suave">No patients match this search.</p>
+      <p className="py-8 text-center text-sm text-tinta-suave">{tr('Nenhum paciente encontrado para essa busca.', 'No patients match this search.')}</p>
     ) : (
       <ul className="divide-y divide-linha/70">
         {pacientes.map((p) => {
@@ -56,7 +57,7 @@ export const ListaPacientes: React.FC<ListaPacientesProps> = ({
                 <span className="flex-1 min-w-0">
                   <span className="block font-semibold text-azul truncate">{p.nome}</span>
                   <span className="block text-sm text-tinta-suave truncate">
-                    {p.idade} y/o · {diagnosticoCurto(p.diagnosticoResumido)}
+                    {p.idade} {tr('anos ·', 'y/o ·')} {diagnosticoCurto(p.diagnosticoResumido)}
                   </span>
                   {p.situacao !== 'sem_pendencias' && (
                     <span className={`mt-1 inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${info.classes}`}>

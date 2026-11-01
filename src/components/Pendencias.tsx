@@ -20,46 +20,47 @@ import type {
   TipoPendencia,
 } from '../types';
 import { ROTULO_DESFECHO } from '../types';
+import { tr } from '../idioma';
 
 export const ROTULO_TIPO: Record<TipoPendencia, string> = {
-  sinal_urgencia: 'Possible urgency sign',
+  sinal_urgencia: tr('Possível sinal de urgência', 'Possible urgency sign'),
   checkin: 'Check-in',
-  contato_equipe: 'Contact request',
-  reagendamento: 'Rescheduling',
-  duvida: 'Patient question',
+  contato_equipe: tr('Pedido de contato', 'Contact request'),
+  reagendamento: tr('Reagendamento', 'Rescheduling'),
+  duvida: tr('Dúvida do paciente', 'Patient question'),
 };
 
 export const ROTULO_PAPEL: Record<PapelEquipe, string> = {
-  medico: 'Physician',
-  enfermagem: 'Nursing',
-  navegacao: 'Navigation',
+  medico: tr('Médica(o)', 'Physician'),
+  enfermagem: tr('Enfermagem', 'Nursing'),
+  navegacao: tr('Navegação', 'Navigation'),
 };
 
 const ROTULO_ORIGEM: Record<OrigemPendencia, string> = {
-  hipotese_sistema: 'System hypothesis · awaiting review',
-  solicitacao_paciente: 'Request confirmed by the patient',
-  regra_servico: 'Service rule',
+  hipotese_sistema: tr('Hipótese do sistema · aguardando revisão', 'System hypothesis · awaiting review'),
+  solicitacao_paciente: tr('Pedido confirmado pelo paciente', 'Request confirmed by the patient'),
+  regra_servico: tr('Regra do serviço', 'Service rule'),
 };
 
 export function infoSituacao(situacao: SituacaoPaciente) {
   switch (situacao) {
     case 'sinal_a_revisar':
       return {
-        rotulo: 'Sinal a revisar',
+        rotulo: tr('Sinal a revisar', 'Sign to review'),
         Icone: AlertTriangle,
         classes: 'bg-urgente-fundo border-urgente-borda text-urgente',
         ponto: 'bg-urgente',
       };
     case 'aguardando_revisao':
       return {
-        rotulo: 'Awaiting review',
+        rotulo: tr('Aguardando revisão', 'Awaiting review'),
         Icone: Clock,
         classes: 'bg-atencao-fundo border-atencao-borda text-atencao',
         ponto: 'bg-atencao',
       };
     default:
       return {
-        rotulo: 'No pending items',
+        rotulo: tr('Sem pendências', 'No pending items'),
         Icone: CheckCircle2,
         classes: 'bg-gelo border-linha text-azul',
         ponto: 'bg-verde',
@@ -77,15 +78,15 @@ export const BadgeSituacao: React.FC<{ situacao: SituacaoPaciente }> = ({ situac
   );
 };
 
-export function descreverPrazo(prazoISO: string, agora = Date.now(), locale: 'pt-BR' | 'en-US' = 'en-US'): { texto: string; atrasada: boolean } {
+export function descreverPrazo(prazoISO: string, agora = Date.now()): { texto: string; atrasada: boolean } {
   const diferenca = new Date(prazoISO).getTime() - agora;
   const horas = Math.round(Math.abs(diferenca) / 3_600_000);
   const quanto = horas >= 1 ? `${horas} h` : `${Math.max(1, Math.round(Math.abs(diferenca) / 60_000))} min`;
-  return diferenca >= 0 ? { texto: `${locale === 'pt-BR' ? 'em' : 'due in'} ${quanto}`, atrasada: false } : { texto: `${locale === 'pt-BR' ? 'vencido há' : 'overdue by'} ${quanto}`, atrasada: true };
+  return diferenca >= 0 ? { texto: `${tr('em', 'due in')} ${quanto}`, atrasada: false } : { texto: `${tr('vencido há', 'overdue by')} ${quanto}`, atrasada: true };
 }
 
-function quando(iso: string, locale = 'en-US'): string {
-  return new Intl.DateTimeFormat(locale, {
+function quando(iso: string): string {
+  return new Intl.DateTimeFormat(tr('pt-BR', 'en-US'), {
     timeZone: 'America/Sao_Paulo',
     day: '2-digit',
     month: '2-digit',
@@ -108,18 +109,20 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
   const bloqueio = useRef(false);
   const concluida = pendencia.estado === 'concluida';
   const ehSinal = pendencia.tipo === 'sinal_urgencia';
-  const prazo = descreverPrazo(pendencia.prazo, Date.now(), ehSinal ? 'pt-BR' : 'en-US');
+  const prazo = descreverPrazo(pendencia.prazo);
   const ehHipotese = pendencia.origem === 'hipotese_sistema';
-  const seloSinal = concluida ? 'Hipótese do sistema · revisada pela equipe' : pendencia.estado === 'em_andamento' ? 'Hipótese do sistema · em revisão' : 'Hipótese do sistema · aguardando revisão';
-  const papelPt = { medico: 'Medicina', enfermagem: 'Enfermagem', navegacao: 'Navegação' };
-  const desfechoPt: Record<Desfecho, string> = { sem_acao_necessaria: 'Sem ação necessária', contato_realizado: 'Contato realizado', encaminhado: 'Encaminhado' };
-  const estadoPt = { aberta: 'Aberta', em_andamento: 'Em revisão', concluida: 'Revisão concluída' };
+  const seloSinal = concluida
+    ? tr('Hipótese do sistema · revisada pela equipe', 'System hypothesis · reviewed by the team')
+    : pendencia.estado === 'em_andamento'
+      ? tr('Hipótese do sistema · em revisão', 'System hypothesis · under review')
+      : tr('Hipótese do sistema · aguardando revisão', 'System hypothesis · awaiting review');
+  const rotuloEstado = { aberta: tr('Aberta', 'Open'), em_andamento: tr('Em revisão', 'Under review'), concluida: tr('Revisão concluída', 'Review completed') };
   const Icone = pendencia.tipo === 'sinal_urgencia' ? AlertTriangle : pendencia.tipo === 'duvida' ? HelpCircle : ClipboardList;
   const executar = async (trabalho: () => void | Promise<void>) => {
     if (bloqueio.current) return;
     bloqueio.current = true; setExecutando(true); setErro('');
     try { await trabalho(); }
-    catch (error) { setErro((error as Error).message || (ehSinal ? 'Não foi possível salvar a revisão. Tente novamente.' : 'The review could not be saved. Please try again.')); }
+    catch (error) { setErro((error as Error).message || tr('Não foi possível salvar a revisão. Tente novamente.', 'The review could not be saved. Please try again.')); }
     finally { bloqueio.current = false; setExecutando(false); }
   };
 
@@ -127,7 +130,6 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
     <article
       data-pendencia-id={pendencia.id}
       data-paciente-id={pendencia.pacienteId}
-      lang={ehSinal ? 'pt-BR' : undefined}
       className={`review-item border p-3.5 text-xs space-y-2.5 ${
         concluida ? 'bg-fundo border-linha opacity-80' : ehSinal ? 'bg-urgente-fundo/40 border-dashed border-urgente-borda' : ehHipotese ? 'bg-white border-dashed border-urgente-borda' : 'bg-white border-linha'
       }`}
@@ -137,7 +139,7 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
           <Icone className={`w-4 h-4 mt-0.5 shrink-0 ${pendencia.tipo === 'sinal_urgencia' ? 'text-urgente' : 'text-verde'}`} aria-hidden />
           <div className="min-w-0">
             <div className="font-semibold text-azul text-sm">
-              {ehSinal ? 'Sinal a revisar' : ROTULO_TIPO[pendencia.tipo]}
+              {ehSinal ? tr('Sinal a revisar', 'Sign to review') : ROTULO_TIPO[pendencia.tipo]}
               {nomePaciente && <span className="font-normal text-tinta-suave"> · {nomePaciente}</span>}
             </div>
             <div className="text-tinta-suave">{pendencia.titulo}</div>
@@ -157,7 +159,7 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
         <blockquote className="flex gap-2 border-l-4 border-turquesa pl-2.5 py-1 text-azul">
           <Quote className="w-3.5 h-3.5 shrink-0 mt-0.5 text-tinta-suave" aria-hidden />
           <span>
-            <span className="block text-[10px] uppercase tracking-wider font-semibold text-tinta-suave">{ehSinal ? 'Fala literal do paciente' : "Patient's words"}</span>
+            <span className="block text-[10px] uppercase tracking-wider font-semibold text-tinta-suave">{ehSinal ? tr('Fala literal do paciente', "Patient's literal words") : tr('Fala do paciente', "Patient's words")}</span>
             {pendencia.falaLiteral}
           </span>
         </blockquote>
@@ -166,30 +168,33 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
       {pendencia.motivo && <p className="text-tinta-suave">{pendencia.motivo}</p>}
       {pendencia.tipo === 'sinal_urgencia' && (
         <p className="text-tinta-suave">
-          {pendencia.confirmadaPeloPaciente ? 'Relato encaminhado com confirmação do paciente.' : 'Encaminhado automaticamente pelas regras do serviço para revisão da equipe.'} A prioridade clínica depende de avaliação profissional.
+          {pendencia.confirmadaPeloPaciente
+            ? tr('Relato encaminhado com confirmação do paciente.', "Report forwarded with the patient's confirmation.")
+            : tr('Encaminhado automaticamente pelas regras do serviço para revisão da equipe.', "Forwarded automatically by the service's rules for team review.")}{' '}
+          {tr('A prioridade clínica depende de avaliação profissional.', 'Clinical priority depends on professional assessment.')}
         </p>
       )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-tinta-suave">
-        <span>{ehSinal ? 'Encaminhado para: ' : 'Routed to: '}<strong className="text-azul">{ehSinal ? papelPt[pendencia.papelDestino] : ROTULO_PAPEL[pendencia.papelDestino]}</strong></span>
-        <span>{ehSinal ? 'Registrado em ' : 'Created '}{quando(pendencia.criadaEm, ehSinal ? 'pt-BR' : 'en-US')}</span>
-        {ehSinal && <span>Estado: <strong className="text-azul">{estadoPt[pendencia.estado]}</strong></span>}
+        <span>{tr('Encaminhado para: ', 'Routed to: ')}<strong className="text-azul">{ROTULO_PAPEL[pendencia.papelDestino]}</strong></span>
+        <span>{tr('Registrado em ', 'Created ')}{quando(pendencia.criadaEm)}</span>
+        {ehSinal && <span>{tr('Estado: ', 'Status: ')}<strong className="text-azul">{rotuloEstado[pendencia.estado]}</strong></span>}
         {!concluida && (
           <span className={`inline-flex items-center gap-1 font-semibold ${prazo.atrasada ? 'text-urgente' : 'text-azul'}`}>
             <Clock className="w-3 h-3" aria-hidden />
-            {ehSinal ? 'Prazo do serviço: ' : 'Service deadline: '}{prazo.texto}
+            {tr('Prazo do serviço: ', 'Service deadline: ')}{prazo.texto}
           </span>
         )}
         <span>
-          {ehSinal ? 'Responsável: ' : 'Owner: '}<strong className="text-azul">{pendencia.responsavel ?? (ehSinal ? 'A definir' : 'unassigned')}</strong>
+          {tr('Responsável: ', 'Owner: ')}<strong className="text-azul">{pendencia.responsavel ?? tr('A definir', 'Unassigned')}</strong>
         </span>
       </div>
 
       {concluida ? (
         <div className="flex items-center gap-1.5 text-azul font-semibold">
           <CheckCircle2 className="w-3.5 h-3.5 text-verde" aria-hidden />
-          {ehSinal ? 'Revisado por ' : 'Reviewed by '}{pendencia.concluidaPor} · {quando(pendencia.concluidaEm!, ehSinal ? 'pt-BR' : 'en-US')} ·{' '}
-          {pendencia.desfecho ? (ehSinal ? desfechoPt[pendencia.desfecho] : ROTULO_DESFECHO[pendencia.desfecho]) : ''}
+          {tr('Revisado por ', 'Reviewed by ')}{pendencia.concluidaPor} · {quando(pendencia.concluidaEm!)} ·{' '}
+          {pendencia.desfecho ? ROTULO_DESFECHO[pendencia.desfecho] : ''}
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -201,11 +206,11 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-verde hover:bg-verde-escuro text-white font-semibold cursor-pointer"
             >
               <UserCheck className="w-3.5 h-3.5" aria-hidden />
-              {ehSinal ? 'Assumir revisão' : 'Take on'}
+              {ehSinal ? tr('Assumir revisão', 'Take on review') : tr('Assumir', 'Take on')}
             </button>
           )}
           <label className="sr-only" htmlFor={`desfecho-${pendencia.id}`}>
-            {ehSinal ? 'Desfecho da revisão' : 'Review outcome'}
+            {tr('Desfecho da revisão', 'Review outcome')}
           </label>
           <select
             id={`desfecho-${pendencia.id}`}
@@ -214,10 +219,10 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
             onChange={(e) => setDesfecho(e.target.value as Desfecho)}
             className="px-2 py-1.5 rounded-lg border border-linha bg-white text-azul"
           >
-            <option value="">{ehSinal ? 'Escolha o desfecho…' : 'Review outcome…'}</option>
+            <option value="">{tr('Escolha o desfecho…', 'Choose the outcome…')}</option>
             {(Object.keys(ROTULO_DESFECHO) as Desfecho[]).map((d) => (
               <option key={d} value={d}>
-                {ehSinal ? desfechoPt[d] : ROTULO_DESFECHO[d]}
+                {ROTULO_DESFECHO[d]}
               </option>
             ))}
           </select>
@@ -227,7 +232,7 @@ export const PendenciaItem: React.FC<PendenciaItemProps> = ({ pendencia, nomePac
             onClick={() => desfecho && void executar(() => onConcluir(pendencia.id, desfecho))}
             className="px-3 py-1.5 rounded-lg border border-verde text-verde font-semibold hover:bg-gelo disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
-            {ehSinal ? 'Concluir revisão' : 'Complete review'}
+            {tr('Concluir revisão', 'Complete review')}
           </button>
         </div>
       )}

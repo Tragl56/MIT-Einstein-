@@ -3,14 +3,15 @@
 import React from 'react';
 import { Home, Users, ClipboardList, MessageSquareText, Building2 } from 'lucide-react';
 import { AssinaturaOncoFlow } from './LogoOncoFlow';
+import { tr } from '../idioma';
 
 export type PaginaPro = 'inicio' | 'pacientes' | 'pendencias' | 'comunicacao';
 
 const ITENS: { pagina: PaginaPro; rotulo: string; Icone: React.ElementType }[] = [
-  { pagina: 'inicio', rotulo: 'Home', Icone: Home },
-  { pagina: 'pacientes', rotulo: 'Patients', Icone: Users },
-  { pagina: 'pendencias', rotulo: 'Pending items', Icone: ClipboardList },
-  { pagina: 'comunicacao', rotulo: 'Messages', Icone: MessageSquareText },
+  { pagina: 'inicio', rotulo: tr('Início', 'Home'), Icone: Home },
+  { pagina: 'pacientes', rotulo: tr('Pacientes', 'Patients'), Icone: Users },
+  { pagina: 'pendencias', rotulo: tr('Pendências', 'Pending items'), Icone: ClipboardList },
+  { pagina: 'comunicacao', rotulo: tr('Comunicação', 'Messages'), Icone: MessageSquareText },
 ];
 
 interface SidebarProps {
@@ -29,9 +30,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
     <div className="space-y-9">
       <div className="px-2">
         <AssinaturaOncoFlow className="h-12 w-auto" />
-        <span className="block mt-1.5 pl-[52px] text-[11px] font-semibold uppercase tracking-[0.14em] text-verde">Pro · Care team</span>
+        <span className="block mt-1.5 pl-[52px] text-[11px] font-semibold uppercase tracking-[0.14em] text-verde">{tr('Pro · Equipe de cuidado', 'Pro · Care team')}</span>
       </div>
-      <nav aria-label="Sections" className="space-y-1">
+      <nav aria-label={tr("Seções", "Sections")} className="space-y-1">
         {ITENS.map(({ pagina: p, rotulo, Icone }) => {
           const ativa = pagina === p;
           return (
@@ -50,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
                 <span className="px-1.5 rounded-full bg-atencao text-white text-[11px] font-bold tabular-nums">{totalPendencias}</span>
               )}
               {p === 'comunicacao' && comunicacaoAtiva && (
-                <span className="w-2 h-2 rounded-full bg-verde" title="Contact request waiting" />
+                <span className="w-2 h-2 rounded-full bg-verde" title={tr("Pedido de contato aguardando", "Contact request waiting")} />
               )}
             </button>
           );
@@ -63,13 +64,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
         <Building2 className="w-5 h-5 text-verde shrink-0" aria-hidden />
         <span className="leading-tight">{instituicao}</span>
       </div>
-      <p className="px-3 text-[11px] text-tinta-suave">Fictional data · demo</p>
+      <p className="px-3 text-[11px] text-tinta-suave">{tr('Dados fictícios · demonstração', 'Fictional data · demo')}</p>
     </div>
   </aside>
 );
 
 export const NavegacaoCompacta: React.FC<{ pagina: PaginaPro; onNavegar: (p: PaginaPro) => void }> = ({ pagina, onNavegar }) => (
-  <nav aria-label="Sections" className="md:hidden flex gap-1 overflow-x-auto bg-white border-b border-linha px-4 py-2">
+  <nav aria-label={tr("Seções", "Sections")} className="md:hidden flex gap-1 overflow-x-auto bg-white border-b border-linha px-4 py-2">
     {ITENS.map(({ pagina: p, rotulo, Icone }) => (
       <button
         key={p}
