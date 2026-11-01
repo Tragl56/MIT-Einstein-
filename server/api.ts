@@ -1,6 +1,7 @@
 import express from 'express';
 import { criarRotas } from './rotas';
 import { criarIntegracaoMobile, type MobileOptions } from './mobile';
+import { tr } from '../src/idioma';
 
 /** Actual Express API, also mounted unchanged by HTTP integration tests. */
 export function criarApi(options: MobileOptions = {}) {
@@ -26,7 +27,7 @@ export function criarApi(options: MobileOptions = {}) {
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     // Never echo submitted text, tokens, codes or exception details.
     const status = error && typeof error === 'object' && 'status' in error && typeof error.status === 'number' ? error.status : 500;
-    res.status(status >= 400 && status < 600 ? status : 500).json({ erro: 'erro_api', mensagem: status === 500 ? 'Falha ao salvar ou processar a demonstração.' : 'Requisição inválida.' });
+    res.status(status >= 400 && status < 600 ? status : 500).json({ erro: 'erro_api', mensagem: status === 500 ? tr('Falha ao salvar ou processar a demonstração.', 'Could not save or process the demo.') : tr('Requisição inválida.', 'Invalid request.') });
   });
   return { app, ...mobile };
 }

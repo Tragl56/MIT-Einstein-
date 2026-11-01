@@ -35,6 +35,7 @@ import { AssinaturaOncoFlow } from '../components/LogoOncoFlow';
 import { AvisoUrgencia } from './AvisoUrgencia';
 import { OrbeLia } from './OrbeLia';
 import { dataCurta, diaDaSemana, diaEHora, porExtenso } from './formato';
+import { tr } from '../idioma';
 
 export type Tela = 'inicio' | 'jornada' | 'como-estou' | 'agenda' | 'documentos' | 'lia';
 
@@ -50,7 +51,7 @@ export const Cabecalho: React.FC<{ titulo: string; onVoltar: () => void; direita
       className="flex items-center gap-1.5 min-h-12 pr-3 text-azul font-semibold cursor-pointer"
     >
       <ArrowLeft className="w-6 h-6" aria-hidden />
-      Back
+      {tr('Voltar', 'Back')}
     </button>
     <h1 className="text-lg font-bold text-azul text-center flex-1 truncate">{titulo}</h1>
     <div className="min-w-12 flex justify-end">{direita}</div>
@@ -64,7 +65,7 @@ const BotaoOuvir: React.FC<{ texto: string; onOuvir: (t: string) => void }> = ({
     className="inline-flex items-center gap-1.5 min-h-11 px-3 rounded-xl border border-linha bg-white text-azul font-semibold cursor-pointer"
   >
     <Volume2 className="w-5 h-5 text-verde" aria-hidden />
-    Read aloud
+    {tr('Ouvir em voz alta', 'Read aloud')}
   </button>
 );
 
@@ -73,9 +74,9 @@ const BotaoOuvir: React.FC<{ texto: string; onOuvir: (t: string) => void }> = ({
 // ---------------------------------------------------------------------------
 
 const ROTULO_SOLICITACAO: Record<SolicitacaoPaciente['estado'], string> = {
-  registrada: 'Logged · waiting for the team',
-  com_a_equipe: 'With the team',
-  respondida: 'Completed by the team',
+  registrada: tr('Registrada · aguardando a equipe', 'Logged · waiting for the team'),
+  com_a_equipe: tr('Com a equipe', 'With the team'),
+  respondida: tr('Concluída pela equipe', 'Completed by the team'),
 };
 
 export const TelaInicio: React.FC<{ inicio: InicioPaciente; irPara: (t: Tela) => void; onPreferencias: () => void }> = ({
@@ -83,35 +84,35 @@ export const TelaInicio: React.FC<{ inicio: InicioPaciente; irPara: (t: Tela) =>
 }) => {
   const proxima = inicio.proximoCompromisso;
   const atalhos: [Tela, string, React.ElementType][] = [
-    ['jornada', 'My journey', Route], ['como-estou', 'How am I?', Heart],
-    ['agenda', 'My schedule', CalendarDays], ['documentos', 'My documents', FileText],
+    ['jornada', tr('Minha jornada', 'My journey'), Route], ['como-estou', tr('Como estou?', 'How am I?'), Heart],
+    ['agenda', tr('Minha agenda', 'My schedule'), CalendarDays], ['documentos', tr('Meus documentos', 'My documents'), FileText],
   ];
   const pedidosAbertos = inicio.solicitacoes.filter((s) => s.estado !== 'respondida');
-  const dia = proxima ? new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', day: '2-digit' }).format(new Date(proxima.dataHora)) : '';
-  const mes = proxima ? new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', month: 'short' }).format(new Date(proxima.dataHora)) : '';
+  const dia = proxima ? new Intl.DateTimeFormat(tr('pt-BR', 'en-US'), { timeZone: 'America/Sao_Paulo', day: '2-digit' }).format(new Date(proxima.dataHora)) : '';
+  const mes = proxima ? new Intl.DateTimeFormat(tr('pt-BR', 'en-US'), { timeZone: 'America/Sao_Paulo', month: 'short' }).format(new Date(proxima.dataHora)).replace('.', '') : '';
 
   return (
     <div className="patient-home">
       <header className="patient-home-brand">
-        <div className="patient-brand-lockup"><AssinaturaOncoFlow className="h-9 w-auto" /><span>Your care space</span></div>
-        <button type="button" onClick={onPreferencias} aria-label="Reading and voice preferences" className="patient-preferences">Aa</button>
+        <div className="patient-brand-lockup"><AssinaturaOncoFlow className="h-9 w-auto" /><span>{tr('Seu espaço de cuidado', 'Your care space')}</span></div>
+        <button type="button" onClick={onPreferencias} aria-label={tr("Preferências de idioma, leitura e voz", "Language, reading and voice preferences")} className="patient-preferences">Aa</button>
       </header>
-      <div className="patient-welcome"><h1>Hi, {inicio.primeiroNome}.</h1><p>Shall we organize your next steps?</p></div>
+      <div className="patient-welcome"><h1>{tr('Olá', 'Hi')}, {inicio.primeiroNome}.</h1><p>{tr('Vamos organizar seus próximos passos?', 'Shall we organize your next steps?')}</p></div>
 
       {proxima ? (
         <button type="button" onClick={() => irPara('agenda')} className="patient-appointment">
-          <span className="patient-appointment-heading"><span>{proxima.tipo === 'consulta' ? 'Your next appointment' : 'Your next scheduled visit'}</span><ChevronRight size={20} aria-hidden /></span>
+          <span className="patient-appointment-heading"><span>{proxima.tipo === 'consulta' ? tr('Sua próxima consulta', 'Your next appointment') : tr('Seu próximo compromisso', 'Your next scheduled visit')}</span><ChevronRight size={20} aria-hidden /></span>
           <span className="patient-appointment-date">
             <span className="patient-date-tile" aria-hidden><strong>{dia}</strong><small>{mes}</small></span>
             <span><strong>{diaDaSemana(proxima.dataHora)}</strong><span>{diaEHora(proxima.dataHora)}</span></span>
           </span>
           <span className="patient-appointment-place"><MapPin size={16} className="shrink-0 mt-1" aria-hidden /><span>{proxima.local}{proxima.profissional && <span className="block">{proxima.profissional}</span>}</span></span>
         </button>
-      ) : <div className="rounded-2xl bg-gelo p-5 text-azul">No appointments scheduled.</div>}
+      ) : <div className="rounded-2xl bg-gelo p-5 text-azul">{tr('Nenhum compromisso marcado.', 'No appointments scheduled.')}</div>}
 
       <section aria-labelledby="titulo-atalhos">
-        <h2 id="titulo-atalhos" className="patient-section-title">Your follow-up</h2>
-        <nav aria-label="Shortcuts" className="patient-shortcuts">
+        <h2 id="titulo-atalhos" className="patient-section-title">{tr('Seu acompanhamento', 'Your follow-up')}</h2>
+        <nav aria-label={tr("Atalhos", "Shortcuts")} className="patient-shortcuts">
           {atalhos.map(([tela, rotulo, Icone]) => <button key={tela} type="button" onClick={() => irPara(tela)} className="patient-shortcut">
             <span className="patient-shortcut-icon"><Icone size={23} aria-hidden /></span>
             <span className="patient-shortcut-label">{rotulo}<ChevronRight size={16} className="shrink-0" aria-hidden /></span>
@@ -119,19 +120,19 @@ export const TelaInicio: React.FC<{ inicio: InicioPaciente; irPara: (t: Tela) =>
         </nav>
       </section>
 
-      {pedidosAbertos.length > 0 && <section aria-label="My requests" className="patient-home-requests">
-        <h2 className="patient-section-title">My requests</h2>
+      {pedidosAbertos.length > 0 && <section aria-label={tr("Meus pedidos", "My requests")} className="patient-home-requests">
+        <h2 className="patient-section-title">{tr('Meus pedidos', 'My requests')}</h2>
         {pedidosAbertos.map((s) => <div key={s.id}>
           <p className="font-semibold text-azul text-sm">{s.titulo}</p>
           <p className="text-sm text-tinta-suave flex items-center gap-1.5 mt-1"><Clock className="w-4 h-4 shrink-0" aria-hidden />{ROTULO_SOLICITACAO[s.estado]}</p>
         </div>)}
       </section>}
 
-      <p className="patient-demo-note"><Info size={13} aria-hidden />Demo with fictional data.</p>
+      <p className="patient-demo-note"><Info size={13} aria-hidden />{tr('Demonstração com dados fictícios.', 'Demo with fictional data.')}</p>
       <div className="patient-lia-dock">
         <button type="button" onClick={() => irPara('lia')} className="patient-lia-button">
           <OrbeLia estado="espera" tamanho={47} />
-          <span><strong>Talk to {inicio.assistenteNome}</strong><small>Chat by text or voice</small></span>
+          <span><strong>{tr(`Falar com a ${inicio.assistenteNome}`, `Talk to ${inicio.assistenteNome}`)}</strong><small>{tr('Converse por texto ou voz', 'Chat by text or voice')}</small></span>
           <Mic size={23} className="shrink-0" aria-hidden />
         </button>
       </div>
@@ -141,11 +142,11 @@ export const TelaInicio: React.FC<{ inicio: InicioPaciente; irPara: (t: Tela) =>
 
 // Minha jornada: os mesmos estados e dados da plataforma.
 const ESTADO_ETAPA: Record<EstadoEtapa, { rotulo: string; Icone: React.ElementType; cor: string }> = {
-  concluida: { rotulo: 'Done', Icone: CheckCircle2, cor: 'text-verde' },
-  em_andamento: { rotulo: 'In progress', Icone: CircleDot, cor: 'text-azul' },
-  proxima: { rotulo: 'Next step', Icone: ChevronRight, cor: 'text-azul' },
-  aguardando: { rotulo: 'Pending', Icone: Clock, cor: 'text-atencao' },
-  futura: { rotulo: 'Upcoming', Icone: Circle, cor: 'text-tinta-suave' },
+  concluida: { rotulo: tr('Concluído', 'Done'), Icone: CheckCircle2, cor: 'text-verde' },
+  em_andamento: { rotulo: tr('Em andamento', 'In progress'), Icone: CircleDot, cor: 'text-azul' },
+  proxima: { rotulo: tr('Próxima etapa', 'Next step'), Icone: ChevronRight, cor: 'text-azul' },
+  aguardando: { rotulo: tr('Aguardando', 'Pending'), Icone: Clock, cor: 'text-atencao' },
+  futura: { rotulo: tr('Futuro', 'Upcoming'), Icone: Circle, cor: 'text-tinta-suave' },
 };
 
 export const TelaJornada: React.FC<{ inicio: InicioPaciente; onVoltar: () => void }> = ({ inicio, onVoltar }) => {
@@ -155,9 +156,9 @@ export const TelaJornada: React.FC<{ inicio: InicioPaciente; onVoltar: () => voi
 
   return (
     <div>
-      <Cabecalho titulo="My journey" onVoltar={onVoltar} />
+      <Cabecalho titulo={tr("Minha jornada", "My journey")} onVoltar={onVoltar} />
       <p className="text-azul mb-4">
-        <strong>{pct}%</strong> · of listed steps completed
+        <strong>{pct}%</strong> {tr('· Etapas cadastradas concluídas', '· of listed steps completed')}
       </p>
       <ol className="relative border-l-2 border-linha ml-3 space-y-4">
         {inicio.jornada.map((etapa) => {
@@ -179,8 +180,8 @@ export const TelaJornada: React.FC<{ inicio: InicioPaciente; onVoltar: () => voi
                 {expandida && (
                   <span className="block mt-2 space-y-1 text-azul">
                     {etapa.descricao && <span className="block">{etapa.descricao}</span>}
-                    {etapa.responsavel && <span className="block text-sm">Responsible: {etapa.responsavel}</span>}
-                    {etapa.oQueFazer && <span className="block text-sm font-semibold">What to do: {etapa.oQueFazer}</span>}
+                    {etapa.responsavel && <span className="block text-sm">{tr('Responsável:', 'Responsible:')} {etapa.responsavel}</span>}
+                    {etapa.oQueFazer && <span className="block text-sm font-semibold">{tr('O que fazer:', 'What to do:')} {etapa.oQueFazer}</span>}
                   </span>
                 )}
               </button>
@@ -203,11 +204,11 @@ export const TelaAgenda: React.FC<{
   onPedirLia: (texto: string) => void;
 }> = ({ inicio, onVoltar, onOuvir, onPedirLia }) => (
   <div className="space-y-4">
-    <Cabecalho titulo="My schedule" onVoltar={onVoltar} />
-    {inicio.agenda.length === 0 && <p className="text-azul">No appointments scheduled.</p>}
+    <Cabecalho titulo={tr("Minha agenda", "My schedule")} onVoltar={onVoltar} />
+    {inicio.agenda.length === 0 && <p className="text-azul">{tr('Nenhum compromisso marcado.', 'No appointments scheduled.')}</p>}
     {inicio.agenda.map((c: Compromisso) => (
       <article key={c.id} className="rounded-2xl bg-white border border-linha p-4 space-y-2">
-        <p className="text-sm font-semibold text-verde uppercase tracking-wide">{c.tipo === 'exame' ? 'Test' : 'Appointment'}</p>
+        <p className="text-sm font-semibold text-verde uppercase tracking-wide">{c.tipo === 'exame' ? tr('Exame', 'Test') : tr('Consulta', 'Appointment')}</p>
         <h2 className="text-lg font-bold text-azul">{c.titulo}</h2>
         <p className="text-azul">{porExtenso(c.dataHora)}</p>
         <p className="text-tinta-suave">
@@ -216,7 +217,7 @@ export const TelaAgenda: React.FC<{
         </p>
         {c.preparo && (
           <details className="rounded-xl bg-gelo p-3">
-            <summary className="font-semibold text-azul cursor-pointer min-h-8">How to prepare</summary>
+            <summary className="font-semibold text-azul cursor-pointer min-h-8">{tr('Como me preparar', 'How to prepare')}</summary>
             <p className="mt-2 text-azul">{c.preparo}</p>
             <div className="mt-2">
               <BotaoOuvir texto={c.preparo} onOuvir={onOuvir} />
@@ -225,10 +226,10 @@ export const TelaAgenda: React.FC<{
         )}
         <button
           type="button"
-          onClick={() => onPedirLia(c.tipo === 'exame' ? "I can't go to the test." : "I can't go to the appointment.")}
+          onClick={() => onPedirLia(c.tipo === 'exame' ? tr('Não posso ir ao exame.', "I can't go to the test.") : tr('Não posso ir à consulta.', "I can't go to the appointment."))}
           className="min-h-11 px-3 rounded-xl border border-linha text-azul font-semibold cursor-pointer"
         >
-          I can't go
+          {tr('Não posso ir', 'I can\'t go')}
         </button>
       </article>
     ))}
@@ -236,7 +237,7 @@ export const TelaAgenda: React.FC<{
       <section className="space-y-2">
         <h2 className="font-bold text-azul flex items-center gap-2">
           <Bell className="w-5 h-5 text-verde" aria-hidden />
-          Reminders
+          {tr('Lembretes', 'Reminders')}
         </h2>
         {inicio.lembretes.map((l) => (
           <p key={l.id} className="rounded-xl bg-white border border-linha p-3 text-azul">
@@ -263,10 +264,10 @@ export const TelaDocumentos: React.FC<{
   if (aberto) {
     return (
       <div className="space-y-4">
-        <Cabecalho titulo="Document" onVoltar={() => onAbrir(null)} />
+        <Cabecalho titulo={tr("Documento", "Document")} onVoltar={() => onAbrir(null)} />
         <h2 className="text-xl font-bold text-azul">{aberto.titulo}</h2>
         <p className="text-tinta-suave">
-          Released on {dataCurta(aberto.data)} by {aberto.liberadoPor}
+          {tr('Liberado em', 'Released on')} {dataCurta(aberto.data)} {tr('por', 'by')} {aberto.liberadoPor}
         </p>
         <p className="rounded-2xl bg-white border border-linha p-4 text-azul leading-relaxed">{aberto.texto}</p>
         <BotaoOuvir texto={`${aberto.titulo}. ${aberto.texto}`} onOuvir={onOuvir} />
@@ -275,9 +276,9 @@ export const TelaDocumentos: React.FC<{
   }
   return (
     <div className="space-y-3">
-      <Cabecalho titulo="My documents" onVoltar={onVoltar} />
-      <p className="text-tinta-suave">Results and guidance your team released to you.</p>
-      {inicio.documentos.length === 0 && <p className="text-azul">No documents released yet.</p>}
+      <Cabecalho titulo={tr("Meus documentos", "My documents")} onVoltar={onVoltar} />
+      <p className="text-tinta-suave">{tr('Resultados e orientações que sua equipe liberou para você.', 'Results and guidance your team released to you.')}</p>
+      {inicio.documentos.length === 0 && <p className="text-azul">{tr('Nenhum documento liberado ainda.', 'No documents released yet.')}</p>}
       {inicio.documentos.map((d: Documento) => (
         <button
           key={d.id}
@@ -289,7 +290,7 @@ export const TelaDocumentos: React.FC<{
           <span className="flex-1">
             <span className="block font-semibold text-azul">{d.titulo}</span>
             <span className="block text-sm text-tinta-suave">
-              {d.tipo === 'resultado' ? 'Result' : 'Guidance'} · {dataCurta(d.data)}
+              {d.tipo === 'resultado' ? tr('Resultado', 'Result') : tr('Orientação', 'Guidance')} · {dataCurta(d.data)}
             </span>
           </span>
           <ChevronRight className="w-6 h-6 text-azul" aria-hidden />
@@ -332,7 +333,7 @@ export const TelaComoEstou: React.FC<{
 
   return (
     <div className="space-y-5 pb-8">
-      <Cabecalho titulo="How am I?" onVoltar={onVoltar} />
+      <Cabecalho titulo={tr("Como estou?", "How am I?")} onVoltar={onVoltar} />
 
       {resultado ? (
         <div className="space-y-4">
@@ -340,21 +341,21 @@ export const TelaComoEstou: React.FC<{
           <div role="status" className="rounded-2xl bg-gelo p-4 space-y-1">
             <p className="flex items-center gap-2 font-bold text-azul">
               <CheckCircle2 className="w-5 h-5 text-verde" aria-hidden />
-              Check-in logged
+              {tr('Check-in registrado', 'Check-in logged')}
             </p>
-            <p className="text-azul">We received your update. Your team will see it as agreed with the service.</p>
+            <p className="text-azul">{tr('Recebemos sua atualização. Sua equipe vai ver conforme o combinado com o serviço.', 'We received your update. Your team will see it as agreed with the service.')}</p>
           </div>
           <button type="button" onClick={() => setResultado(null)} className="min-h-12 px-4 rounded-xl border border-linha text-azul font-semibold cursor-pointer">
-            Log another
+            {tr('Registrar outro', 'Log another')}
           </button>
         </div>
       ) : (
         <>
           <div>
-            <h2 className="text-xl font-bold text-azul">How are you feeling today?</h2>
-            <p className="text-tinta-suave">You can tell us how you are or pick one or more options.</p>
+            <h2 className="text-xl font-bold text-azul">{tr('Como você está se sentindo hoje?', 'How are you feeling today?')}</h2>
+            <p className="text-tinta-suave">{tr('Você pode dizer como está ou escolher uma ou mais opções.', 'You can tell us how you are or pick one or more options.')}</p>
           </div>
-          <div role="group" aria-label="How you are feeling options" className="grid grid-cols-2 gap-3">
+          <div role="group" aria-label={tr("Opções de como você está", "How you are feeling options")} className="grid grid-cols-2 gap-3">
             {OPCOES.map((o) => {
               const marcada = escolhidas.includes(o);
               return (
@@ -376,7 +377,7 @@ export const TelaComoEstou: React.FC<{
 
           <div className="space-y-2">
             <label htmlFor="checkin-texto" className="font-semibold text-azul">
-              Want to tell us more? (optional)
+              {tr('Quer contar mais? (opcional)', 'Want to tell us more? (optional)')}
             </label>
             <textarea
               id="checkin-texto"
@@ -387,7 +388,7 @@ export const TelaComoEstou: React.FC<{
               }}
               rows={3}
               className="w-full rounded-xl border border-linha bg-white p-3 text-azul"
-              placeholder="Write in your own words"
+              placeholder={tr("Escreva com suas palavras", "Write in your own words")}
             />
             <button
               type="button"
@@ -400,16 +401,16 @@ export const TelaComoEstou: React.FC<{
               className="min-h-12 px-4 rounded-xl border border-linha bg-white text-azul font-semibold flex items-center gap-2 cursor-pointer"
             >
               {gravacao.gravando ? <Square className="w-5 h-5 text-urgente" aria-hidden /> : <Mic className="w-5 h-5 text-verde" aria-hidden />}
-              {gravacao.gravando ? 'Stop and transcribe' : gravacao.transcrevendo ? 'Transcribing…' : 'Speak instead of typing'}
+              {gravacao.gravando ? tr('Parar e transcrever', 'Stop and transcribe') : gravacao.transcrevendo ? tr('Transcrevendo…', 'Transcribing…') : tr('Falar em vez de escrever', 'Speak instead of typing')}
             </button>
-            {origem === 'voz' && texto && <p className="text-sm text-tinta-suave">This is what I understood. You can correct it before sending.</p>}
+            {origem === 'voz' && texto && <p className="text-sm text-tinta-suave">{tr('Entendi o que está acima. Você pode corrigir antes de enviar.', 'This is what I understood. You can correct it before sending.')}</p>}
             {gravacao.erro && <p className="text-sm text-atencao">{gravacao.erro}</p>}
           </div>
 
           <div className="rounded-xl bg-white border border-linha p-3 text-sm text-azul flex gap-2">
             <Users className="w-5 h-5 text-verde shrink-0" aria-hidden />
             <span>
-              <strong className="block">Who sees this and why</strong>
+              <strong className="block">{tr('Quem vê e para quê', 'Who sees this and why')}</strong>
               {inicio.quemVe}
             </span>
           </div>
@@ -421,7 +422,7 @@ export const TelaComoEstou: React.FC<{
             onClick={enviar}
             className="w-full min-h-14 rounded-2xl bg-verde text-white text-lg font-bold disabled:opacity-40 cursor-pointer"
           >
-            Send
+            {tr('Enviar', 'Send')}
           </button>
           <button
             type="button"
@@ -429,20 +430,20 @@ export const TelaComoEstou: React.FC<{
             className="w-full min-h-12 rounded-2xl border-2 border-azul text-azul font-bold flex items-center justify-center gap-2 cursor-pointer"
           >
             <Mic className="w-5 h-5" aria-hidden />
-            I want to talk to {inicio.assistenteNome}
+            {tr('Quero falar com a', 'I want to talk to')} {inicio.assistenteNome}
           </button>
         </>
       )}
 
-      <section aria-label="My check-ins" className="space-y-2">
+      <section aria-label={tr("Meus registros", "My check-ins")} className="space-y-2">
         <h2 className="font-bold text-azul flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-verde" aria-hidden />
-          My check-ins
+          {tr('Meus registros', 'My check-ins')}
         </h2>
         {inicio.checkins.slice(0, 6).map((c) => (
           <div key={c.id} className="rounded-xl bg-white border border-linha p-3 text-azul">
             <p className="text-sm text-tinta-suave">{porExtenso(c.em)}</p>
-            <p className="font-semibold">{c.opcoes.map((o) => ROTULO_OPCAO_CHECKIN[o]).join(', ') || 'Report'}</p>
+            <p className="font-semibold">{c.opcoes.map((o) => ROTULO_OPCAO_CHECKIN[o]).join(', ') || tr('Relato', 'Report')}</p>
             {c.texto && <p>“{c.texto}”</p>}
           </div>
         ))}

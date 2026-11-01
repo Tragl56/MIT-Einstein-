@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { InicioPaciente, OpcaoCheckin } from '../types';
+import { tr } from '../idioma';
 
 const SESSAO_DEMO = 'demo-maria';
 
@@ -13,7 +14,7 @@ async function chamar<T>(caminho: string, corpo?: unknown): Promise<T> {
     body: corpo === undefined ? undefined : JSON.stringify(corpo),
   });
   const dados = await resposta.json().catch(() => ({}));
-  if (!resposta.ok) throw new Error(dados.mensagem || "We couldn't finish that right now. Please try again in a moment.");
+  if (!resposta.ok) throw new Error(dados.mensagem || tr('Não conseguimos concluir agora. Tente de novo em instantes.', "We couldn't finish that right now. Please try again in a moment."));
   return dados as T;
 }
 
@@ -34,7 +35,7 @@ export function usePaciente() {
       setErro(null);
       if (novo.versao !== versao.current) aplicar(novo);
     } catch {
-      setErro('No connection right now. Trying again…');
+      setErro(tr('Sem conexão agora. Tentando de novo…', 'No connection right now. Trying again…'));
     }
   }, [aplicar]);
 

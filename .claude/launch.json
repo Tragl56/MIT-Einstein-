@@ -8,6 +8,12 @@
       "port": 3000
     },
     {
+      "name": "platform",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:platform"],
+      "port": 3000
+    },
+    {
       "name": "backend",
       "runtimeExecutable": "backend\\.venv\\Scripts\\python.exe",
       "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--app-dir", "backend", "--port", "8000"],

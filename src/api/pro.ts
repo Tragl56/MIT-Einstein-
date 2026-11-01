@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Desfecho, EstadoPro, UsuarioEquipe } from '../types';
+import { tr } from '../idioma';
 
 export async function chamarApi<T>(caminho: string, usuarioId?: string, corpo?: unknown, options?: { signal?: AbortSignal }): Promise<T> {
   const resposta = await fetch(caminho, {
@@ -16,7 +17,7 @@ export async function chamarApi<T>(caminho: string, usuarioId?: string, corpo?: 
   });
   const dados = await resposta.json().catch(() => ({}));
   if (!resposta.ok) {
-    throw new Error(dados.mensagem || dados.error?.message || "We couldn't finish that right now. Please try again in a moment.");
+    throw new Error(dados.mensagem || dados.error?.message || tr('Não conseguimos concluir agora. Tente de novo em instantes.', "We couldn't finish that right now. Please try again in a moment."));
   }
   return dados as T;
 }
@@ -55,7 +56,7 @@ export function useEstadoPro(usuario: UsuarioEquipe | null) {
         setEstado(novo);
       }
     } catch {
-      if (geracao === sessao.current) setErro("We couldn't load right now. Trying again…");
+      if (geracao === sessao.current) setErro(tr('Não conseguimos carregar agora. Tentando de novo…', "We couldn't load right now. Trying again…"));
     } finally {
       if (geracao === sessao.current) carregando.current = false;
     }
