@@ -133,7 +133,7 @@
   padding-top: 12px !important;
 }
 .safety-demo :is(summary, textarea, input):focus-visible {
-  outline: 3px solid #167c70;
+  outline: 3px solid #14776d;
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {

@@ -24,6 +24,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend", "run", "dev:paciente"],
       "port": 5174
+    },
+    {
+      "name": "patient-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "patient-app", "run", "dev", "--", "--port", "5175", "--strictPort"],
+      "port": 5175,
+      "url": "http://127.0.0.1:5175"
     }
   ]
 }

@@ -348,7 +348,7 @@
     },
     {
       "path": "public/visual/lia-orb.svg",
-      "sha256": "f2088f2933802491ea655a4e2fd9a715ffc8641b77018ac31e76d2d250b90f9f"
+      "sha256": "71bac0d4b655ed7a2ed431c198339322279edffb4bd022a232dba979df39e097"
     },
     {
       "path": "README.md",
@@ -396,11 +396,11 @@
     },
     {
       "path": "src/app/styles.css",
-      "sha256": "5182bd2d145b0ecc8c20ae508afd3414ee7837537e6f5ec7be1a79ef7a1873fb"
+      "sha256": "4f63158b6537711aefa164f1b32d9d571a1d7d98936a210863a843de5b888b09"
     },
     {
       "path": "src/app/visualTheme.css",
-      "sha256": "8d1e854fdd17b8f8aa9e47adb46423afee831d4d52cc068a3759ebf76dacb1d6"
+      "sha256": "67017c576057716767501a17f64b2a2ef12dae1e818ddaf73b223cfea7316c86"
     },
     {
       "path": "src/demo/fixtures.ts",
@@ -412,7 +412,7 @@
     },
     {
       "path": "src/features/lia/lia.css",
-      "sha256": "da23b7c198744848d622de940b4f89f05ac9a216fc88d5f820899d878d00066e"
+      "sha256": "83b6df7d8318b01632c89c3281496294ab91e54a3ceb5c28cb1b5c69b26298e9"
     },
     {
       "path": "src/features/lia/LiaActionConfirmation.tsx",
@@ -428,11 +428,11 @@
     },
     {
       "path": "src/features/lia/voiceConversation.css",
-      "sha256": "c95bdf5da1c4f461bba1ea2267f1f6aa9c13009faa79aa12a77fe3aca72e0c1b"
+      "sha256": "9cd33210250050fe482d1a45ecf849e1eccef8195541acb94053d103062529e3"
     },
     {
       "path": "src/features/lia/VoiceConversation.tsx",
-      "sha256": "de99d50c77edfbc9d469dff24c95a712e420d22b2091478672acf5334d0103d4"
+      "sha256": "add48dbe06c3a31e203aa9864696ce14aaff3fe8a2846a602b328024a1a7ee57"
     },
     {
       "path": "src/features/safety/connectedSymptoms.css",
@@ -452,7 +452,7 @@
     },
     {
       "path": "src/features/safety/safetyDemo.css",
-      "sha256": "6a078e53174085eb7dcc7907d9e4afcc72886fa79b9693a4c41ad8d5c9966ad5"
+      "sha256": "c6033913f7358949b373235552b3b0f16aa355a41cb047eb2919f3ad3fb81dfe"
     },
     {
       "path": "src/features/safety/SafetyDemo.tsx",
@@ -512,7 +512,7 @@
     },
     {
       "path": "src/integrations/connected.css",
-      "sha256": "122397beaafcd649c6f0c08b90d0cae2ece0457f24a3d9878f2f9cd1cd3d3c9a"
+      "sha256": "31573538e789c5686dd8c83a6ab7dcb23d90d01a231b2c136fd74e9bf1fde31a"
     },
     {
       "path": "src/integrations/ConnectedPanels.tsx",
