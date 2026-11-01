@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Home, Users, ClipboardList, MessageSquareText, Building2 } from 'lucide-react';
-import { LogoOncoFlow } from './LogoOncoFlow';
+import { AssinaturaOncoFlow } from './LogoOncoFlow';
 
 export type PaginaPro = 'inicio' | 'pacientes' | 'pendencias' | 'comunicacao';
 
@@ -27,9 +27,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ pagina, onNavegar, totalPenden
     style={{ backgroundImage: 'radial-gradient(120% 40% at 0% 100%, var(--color-gelo) 0%, transparent 70%)' }}
   >
     <div className="space-y-9">
-      <div className="flex items-center gap-2.5 px-2">
-        <LogoOncoFlow className="w-10 h-10" />
-        <span className="text-2xl font-bold text-azul tracking-tight">OncoFlow</span>
+      <div className="px-2">
+        <AssinaturaOncoFlow className="h-12 w-auto" />
+        <span className="block mt-1.5 pl-[52px] text-[11px] font-semibold uppercase tracking-[0.14em] text-verde">Pro · Care team</span>
       </div>
       <nav aria-label="Sections" className="space-y-1">
         {ITENS.map(({ pagina: p, rotulo, Icone }) => {

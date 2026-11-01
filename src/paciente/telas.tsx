@@ -31,7 +31,7 @@ import type {
   SolicitacaoPaciente,
 } from '../types';
 import { ROTULO_OPCAO_CHECKIN } from '../types';
-import { LogoOncoFlow } from '../components/LogoOncoFlow';
+import { AssinaturaOncoFlow } from '../components/LogoOncoFlow';
 import { AvisoUrgencia } from './AvisoUrgencia';
 import { OrbeLia } from './OrbeLia';
 import { dataCurta, diaDaSemana, diaEHora, porExtenso } from './formato';
@@ -93,7 +93,7 @@ export const TelaInicio: React.FC<{ inicio: InicioPaciente; irPara: (t: Tela) =>
   return (
     <div className="patient-home">
       <header className="patient-home-brand">
-        <div className="patient-brand-lockup"><LogoOncoFlow className="w-9 h-9" /><div><strong>OncoFlow</strong><span>Your care space</span></div></div>
+        <div className="patient-brand-lockup"><AssinaturaOncoFlow className="h-9 w-auto" /><span>Your care space</span></div>
         <button type="button" onClick={onPreferencias} aria-label="Reading and voice preferences" className="patient-preferences">Aa</button>
       </header>
       <div className="patient-welcome"><h1>Hi, {inicio.primeiroNome}.</h1><p>Shall we organize your next steps?</p></div>
@@ -132,7 +132,7 @@ export const TelaInicio: React.FC<{ inicio: InicioPaciente; irPara: (t: Tela) =>
         <button type="button" onClick={() => irPara('lia')} className="patient-lia-button">
           <OrbeLia estado="espera" tamanho={47} />
           <span><strong>Talk to {inicio.assistenteNome}</strong><small>Chat by text or voice</small></span>
-          <Mic size={23} className="text-verde shrink-0" aria-hidden />
+          <Mic size={23} className="shrink-0" aria-hidden />
         </button>
       </div>
     </div>

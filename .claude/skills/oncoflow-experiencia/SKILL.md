@@ -1,6 +1,6 @@
 ---
 name: oncoflow-experiencia
-description: Experiência, marca e frontend do OncoFlow — app OncoFlow Paciente híbrido (visual + voz com a Lia; tela inicial com próxima consulta, Minha jornada, Como estou?, Minha agenda, Meus documentos, Falar com a assistente), portal OncoFlow Pro (visão geral, perfil do paciente, gestão de tarefas, check-ins, copiloto, indicadores), sistema visual de proveniência (fala literal, extração, hipótese, confirmado), identidade de marca (paleta azul profundo #123B56, verde-água #167C70, turquesa #55B9B0, gelo #EAF3F4; Inter/Manrope/Sora; assinatura "Cada etapa do cuidado, conectada."), textos em PT-BR acolhedores sem infantilizar, acessibilidade WCAG AA para pessoas idosas e estados de tela. Use sempre que for criar ou alterar tela, componente React, layout, texto de interface, cores, logo, tipografia, PWA ou acessibilidade do OncoFlow, ou quando pedirem "fazer a tela X", "deixar mais bonito", "aplicar a marca".
+description: Experiência, marca e frontend do OncoFlow — app OncoFlow Paciente híbrido (visual + voz com a Lia; tela inicial com próxima consulta, Minha jornada, Como estou?, Minha agenda, Meus documentos, Falar com a assistente), portal OncoFlow Pro (visão geral, perfil do paciente, gestão de tarefas, check-ins, copiloto, indicadores), sistema visual de proveniência (fala literal, extração, hipótese, confirmado), identidade de marca do kit OncoFlow AI v1.0 (símbolo "Percurso" com F invertido; paleta azul profundo #123B56, verde-água #1D9E91, turquesa #55B9B0, cinza azulado #EAF3F4; Manrope; assinatura "Cada etapa do cuidado, conectada."), textos em PT-BR acolhedores sem infantilizar, acessibilidade WCAG AA para pessoas idosas e estados de tela. Use sempre que for criar ou alterar tela, componente React, layout, texto de interface, cores, logo, tipografia, PWA ou acessibilidade do OncoFlow, ou quando pedirem "fazer a tela X", "deixar mais bonito", "aplicar a marca".
 ---
 
 # OncoFlow — experiência do paciente, da equipe e marca
@@ -13,26 +13,28 @@ operacional: densidade, achar o que está atrasado e validar sugestões da IA se
 
 ## Marca (documento, seção 11)
 
-- **Nome:** OncoFlow (nome de trabalho; marca e domínio ainda precisam ser verificados). **Assinatura
-  sugerida:** "Cada etapa do cuidado, conectada."
+- **Nome:** OncoFlow AI (kit de marca v1.0, 31/10/2026; registro da marca e domínio ainda precisam ser
+  verificados). **Assinatura sugerida:** "Cada etapa do cuidado, conectada."
 - **Personalidade:** humana, confiável, inovadora, fluida, premium (contemporânea, limpa, profissional).
-- **Símbolo:** caminho contínuo ou linhas conectadas, com referência abstrata à letra O e à ideia de fluxo.
-  Evite cruz médica genérica, laço de conscientização como símbolo principal, coração literal, excesso de
-  detalhe e aparência infantil.
-- **Tipografia:** sans-serif moderna e legível. Use **Inter** na interface (melhor legibilidade em tamanhos
-  pequenos e números tabulares no Pro). Manrope ou Sora só em títulos de marketing, se quiser.
+- **Símbolo:** direção "Percurso", com F invertido na haste direita (azul profundo + verde-água; sobre azul
+  profundo, branco + turquesa). Arquivos oficiais em `public/brand/`; no código, `LogoOncoFlow` (símbolo) e
+  `AssinaturaOncoFlow` (símbolo + "OncoFlow AI" em contornos). Não redesenhar nem redigitar o logo. Evite
+  cruz médica genérica, laço de conscientização, coração literal e aparência infantil.
+- **Tipografia:** **Manrope** em toda a interface (variável, servida de `public/brand/fonts`, licença OFL).
+- **Ícones:** favicon, app icons 180/192/512 e manifest do kit em `public/brand/`.
 
 ### Paleta e contraste (medido, WCAG 2.2)
 
 | Token | Hex | Uso permitido |
 |---|---|---|
-| `azul-profundo` | #123B56 | Texto principal, cabeçalhos, fundo de destaque com texto branco (11,8:1) |
-| `verde-agua` | #167C70 | Botão primário com texto branco (5,1:1), links e ícones sobre branco. **Sobre gelo dá 4,49:1, abaixo do mínimo: use texto ≥ 24 px (ou 19 px em negrito) ou troque para azul.** |
-| `turquesa` | #55B9B0 | **Só decorativo** (orbe da Lia, ilustrações, fundo com texto azul por cima: 5,0:1). Sobre branco dá 2,35:1: reprovado para texto e para borda de componente (mínimo 3:1). |
-| `gelo` | #EAF3F4 | Fundo de seções e cards. Texto sobre ele sempre em azul-profundo (10,4:1) |
+| `azul` (azul profundo) | #123B56 | Texto principal, cabeçalhos, botões primários e fundos de destaque com texto branco (11,8:1) |
+| `teal` (verde-água do kit) | #1D9E91 | **Só acento:** ícones, passos da jornada, linhas, bordas de foco. Sobre branco dá 3,3:1: reprovado para texto pequeno. |
+| `verde` (verde-água escurecido) | #14776D | Texto e links de acento sobre branco (5,4:1) e sobre gelo (4,8:1). |
+| `turquesa` | #55B9B0 | **Só decorativo** (versão para fundo escuro, orbe da Lia, rótulos sobre azul profundo). Sobre branco dá 2,35:1. |
+| `gelo` (cinza azulado) | #EAF3F4 | Fundo de seções e cards. Texto sobre ele sempre em azul (10,4:1) |
 
 Estados funcionais (erro, atenção, sucesso) têm tokens próprios com contraste aprovado e **sempre ícone +
-texto**. A marca não comunica estado sozinha. Defina tudo em `packages/shared/tokens` e no `tailwind.config`;
+texto**. A marca não comunica estado sozinha. No MVP os tokens ficam no `@theme` de `src/index.css` (Tailwind 4);
 nada de hex espalhado nos componentes.
 
 ## OncoFlow Paciente: experiência híbrida
