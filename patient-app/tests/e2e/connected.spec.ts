@@ -473,6 +473,7 @@ test("TTS quota failure keeps the microphone, written guidance and automatic ale
 
 async function connect(page: Page) {
   await page.goto("/");
+  await page.getByText("Conexão avançada", { exact: true }).click();
   await page
     .getByRole("button", { name: "Conectar ao hospital", exact: true })
     .click();
@@ -602,7 +603,7 @@ test("hospital data, requests, messages and preferences use the connected server
   expect(stored).not.toMatch(/memory-only-token|OF-123456/);
   await page.getByRole("button", { name: "Disconnect", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Explore demo", exact: true }),
+    page.getByRole("button", { name: "Explore demo offline", exact: true }),
   ).toBeVisible();
   await expect(page.getByText("Maria do painel", { exact: true })).toHaveCount(
     0,
