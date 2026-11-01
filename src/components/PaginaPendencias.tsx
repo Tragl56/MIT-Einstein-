@@ -21,11 +21,11 @@ export const PaginaPendencias: React.FC<PaginaPendenciasProps> = ({ estado, acoe
   return (
     <section className="rounded-2xl bg-white border border-linha/70 shadow-[0_2px_12px_-6px_rgba(18,59,86,0.15)] p-5 sm:p-7 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-azul">Open pending items</h2>
+        <h2 className="text-lg font-semibold text-azul">{somenteSinais ? 'Sinais aguardando revisão' : 'Open pending items'}</h2>
         <div role="group" aria-label="Filter" className="flex gap-1 rounded-full bg-gelo p-1 text-sm">
           {[
             [false, 'All'],
-            [true, 'Attention signs only'],
+            [true, 'Sinais a revisar'],
           ].map(([valor, rotulo]) => (
             <button
               key={String(valor)}
@@ -39,11 +39,12 @@ export const PaginaPendencias: React.FC<PaginaPendenciasProps> = ({ estado, acoe
           ))}
         </div>
       </div>
+      {somenteSinais && <p className="text-sm text-azul">Sinais encaminhados pelas regras do serviço aguardam revisão da equipe. A prioridade clínica depende de avaliação profissional.</p>}
       <p className="text-sm text-tinta-suave">
         Review rules in use (examples, to be defined with the service): {estado.regrasRevisao.map((r) => r.descricao).join(' · ')}.
       </p>
       {itens.length === 0 ? (
-        <p className="py-8 text-center text-tinta-suave">No open pending items.</p>
+        <p className="py-8 text-center text-tinta-suave">{somenteSinais ? 'Nenhum sinal aguardando revisão.' : 'No open pending items.'}</p>
       ) : (
         <div className="space-y-3">
           {itens.map(({ pendencia, paciente }) => (

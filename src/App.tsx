@@ -126,7 +126,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-fundo text-azul md:flex">
+    <div className="pro-app min-h-screen bg-fundo text-azul md:flex">
       <Sidebar
         pagina={pagina}
         onNavegar={navegar}

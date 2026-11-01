@@ -8,7 +8,14 @@
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:integration": "tsx --test server/mobile.test.ts server/urgencia.test.ts",
+    "test:panel": "tsx --test tests/panel-api.test.ts",
+    "sync:patient": "node platform/sync-patient.mjs",
+    "build:platform": "node platform/build.mjs",
+    "start:platform": "node platform/start.mjs",
+    "test:platform": "node --test platform/sync-patient.test.mjs",
+    "test:platform:smoke": "node platform/smoke.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.32.0",

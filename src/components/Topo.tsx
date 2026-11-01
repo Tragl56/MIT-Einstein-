@@ -93,7 +93,7 @@ export const Topo: React.FC<TopoProps> = ({
                 <p className="text-xs text-tinta-suave">{usuario.cargo}</p>
               </div>
               <a
-                href="/paciente"
+                href="/app/"
                 target="_blank"
                 rel="noopener"
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-azul hover:bg-gelo"
