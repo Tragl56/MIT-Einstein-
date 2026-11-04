@@ -15,8 +15,6 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": { "service": "api" } },
-    { "source": "/profissional/:path*", "destination": { "service": "web", "path": "/index.html" } },
-    { "source": "/paciente/:path*", "destination": { "service": "web", "path": "/index.html" } },
     { "source": "/(.*)", "destination": { "service": "web" } }
   ],
   "headers": [

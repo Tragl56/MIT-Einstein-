@@ -29,10 +29,10 @@ function EscolhaPainel() {
         <h1 className="mt-2 text-3xl font-semibold">A jornada, mais próxima.</h1>
         <p className="mt-2 text-texto-suave">Escolha como deseja acessar a demonstração.</p>
       </div>
-      <a href="/profissional" className="flex min-h-16 items-center justify-between rounded-2xl bg-marca-azul px-5 font-semibold text-white">
+      <a href="/profissional.html" className="flex min-h-16 items-center justify-between rounded-2xl bg-marca-azul px-5 font-semibold text-white">
         <span>Painel profissional</span><span aria-hidden="true">→</span>
       </a>
-      <a href="/paciente" className="flex min-h-16 items-center justify-between rounded-2xl border border-marca-azul px-5 font-semibold text-marca-azul">
+      <a href="/paciente.html" className="flex min-h-16 items-center justify-between rounded-2xl border border-marca-azul px-5 font-semibold text-marca-azul">
         <span>Painel do paciente</span><span aria-hidden="true">→</span>
       </a>
       <p className="text-sm text-texto-suave">Demonstração com dados fictícios. Não use para decisões clínicas.</p>
