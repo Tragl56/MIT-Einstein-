@@ -147,8 +147,8 @@ export const appEnglishTranslations: Record<string, string> = {
     "You can try requesting contact from the navigation team. In this version, the request stays in the app.",
   "Uma primeira versão para explorar a jornada do paciente. Todos os nomes, encontros e documentos são fictícios.":
     "An early version to explore the patient journey. All names, meetings, and documents are fictional.",
-  "A Lia conversa com GPT-4o, transcreve sua fala e responde com a voz Sarah no Android. Os cenários de gravidade e os alertas são simulações.":
-    "Lia chats with GPT-4o, transcribes your speech, and responds with the Sarah voice on Android. Urgency scenarios and alerts are simulations.",
+  "A Lia conversa com Llama via Ollama, transcreve sua fala pela OpenAI e responde com a voz Sarah da ElevenLabs no Android. Os cenários de gravidade e os alertas são simulações.":
+    "Lia chats with Llama via Ollama, transcribes speech with OpenAI, and replies with ElevenLabs' Sarah voice on Android. Urgency scenarios and alerts are simulations.",
   "Não há atendimento, monitoramento clínico ou envio de mensagens a profissionais.":
     "There is no care delivery, clinical monitoring, or messaging to professionals.",
   "VERSÃO 0.9.0 · DEMONSTRAÇÃO": "VERSION 0.9.0 · DEMO",

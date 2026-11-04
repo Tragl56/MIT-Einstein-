@@ -26,7 +26,8 @@ class Config(BaseSettings):
     demo_senha: str = ""
 
     cors_origens: list[str] = ["http://localhost:5173", "http://localhost:5174"]
-    fixtures_dir: Path = RAIZ_REPOSITORIO / "fixtures"
+    # O serviço backend da Vercel é empacotado com sua própria raiz.
+    fixtures_dir: Path = Path(__file__).resolve().parents[1] / "fixtures"
 
     ia_modo: str = "fixture"
 

@@ -10,6 +10,7 @@
     "dev:pro": "npm run dev -w @oncoflow/pro --",
     "dev:paciente": "npm run dev -w @oncoflow/paciente --",
     "build": "npm run build -w @oncoflow/pro && npm run build -w @oncoflow/paciente",
+    "build:vercel": "vite build",
     "typecheck": "tsc -b apps/pro apps/paciente"
   },
   "devDependencies": {

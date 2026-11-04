@@ -369,7 +369,7 @@ describe("live duplex conversation", () => {
     await flush();
     expect(action).not.toHaveBeenCalled();
   });
-  it("cancels GPT immediately on new speech and ignores its late result", async () => {
+  it("cancels the LLM immediately on new speech and ignores its late result", async () => {
     const old = deferred<{ text: string }>();
     const { controller, deps, sessions } = setup({
       respond: vi.fn(() => old.promise),
@@ -485,7 +485,7 @@ describe("live duplex conversation", () => {
     await controller.stop();
     expect(vi.getTimerCount()).toBe(0);
   });
-  it("bounds GPT and TTS waits and clears their timers on stop", async () => {
+  it("bounds LLM and TTS waits and clears their timers on stop", async () => {
     vi.useFakeTimers();
     const pending = deferred<{ text: string }>();
     const { controller, deps, sessions } = setup({

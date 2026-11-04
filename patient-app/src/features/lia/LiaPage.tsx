@@ -1066,7 +1066,7 @@ export function LiaPage({
           <h2>{translate("Antes de conversar")}</h2>
           <p>
             {translate(
-              "Seu texto e áudio serão processados pela OpenAI e ElevenLabs para gerar as respostas. Nesta apresentação, use somente relatos fictícios.",
+              "A conversa usa Llama via Ollama. Áudios são transcritos pela OpenAI e as respostas podem ser faladas pela ElevenLabs. Nesta apresentação, use somente relatos fictícios.",
             )}
           </p>
           {latest.current.appBridge.getSnapshot().connected && (

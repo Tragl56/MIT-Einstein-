@@ -41,8 +41,8 @@ export const liaEnglishTranslations: Record<string, string> = {
   "Preparando o microfone…": "Preparing the microphone…",
   "Conversa ao vivo": "Live conversation",
   "Antes de conversar": "Before we chat",
-  "Seu texto e áudio serão processados pela OpenAI e ElevenLabs para gerar as respostas. Nesta apresentação, use somente relatos fictícios.":
-    "Your text and audio will be processed by OpenAI and ElevenLabs to generate responses. Use only fictional reports in this demonstration.",
+  "A conversa usa Llama via Ollama. Áudios são transcritos pela OpenAI e as respostas podem ser faladas pela ElevenLabs. Nesta apresentação, use somente relatos fictícios.":
+    "Chat uses Llama via Ollama. Audio is transcribed by OpenAI and replies can be spoken by ElevenLabs. Use only fictional reports in this demonstration.",
   "Entendi, ativar e conversar": "I understand, enable and chat",
   "Entendi, ativar a Lia": "I understand, enable Lia",
   "Prefiro digitar": "I'd rather type",

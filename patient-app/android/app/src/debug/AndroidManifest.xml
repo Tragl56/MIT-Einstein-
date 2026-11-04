@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- Private demo builds may connect to an explicitly selected LAN server.
-         The application validates local HTTP destinations; release remains HTTPS. -->
+    <!-- Development only: permits HTTP to the local Ollama instance. Configure HTTPS
+         behind an authenticated gateway for release or any use beyond fictional demo data. -->
     <application android:usesCleartextTraffic="true" tools:replace="android:usesCleartextTraffic" />
 </manifest>
