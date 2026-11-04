@@ -515,6 +515,10 @@ export function App() {
   }
   connectedActions.current = hospital
     ? {
+        chat: (text, locale, signal) => {
+          if (!hospital.liaChat) throw new Error('Lia unavailable');
+          return hospital.liaChat(text, locale, signal);
+        },
         reportSymptoms: (input, signal) =>
           performConnected(
             `symptoms-${input.operationId}`,

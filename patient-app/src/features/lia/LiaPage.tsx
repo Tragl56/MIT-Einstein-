@@ -54,12 +54,15 @@ import { createPlaybackSession } from "../voice/playback";
 import { VoiceConversation } from "./VoiceConversation";
 import { LiaActionConfirmation } from "./LiaActionConfirmation";
 import { LiaCallDock } from "./LiaCallDock";
+import { webLiaCommand, webLiaHelp } from "./webCommands";
+import { browserVoiceAvailable, recognizeBrowser, speakBrowser } from '../voice/browserVoice';
 import { buildLiaContext, createLiaActionSession } from "./actions";
 import type {
   LiaAppBridge,
   LiaExecution,
   PendingLiaAction,
 } from "../../../shared/liaActions";
+import { parseLiaAction } from "../../../shared/liaActions";
 import "./lia.css";
 
 type Destination = "agenda" | "journey" | "documents" | "checkin";
@@ -94,7 +97,7 @@ type Props = {
   onShowApp?(): void;
   onCallActiveChange?(active: boolean): void;
 };
-const CONSENT_KEY = "oncoflow-lia-consent-v1";
+const CONSENT_KEY = Capacitor.getPlatform() === 'android' ? 'oncoflow-lia-consent-v1' : 'oncoflow-lia-web-consent-v2';
 function hasConsent() {
   try {
     return localStorage.getItem(CONSENT_KEY) === "accepted";
@@ -136,6 +139,7 @@ export function LiaPage({
   const [draftSource, setDraftSource] = useState<"text" | "provider">("text");
   const [consent, setConsent] = useState(hasConsent);
   const [configured, setConfigured] = useState(false);
+  const web = Capacitor.getPlatform() !== 'android' && !configured;
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState("");
   const [voiceWarning, setVoiceWarning] = useState("");
@@ -403,6 +407,16 @@ export function LiaPage({
     setPendingAction(actions.current!.pending());
     if (local) return applyExecution(local);
     const snapshot = latest.current.appBridge.getSnapshot();
+    if (web) {
+      const command = webLiaCommand(text);
+      if (command) return applyExecution(await actions.current!.propose(command, signal));
+      if (snapshot.connected && latest.current.appBridge.chat) {
+        const result = await latest.current.appBridge.chat(text, locale, signal);
+        const action = parseLiaAction((result as { action?: unknown })?.action);
+        if (action) return applyExecution(await actions.current!.propose(action, signal));
+      }
+      return { text: webLiaHelp(locale === 'en-US'), intent: 'clarify' };
+    }
     const result = await chatWithLia(
       {
         text,
@@ -501,7 +515,24 @@ export function LiaPage({
     if (voice) void speak(result.text, operation);
   }
 
+  async function browserVoiceTurn() {
+    if (!consent || busy.current || !activeRef.current) return;
+    interrupt(); const id = ++job.current; const controller = new AbortController(); abort.current = controller;
+    busy.current = true; setError(''); setStage('listening');
+    try {
+      const text = await recognizeBrowser(locale, controller.signal);
+      if (!isCurrent(id)) return;
+      setMessages(m => [...m, { id: ++sequence.current, role: 'user', text }]); setStage('processing');
+      const result = await respondWithActions(text, messages.slice(-8).map(m => ({ role: m.role, text: m.text })), controller.signal, 'provider', `web-voice-${id}`);
+      if (!isCurrent(id)) return;
+      setMessages(m => [...m, { id: ++sequence.current, role: 'assistant', text: result.text, intent: result.intent }]);
+      busy.current = false; setStage('idle');
+      if (voice) await speak(result.text, id);
+    } catch (error) { if (!controller.signal.aborted) failure(error, id); }
+    finally { if (isCurrent(id)) { busy.current = false; setStage('idle'); } }
+  }
   async function startConversation() {
+    if (web) { await browserVoiceTurn(); return; }
     if (
       !consent ||
       !configured ||
@@ -729,7 +760,14 @@ export function LiaPage({
   }, [stage]);
 
   async function speak(text: string, id: number) {
-    if (!consent || !configured || !isCurrent(id)) return;
+    if (!consent || (!configured && !web) || !isCurrent(id)) return;
+    if (web) {
+      setStage('speaking');
+      try { await speakBrowser(text, locale, prefs.speechRate, abort.current?.signal ?? new AbortController().signal); }
+      catch { setVoiceWarning(locale === 'en-US' ? 'Voice playback failed. The response is available in text.' : 'A reprodução de voz falhou. A resposta está disponível no texto.'); }
+      finally { if (isCurrent(id)) setStage('idle'); }
+      return;
+    }
     stopPlayback();
     setStage("synthesizing");
     busy.current = true;
@@ -778,7 +816,7 @@ export function LiaPage({
       text.length > 1500 ||
       busy.current ||
       !consent ||
-      (!configured && !latest.current.appBridge.getSnapshot().connected)
+      (Capacitor.getPlatform() === 'android' && !configured && !latest.current.appBridge.getSnapshot().connected)
     )
       return;
     stopPlayback();
@@ -813,7 +851,7 @@ export function LiaPage({
       ]);
       busy.current = false;
       setStage("idle");
-      if (voice) await speak(result.text, id);
+      if (voice && (configured || web)) await speak(result.text, id);
     } catch (err) {
       failure(err, id);
       if (isCurrent(id)) setDraft(text);
@@ -1065,7 +1103,7 @@ export function LiaPage({
         <section className="lia-consent">
           <h2>{translate("Antes de conversar")}</h2>
           <p>
-            {translate(
+            {web ? (locale === 'en-US' ? 'When connected, text requests can use Llama via Ollama through an authenticated bridge. Voice recognition and playback use your browser, which may send audio to its provider. Use fictional information only. You can choose to type.' : 'Quando conectado, os pedidos por texto podem usar Llama via Ollama por uma ponte autenticada. O reconhecimento e a reprodução de voz usam seu navegador, que pode enviar áudio ao fornecedor dele. Use somente informações fictícias. Você pode escolher digitar.') : translate(
               "A conversa usa Llama via Ollama. Áudios são transcritos pela OpenAI e as respostas podem ser faladas pela ElevenLabs. Nesta apresentação, use somente relatos fictícios.",
             )}
           </p>
@@ -1100,12 +1138,13 @@ export function LiaPage({
         </div>
         <button
           className="primary full"
-          disabled={!consent || !configured || busy.current || callActive}
+          disabled={!consent || (web ? !browserVoiceAvailable() : !configured) || busy.current || callActive}
           onClick={() => void startConversation()}
         >
           <Phone size={20} />
-          {translate("Iniciar conversa")}
+          {web ? (locale === 'en-US' ? 'Speak a message' : 'Falar uma mensagem') : translate("Iniciar conversa")}
         </button>
+        {web && <p className="lia-footnote">{browserVoiceAvailable() ? (locale === 'en-US' ? 'Allow microphone access. Speak, then pause for the reply. Tap again for the next message.' : 'Permita o microfone. Fale e faça uma pausa para receber a resposta. Toque novamente para a próxima mensagem.') : (locale === 'en-US' ? 'This browser does not support voice recognition. Open in Chrome on Android or type below.' : 'Este navegador não oferece reconhecimento de voz. Abra no Chrome do Android ou digite abaixo.')}</p>}
       </section>
       {callActive && !minimized && (
         <VoiceConversation
@@ -1223,7 +1262,7 @@ export function LiaPage({
           </div>
         </section>
       )}
-      {!configured && (
+      {!configured && Capacitor.getPlatform() === 'android' && (
         <p className="lia-footnote">
           {latest.current.appBridge.getSnapshot().connected
             ? locale === "en-US"
@@ -1341,7 +1380,7 @@ export function LiaPage({
             disabled={
               !draft.trim() ||
               !consent ||
-              (!configured &&
+              (Capacitor.getPlatform() === 'android' && !configured &&
                 !latest.current.appBridge.getSnapshot().connected) ||
               busy.current
             }
@@ -1355,16 +1394,16 @@ export function LiaPage({
           {stage === "listening" ? (
             <button
               className="secondary lia-record"
-              onClick={() => void finishRecording()}
+              onClick={() => web ? interrupt() : void finishRecording()}
             >
               <Square size={20} />
-              {translate("Concluir gravação")}
+              {web ? (locale === 'en-US' ? 'Cancel recording' : 'Cancelar gravação') : translate("Concluir gravação")}
             </button>
           ) : (
             <button
               className="secondary lia-record"
-              disabled={!consent || !configured || busy.current || callActive}
-              onClick={() => void record()}
+              disabled={!consent || (web ? !browserVoiceAvailable() : !configured) || busy.current || callActive}
+              onClick={() => web ? void browserVoiceTurn() : void record()}
             >
               <Mic size={20} />
               {translate("Gravar mensagem")}

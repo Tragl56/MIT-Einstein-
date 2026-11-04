@@ -160,6 +160,7 @@ export type HospitalPreferencesInput = Pick<
 
 /** Bound to one authenticated patient. Callers cannot choose a scope per operation. */
 export interface HospitalPatientRepository {
+  liaChat?(text: string, locale: string, signal?: AbortSignal): Promise<unknown>;
   summary(
     options?: HospitalReadOptions,
   ): Promise<HospitalSnapshot<HospitalPatientSummary>>;

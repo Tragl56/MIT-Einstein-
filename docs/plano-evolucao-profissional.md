@@ -12,7 +12,7 @@ Objetivo: comparar plataformas semelhantes e melhorar a utilidade profissional d
 | Acesso profissional real | Identidade verificável, instituição, vínculo e autorização em todos os endpoints e exportações | Pendente na API completa Express; proteção do preview Vercel e cabeçalho fictício não equivalem a RBAC clínico |
 | Histórico e prestação de contas | Linha do tempo operacional e exportação controlada | Histórico por pendência e CSV implementados; auditoria de acesso, exportações e retenção requerem evolução |
 | Integrações | Agenda/prontuário com contrato real e idempotência | Apenas integração interna app-Pro comprovada; nenhuma integração hospitalar real |
-| IA profissional | Gateway autenticado para o Ollama e ferramentas com autorização/validação | Conversa Llama Android configurada; navegador ainda não possui gateway remoto ao Ollama local |
+| IA profissional | Gateway autenticado para o Ollama e ferramentas com autorização/validação | Ponte de saída autenticada para classificar pedidos no Ollama local implementada no navegador; ações são validadas e respondem pelos dados do app, com confirmação para escritas. Voz por fala/reposta do navegador quando suportada. Validação publicada em andamento; depende do PC e do processo local |
 | Validação com usuário | Revisar fluxos com equipe e pacientes; medir tempo para executar tarefas e erros | Pendente; testes automatizados não substituem teste de usabilidade ou piloto |
 
 ## Critérios do ciclo atual
