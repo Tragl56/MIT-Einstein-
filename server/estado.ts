@@ -331,7 +331,7 @@ export function assumirPendencia(id: string, usuario: UsuarioEquipe): void {
   if ((pendencia.responsavelId && pendencia.responsavelId !== usuario.id) || (!pendencia.responsavelId && pendencia.responsavel && pendencia.responsavel !== usuario.nome)) {
     throw new ErroDominio(409, 'responsavel_diferente', tr('Esta pendência tem outro responsável. Registre uma transferência antes de assumir.', 'This item has another assignee. Record a transfer before taking it on.'));
   }
-  if (pendencia.estado === 'em_andamento') return;
+  if (pendencia.estado === 'em_andamento' && (pendencia.responsavelId === usuario.id || pendencia.responsavel === usuario.nome)) return;
   pendencia.estado = 'em_andamento';
   pendencia.responsavel = usuario.nome;
   pendencia.responsavelId = usuario.id;

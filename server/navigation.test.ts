@@ -8,7 +8,7 @@ import { visaoPro } from './visoes';
 test('navigation management validates identity, atomic changes, stale versions and private history', async t => {
   resetar();
   const p = criarPendencia(obterPaciente('pac-maria'), { tipo: 'contato_equipe', origem: 'solicitacao_paciente', titulo: 'Organizar retorno fictício', confirmadaPeloPaciente: true });
-  const api = criarApi({ statePath: null });
+  const api = criarApi({ statePath: null, autoConnect: true });
   const server = api.app.listen(0, '127.0.0.1');
   await new Promise<void>(resolve => server.once('listening', resolve));
   t.after(async () => { api.dispose(); await new Promise<void>(resolve => server.close(() => resolve())); });
@@ -43,6 +43,13 @@ test('navigation management validates identity, atomic changes, stale versions a
   assert.equal((await post('/gestao', { ...input, revisao: p.revisao }, 'usr-carla')).status, 409);
   const patient = await fetch(origin + '/api/paciente/inicio', { headers: { Authorization: 'Bearer demo-maria' } });
   const patientText = await patient.text(); assert.equal(patient.status, 200); assert.equal(patientText.includes(reason), false);
+  const login = await fetch(origin + '/api/mobile/demo-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patientId: 'pac-maria' }) });
+  const { accessToken } = await login.json() as { accessToken: string };
+  for (const resource of ['requests', 'summary']) {
+    const mobile = await fetch(origin + `/api/v1/tenants/demo/hospitals/oncoflow/patients/pac-maria/${resource}`, { headers: { Authorization: `Bearer ${accessToken}` } });
+    assert.equal(mobile.status, 200);
+    const text = await mobile.text(); assert.equal(text.includes(reason), false); assert.equal(text.includes('historico'), false);
+  }
   const saved = structuredClone(exportarEstado()); importarEstado(saved);
   assert.equal(obterPendencia(p.id).historico?.length, events + 1, 'history survives snapshot rehydration');
 });

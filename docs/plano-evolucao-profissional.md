@@ -26,7 +26,7 @@ Objetivo: comparar plataformas semelhantes e melhorar a utilidade profissional d
 
 ## Próximos ciclos
 
-1. Fila publicada e exercitada em 4/11: atribuição e prazo salvos no Supabase, histórico com autor/motivo/antes-depois, filtro pessoal retornando o item e CSV baixado contendo uma linha e somente as colunas operacionais. A validação de telas estreitas da nova fila permanece pendente; os testes de conflito e erro passaram por HTTP.
+1. Fila publicada e exercitada em 4/11: atribuição e prazo salvos no Supabase, histórico com autor/motivo/antes-depois, filtro pessoal retornando o item e CSV baixado contendo uma linha e somente as colunas operacionais. Em viewport de 390 px, fila e formulário ficaram com largura de documento de 375 px, sem transbordamento horizontal. Os testes de conflito e erro passaram por HTTP; as visões antiga e completa do paciente foram verificadas para não expor justificativas internas.
 2. Ampliar indicadores e relatório de carga de equipe e adicionar navegação de barreiras.
 3. Fechar identidade e autorização da API completa antes de qualquer dado real.
 4. Validar integrações e utilidade com parceiros para sustentar vantagens comparativas com medições.
