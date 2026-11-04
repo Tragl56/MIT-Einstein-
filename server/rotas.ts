@@ -8,6 +8,7 @@ import type { Desfecho, OpcaoCheckin, UsuarioEquipe } from '../src/types';
 import {
   assumirConversa,
   assumirPendencia,
+  gerenciarPendencia,
   atualizarPlano,
   concluirPendencia,
   devolverParaLia,
@@ -152,6 +153,11 @@ export function criarRotas(): express.Router {
   );
 
   // OncoFlow Paciente (o paciente vem da sessão, nunca da URL)
+  r.post('/api/pro/pendencias/:id/gestao', rota((req, res) => {
+    gerenciarPendencia(req.params.id, usuarioDa(req), req.body);
+    res.json({ ok: true });
+  }));
+
   r.get(
     '/api/paciente/inicio',
     rota((req, res) => {

@@ -152,9 +152,31 @@ export interface Pendencia {
   criadaEm: string;
   prazo: string;
   responsavel?: string;
+  responsavelId?: string;
+  revisao?: number;
+  assumidaEm?: string;
+  historico?: EventoPendencia[];
   desfecho?: Desfecho;
   concluidaEm?: string;
   concluidaPor?: string;
+}
+
+export interface EventoPendencia {
+  id: string;
+  em: string;
+  atorId: string;
+  atorNome: string;
+  acao: 'atribuida' | 'prazo_alterado' | 'assumida' | 'concluida';
+  motivo?: string;
+  de?: string;
+  para?: string;
+}
+
+export interface GestaoPendenciaInput {
+  revisao: number;
+  motivo: string;
+  responsavelId?: string;
+  prazo?: string;
 }
 
 // Situação operacional derivada das pendências abertas. Não é prioridade clínica: quem define

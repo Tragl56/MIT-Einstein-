@@ -6,7 +6,7 @@
 
 O OncoFlow combina um painel profissional e aplicativo de paciente com API compartilhada. No fluxo de demonstração, app e painel compartilham relatos, pedidos, mensagens, agenda e jornada; o profissional revisa pendências, assume o atendimento e publica alterações. O app tem Lia por texto/voz e registra pedidos sem alegar conclusão antes da confirmação do servidor. Há alertas de sintomas configuráveis, mas voltados à revisão pela equipe e explicitamente não apresentados como monitoramento de emergência. Os documentos do repositório afirmam que dados de demonstração são fictícios.
 
-O projeto contém também uma arquitetura-alvo FastAPI/PostgreSQL, com autenticação JWT, vínculos institucionais/equipe e trilha de auditoria em construção. A existência de código e testes não comprova prontidão para uso clínico real. A plataforma conectada da raiz ainda descreve cabeçalho de usuário fictício e demonstração local; não representa identidade ou autorização de produção.
+O projeto contém também uma arquitetura-alvo FastAPI/PostgreSQL, com autenticação JWT, vínculos institucionais/equipe e trilha de auditoria em construção. O app completo e o Pro foram publicados em preview Vercel, com cenário fictício persistido por transação no Supabase. A API Express usa identidade fictícia da equipe; a autenticação FastAPI não protege automaticamente essa API. A publicação não comprova prontidão clínica, autorização de produção ou interoperabilidade com prontuários.
 
 ## Produtos comparáveis
 
@@ -58,3 +58,23 @@ O projeto contém também uma arquitetura-alvo FastAPI/PostgreSQL, com autentica
 - Repositório OncoFlow: [guia da plataforma conectada](connected-demo.md), [verificação da plataforma](verification-connected.md), `CLAUDE.md`, `backend/app/main.py`, `backend/app/acesso/seguranca.py` e `backend/app/auditoria/service.py`.
 
 *A comparação usa páginas oficiais dos produtos, consultadas em 4/11/2026. Conteúdo comercial descreve o que cada fornecedor afirma oferecer; disponibilidade, resultados e qualidade dependem de contrato, versão e implantação.*
+
+## Revisão de funcionalidades profissionais — 4/11/2026
+
+Fontes oficiais reabertas para orientar implementação, sem acesso aos produtos privados:
+
+- **Navigating Care** descreve workboards, comunicação bidirecional e atribuição de tarefas à equipe na [página para prestadores](https://www.navigatingcare.com/providers/). A oportunidade identificada no OncoFlow é melhorar sua fila operacional; atribuir tarefas não é um diferencial exclusivo.
+- **Thyme Box** divulga playbooks, perfis agregados, instrumentos de coleta e dashboards na [página da plataforma](https://www.thymecare.com/partners/thyme-box). A referência útil é ligar trabalho registrado a indicadores com denominadores claros. Não foi reproduzido nenhum protocolo clínico do fornecedor.
+- **Equicare CS** lista gestão de barreiras, encaminhamentos, sobrevivência, relatórios populacionais e integração HL7 na [descrição do produto](https://equicarehealth.com/equicare-cs/). O OncoFlow ainda precisa desenvolver e validar essas capacidades antes de alegar paridade.
+
+### Primeira entrega implementada
+
+| Melhoria | Comportamento verificável | Limite |
+|---|---|---|
+| Fila de navegação | Busca, situação, minhas pendências, não atribuídas, sinais encaminhados e prazos vencidos | Prazo operacional não é prioridade clínica |
+| Gestão de responsável e prazo | Profissional selecionado da equipe, justificativa obrigatória, histórico anterior/novo | Identidades ainda são de demonstração |
+| Proteção contra edição concorrente | Revisão desatualizada retorna 409; transferência explícita antes de outro profissional assumir/concluir | Não substitui autenticação real e isolamento institucional |
+| Indicadores da unidade | Abertas, atrasadas, sem responsável, concluídas em sete dias e média até primeira ação com tamanho da amostra | Datas antigas sem ação registrada não são inventadas; não mede desfecho clínico |
+| Exportação da fila | CSV do filtro, sem diagnóstico ou notas internas; fórmulas de planilha neutralizadas | Apenas demonstração fictícia; exportação clínica requer política de acesso |
+
+Os testes `server/navigation.test.ts` verificam validação por HTTP, atomicidade, conflitos, transferência, persistência do histórico, exclusão de justificativas da visão do paciente, métricas e CSV. A suíte de integração existente continua cobrindo o ciclo app-equipe. O trabalho restante está em [plano-evolucao-profissional.md](plano-evolucao-profissional.md).

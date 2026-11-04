@@ -1,0 +1,34 @@
+# Evolução profissional do OncoFlow
+
+Objetivo: comparar plataformas semelhantes e melhorar a utilidade profissional do projeto. Referências: Navigating Care, Thyme Box e Equicare CS; fontes e limites em [analise-comparativa.md](analise-comparativa.md). Contagem de funcionalidades não prova superioridade ou melhor resultado clínico.
+
+## Entregas e evidência exigida
+
+| Frente | Requisito | Estado atual e evidência |
+|---|---|---|
+| Coordenação diária | Responsável, prazo, motivo, histórico, filtros e edição concorrente | Implementado; 3 testes novos de navegação, 30 de integração, 1 transacional e 2 de cliente passaram; lint e build passaram |
+| Operação mensurável | Indicadores auditáveis, período e amostra, sem confundir trabalho com resposta clínica | Contagens e primeira ação implementadas; séries temporais e relatório por equipe ainda pendentes |
+| Navegação de barreiras | Necessidade logística/social, responsável e resolução rastreável | Pendente; não confundir dificuldade de acesso com triagem clínica |
+| Acesso profissional real | Identidade verificável, instituição, vínculo e autorização em todos os endpoints e exportações | Pendente na API completa Express; proteção do preview Vercel e cabeçalho fictício não equivalem a RBAC clínico |
+| Histórico e prestação de contas | Linha do tempo operacional e exportação controlada | Histórico por pendência e CSV implementados; auditoria de acesso, exportações e retenção requerem evolução |
+| Integrações | Agenda/prontuário com contrato real e idempotência | Apenas integração interna app-Pro comprovada; nenhuma integração hospitalar real |
+| IA profissional | Gateway autenticado para o Ollama e ferramentas com autorização/validação | Conversa Llama Android configurada; navegador ainda não possui gateway remoto ao Ollama local |
+| Validação com usuário | Revisar fluxos com equipe e pacientes; medir tempo para executar tarefas e erros | Pendente; testes automatizados não substituem teste de usabilidade ou piloto |
+
+## Critérios do ciclo atual
+
+- Atribuições não concluem pedidos nem enviam orientações ao paciente.
+- Alteração exige motivo e rejeita versão antiga sem sobrescrever trabalho novo.
+- Outro profissional precisa de transferência explícita antes de assumir ou concluir item atribuído.
+- Histórico e justificativas não saem no serializer do paciente.
+- Indicadores exibem período ou amostra aplicáveis e não alegam redução de custo ou melhora clínica.
+- Preview deve ser exercitado com leitura, alteração e releitura do mesmo item persistido no Supabase.
+
+## Próximos ciclos
+
+1. Conferir a nova fila publicada com dados fictícios, incluindo retorno de erro e telas estreitas.
+2. Ampliar indicadores e relatório de carga de equipe e adicionar navegação de barreiras.
+3. Fechar identidade e autorização da API completa antes de qualquer dado real.
+4. Validar integrações e utilidade com parceiros para sustentar vantagens comparativas com medições.
+
+A meta permanece em andamento enquanto essas lacunas materiais não tiverem evidência de resolução. Não há evidência para afirmar que o OncoFlow já supera todos os fornecedores comparados.
