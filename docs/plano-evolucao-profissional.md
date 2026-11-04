@@ -1,6 +1,6 @@
 # Evolução profissional do OncoFlow
 
-Objetivo: comparar plataformas semelhantes e melhorar a utilidade profissional do projeto. Referências: Navigating Care, Thyme Box e Equicare CS; fontes e limites em [analise-comparativa.md](analise-comparativa.md). Contagem de funcionalidades não prova superioridade ou melhor resultado clínico.
+Objetivo: comparar plataformas semelhantes e melhorar a utilidade profissional do projeto. Referências internacionais: Navigating Care, Thyme Box e Equicare CS; brasileiras: WeCancer/Cecí e Thummi. Fontes e limites em [analise-comparativa.md](analise-comparativa.md). Contagem de funcionalidades não prova superioridade ou melhor resultado clínico.
 
 ## Entregas e evidência exigida
 
@@ -26,7 +26,7 @@ Objetivo: comparar plataformas semelhantes e melhorar a utilidade profissional d
 
 ## Próximos ciclos
 
-1. Conferir a nova fila publicada com dados fictícios, incluindo retorno de erro e telas estreitas.
+1. Fila publicada e exercitada em 4/11: atribuição e prazo salvos no Supabase, histórico com autor/motivo/antes-depois, filtro pessoal retornando o item e CSV baixado contendo uma linha e somente as colunas operacionais. A validação de telas estreitas da nova fila permanece pendente; os testes de conflito e erro passaram por HTTP.
 2. Ampliar indicadores e relatório de carga de equipe e adicionar navegação de barreiras.
 3. Fechar identidade e autorização da API completa antes de qualquer dado real.
 4. Validar integrações e utilidade com parceiros para sustentar vantagens comparativas com medições.
