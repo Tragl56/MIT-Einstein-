@@ -80,3 +80,7 @@ Fontes oficiais reabertas para orientar implementação, sem acesso aos produtos
 | Exportação da fila | CSV do filtro, sem diagnóstico ou notas internas; fórmulas de planilha neutralizadas | Apenas demonstração fictícia; exportação clínica requer política de acesso |
 
 Os testes `server/navigation.test.ts` verificam validação por HTTP, atomicidade, conflitos, transferência, persistência do histórico, exclusão de justificativas da visão do paciente, métricas e CSV. A suíte de integração existente continua cobrindo o ciclo app-equipe. O trabalho restante está em [plano-evolucao-profissional.md](plano-evolucao-profissional.md).
+
+### Relatório operacional da equipe
+
+Inspirado nos dashboards e relatórios divulgados por Thyme Box, Equicare e Cecí, o painel de pendências agora inclui período de 7 ou 30 dias de calendário em São Paulo, entradas e conclusões diárias, mediana da criação à conclusão com amostra, e carga atual por responsável (abertas, vencidas/abertas e maior atraso). O relatório usa toda a unidade, independentemente dos filtros da fila, e informa explicitamente esse alcance. Hoje é parcial. Conclusões são agrupadas pelo responsável atual, sem reconstruir atribuições históricas nem ranquear produtividade. Datas inconsistentes não geram durações inventadas. Não mede resposta clínica nem desfechos; requer validação operacional com parceiros. Evidência automatizada: `server/relatorioFila.test.ts`.

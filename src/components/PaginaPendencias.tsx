@@ -3,6 +3,7 @@ import type { EstadoPro, UsuarioEquipe } from '../types';
 import type { AcoesPro } from '../api/pro';
 import { PendenciaItem } from './Pendencias';
 import { GestaoPendencia } from './GestaoPendencia';
+import { RelatorioFila } from './RelatorioFila';
 import { csvFila, filtrarFila, indicadoresFila, itensFila, type FiltrosFila } from '../domain/fila';
 import { tr } from '../idioma';
 
@@ -29,6 +30,7 @@ export const PaginaPendencias: React.FC<Props> = ({ estado, acoes, usuarioAtual,
       {[[indicadores.abertas, tr('Abertas', 'Open')], [indicadores.vencidas, tr('Prazo vencido', 'Overdue')], [indicadores.semResponsavel, tr('Sem responsável', 'Unassigned')], [indicadores.concluidas7dias, tr('Concluídas em 7 dias', 'Closed in 7 days')]].map(([n, label]) => <div key={label} className="rounded-xl border border-linha bg-white p-4"><span className="block text-2xl font-bold tabular-nums">{n}</span><span className="text-sm text-tinta-suave">{label}</span></div>)}
     </div>
     <p className="text-sm text-tinta-suave">{tr('Tempo médio até primeira ação registrada:', 'Average time to first recorded action:')} <strong>{indicadores.primeiraAcaoHoras === null ? tr('sem amostra', 'no sample') : `${indicadores.primeiraAcaoHoras.toFixed(1)} h`}</strong> · {indicadores.amostraTempo} {tr('itens com datas disponíveis. Indicadores da unidade; não representam resposta clínica ou desfecho assistencial.', 'items with available timestamps. Unit metrics, not clinical response or patient outcomes.')}</p>
+    <RelatorioFila itens={todos} usuarios={estado.usuarios} agora={agora} />
     <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 rounded-xl border border-linha bg-white p-4">
       <label className="grid gap-1 text-sm font-medium">{tr('Buscar nesta fila', 'Search this queue')}<input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder={tr('Paciente ou pendência', 'Patient or pending item')} className={campo} /></label>
       <label className="grid gap-1 text-sm font-medium">{tr('Situação', 'Status')}<select value={situacao} onChange={e => { setSituacao(e.target.value as FiltrosFila['estado']); if (e.target.value === 'concluidas') setVencidas(false); }} className={campo}><option value="abertas">{tr('Abertas e em andamento', 'Open and in progress')}</option><option value="concluidas">{tr('Concluídas', 'Completed')}</option><option value="todas">{tr('Todas', 'All')}</option></select></label>
