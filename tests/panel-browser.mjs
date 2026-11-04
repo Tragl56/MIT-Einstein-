@@ -23,6 +23,8 @@ const read = async () => {
 
 try {
   await mkdir('test-results/panel', { recursive: true });
+  // The demo language is shared and starts in Portuguese; switching restarts the fictional data.
+  await page.request.post(`${base}/api/demo/idioma`, { data: { idioma: 'pt-BR' } });
   await page.goto(base);
   await page.locator('#btn-entrar-usr-carla').waitFor();
   await page.screenshot({ path: 'test-results/panel/login-desktop.png' });
@@ -81,7 +83,10 @@ try {
   await panel.getByRole('button', { name: 'Atualizar dados', exact: true }).click();
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: 'test-results/panel/connected-desktop.png' });
-  await panel.getByLabel('Idioma desta área').selectOption('en-US');
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Menu do usuário' }).click();
+  await Promise.all([page.waitForEvent('load'), page.getByRole('button', { name: 'English' }).click()]);
+  await page.getByRole('tab', { name: 'Patient app' }).click();
   await panel.getByRole('heading', { name: 'Patient app', exact: true }).waitFor();
   await panel.getByRole('region', { name: 'Published schedule' }).waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -91,4 +96,7 @@ try {
   await page.screenshot({ path: 'test-results/panel/connected-mobile.png' });
   assert.deepEqual(errors, []);
   console.log('PASS: real pairing, double-click guard, appointment/preparation, journey, explicit document approval, PT/EN, desktop/mobile, zero page errors.');
-} finally { await browser.close(); }
+} finally {
+  await page.request.post(`${base}/api/demo/idioma`, { data: { idioma: 'pt-BR' } }).catch(() => {});
+  await browser.close();
+}

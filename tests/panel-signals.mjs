@@ -19,6 +19,8 @@ const state = async () => {
 
 try {
   await mkdir('test-results/panel', { recursive: true });
+  // The shared demo language starts in Portuguese; pin it so the labels below are stable.
+  await page.request.post(`${base}/api/demo/idioma`, { data: { idioma: 'pt-BR' } });
   await page.goto(base);
   await page.locator('#btn-entrar-usr-rodrigo').click();
   const indicator = page.getByTestId('indicator-sinais');
@@ -79,7 +81,7 @@ try {
   page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith(`/pendencias/${signal.id}/assumir`)) successfulClaimPosts++; });
   await article.getByRole('button', { name: 'Assumir revisão' }).evaluate(button => { button.click(); button.click(); });
   await page.waitForFunction(id => document.querySelector(`[data-pendencia-id="${id}"]`)?.textContent.includes('Estado: Em revisão'), signal.id);
-  assert.match(await article.innerText(), /Responsável: Nurse Rodrigo Mendes/);
+  assert.match(await article.innerText(), /Responsável: Enf. Rodrigo Mendes/);
   assert.equal(successfulClaimPosts, 1, 'two immediate clicks submit one claim');
   await article.getByLabel('Desfecho da revisão').selectOption('contato_realizado');
   await article.getByRole('button', { name: 'Concluir revisão' }).click();
@@ -88,7 +90,7 @@ try {
   assert.equal(reviewed.estado, 'concluida');
   assert.equal(reviewed.desfecho, 'contato_realizado');
   assert.equal(reviewed.falaLiteral, literal);
-  await page.getByRole('button', { name: 'Home', exact: true }).click();
+  await page.getByRole('button', { name: 'Início', exact: true }).click();
   await page.waitForFunction(expected => document.querySelector('[data-testid="signal-count"]')?.textContent === String(expected), initial);
   assert.deepEqual(errors, []);
   console.log('PASS: automatic live signal in open Pro, patient isolation, literal/hypothesis/state/owner, required outcome, claim and completion.');

@@ -5,6 +5,7 @@ import path from 'node:path';
 import type { Server } from 'node:http';
 import { criarApi } from './api';
 import { adicionarMensagem, obterPaciente, resetar } from './estado';
+import { definirIdioma } from '../src/idioma';
 
 const teamHeaders = { 'x-demo-usuario': 'usr-rodrigo' };
 const timestamp = () => new Date().toISOString();
@@ -37,6 +38,9 @@ test('service-local API rewrites reach JSON routes instead of the Vite HTML fall
 });
 
 test('connected fictional demo uses real shared Pro state over HTTP, persists, and isolates patients', async t => {
+  // This suite checks the English seed and service texts; Portuguese is the demo default.
+  definirIdioma('en-US');
+  resetar();
   const testsRoot = path.resolve('outputs/.oncoflow-demo/tests');
   mkdirSync(testsRoot, { recursive: true });
   const folder = mkdtempSync(path.join(testsRoot, 'http-'));

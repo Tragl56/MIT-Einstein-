@@ -1,12 +1,13 @@
 import React, { useRef, type RefObject } from 'react';
 import { LiaOrbArt } from '../components/LiaOrbArt';
 import { useNivelVisual } from './useNivelVisual';
+import { tr } from '../idioma';
 
 export type EstadoOrbe = 'espera' | 'ouvindo' | 'processando' | 'falando' | 'concluido';
 
 export const ROTULO_ORBE: Record<EstadoOrbe, string> = {
-  espera: 'Lia available', ouvindo: 'Listening', processando: 'Looking up your information',
-  falando: 'Lia speaking', concluido: 'Done',
+  espera: tr('Lia disponível', 'Lia available'), ouvindo: tr('Ouvindo', 'Listening'), processando: tr('Consultando suas informações', 'Looking up your information'),
+  falando: tr('Lia falando', 'Lia speaking'), concluido: tr('Pronto', 'Done'),
 };
 
 interface OrbeLiaProps {

@@ -27,16 +27,17 @@ import { UploadPlanoButton } from './UploadPlanoButton';
 import { OrbeMini } from './OrbeMini';
 import { dataCompromisso, dataHoraCurta, diagnosticoCurto, iniciais } from './proUtil';
 import { MobileIntegrationPanel } from './MobileIntegrationPanel';
+import { tr } from '../idioma';
 
 type Aba = 'jornada' | 'agenda' | 'exames' | 'comunicacao' | 'resumo' | 'aplicativo';
 
 const ABAS: [Aba, string][] = [
-  ['jornada', 'Journey'],
-  ['agenda', 'Schedule'],
-  ['exames', 'Tests'],
-  ['comunicacao', 'Messages'],
-  ['resumo', 'Summary'],
-  ['aplicativo', 'Aplicativo do paciente'],
+  ['jornada', tr('Jornada', 'Journey')],
+  ['agenda', tr('Agenda', 'Schedule')],
+  ['exames', tr('Exames', 'Tests')],
+  ['comunicacao', tr('Comunicação', 'Messages')],
+  ['resumo', tr('Resumo', 'Summary')],
+  ['aplicativo', tr('Aplicativo do paciente', 'Patient app')],
 ];
 
 interface DetalhePacienteProps {
@@ -50,7 +51,7 @@ const JornadaHorizontal: React.FC<{ paciente: PacientePro }> = ({ paciente }) =>
   const etapas = paciente.jornada;
   const atual = etapas.findIndex((e) => e.estado === 'em_andamento');
   return (
-    <ol className="flex items-start overflow-x-auto pb-2" aria-label="Journey steps">
+    <ol className="flex items-start overflow-x-auto pb-2" aria-label={tr("Etapas da jornada", "Journey steps")}>
       {etapas.map((e, i) => {
         const concluida = e.estado === 'concluida';
         const corrente = i === atual;
@@ -78,7 +79,7 @@ const JornadaHorizontal: React.FC<{ paciente: PacientePro }> = ({ paciente }) =>
               {e.titulo}
             </span>
             <span className="sr-only">
-              {concluida ? 'done' : corrente ? 'in progress' : e.estado === 'aguardando' ? 'pending' : 'upcoming'}
+              {concluida ? tr('concluída', 'done') : corrente ? tr('em andamento', 'in progress') : e.estado === 'aguardando' ? tr('aguardando', 'pending') : tr('futura', 'upcoming')}
             </span>
           </li>
         );
@@ -113,7 +114,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
           <div className="min-w-0">
             <h2 className="text-2xl font-semibold text-azul truncate">{paciente.nome}</h2>
             <p className="text-tinta-suave">
-              {paciente.idade} y/o · {diagnosticoCurto(paciente.diagnosticoResumido)}
+              {paciente.idade} {tr('anos ·', 'y/o ·')} {diagnosticoCurto(paciente.diagnosticoResumido)}
             </p>
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <BadgeSituacao situacao={paciente.situacao} />
@@ -121,12 +122,12 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
                 {paciente.modoConversa === 'profissional' ? (
                   <>
                     <UserCheck className="w-3.5 h-3.5 text-verde" aria-hidden />
-                    Handled by {paciente.profissionalResponsavel}
+                    {tr('Em atendimento por', 'Handled by')} {paciente.profissionalResponsavel}
                   </>
                 ) : (
                   <>
                     <OrbeMini className="w-3.5 h-3.5" />
-                    Lia is handling
+                    {tr('Lia atendendo', 'Lia is handling')}
                   </>
                 )}
               </span>
@@ -135,20 +136,20 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
         </div>
         <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => setAba('aplicativo')} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gelo text-sm font-semibold text-verde hover:bg-gelo-forte cursor-pointer">
-          <Smartphone className="w-4 h-4" aria-hidden />Aplicativo do paciente
+          <Smartphone className="w-4 h-4" aria-hidden />{tr('Aplicativo do paciente', 'Patient app')}
         </button>
         <button
           type="button"
           onClick={() => setPlanoAberto(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-linha text-sm font-medium text-azul hover:bg-gelo cursor-pointer"
         >
-          See treatment plan
+          {tr('Ver plano terapêutico', 'See treatment plan')}
           <FileSearch className="w-4 h-4" aria-hidden />
         </button>
         </div>
       </div>
 
-      <div role="tablist" aria-label="Patient information" className="mt-6 flex overflow-x-auto overflow-y-hidden border-b border-linha">
+      <div role="tablist" aria-label={tr("Informações do paciente", "Patient information")} className="mt-6 flex overflow-x-auto overflow-y-hidden border-b border-linha">
         {ABAS.map(([id, rotulo]) => (
           <button
             key={id}
@@ -177,7 +178,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
               <div className="flex flex-wrap items-center gap-5 rounded-2xl bg-gelo/70 px-6 py-5">
                 <CalendarDays className="w-9 h-9 text-teal shrink-0" strokeWidth={1.6} aria-hidden />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-tinta-suave">Next appointment</p>
+                  <p className="text-sm text-tinta-suave">{tr('Próximo compromisso', 'Next appointment')}</p>
                   <p className="text-lg font-semibold text-azul">{proximo.titulo}</p>
                   <p className="text-tinta-suave">
                     {dataCompromisso(proximo.dataHora)} · {proximo.local}
@@ -188,16 +189,16 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
                   onClick={() => setAba('agenda')}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-verde bg-white text-sm font-semibold text-verde hover:bg-gelo cursor-pointer"
                 >
-                  See details
+                  {tr('Ver detalhes', 'See details')}
                   <ArrowRight className="w-4 h-4" aria-hidden />
                 </button>
               </div>
             ) : (
-              <p className="text-tinta-suave">No upcoming appointments on the schedule.</p>
+              <p className="text-tinta-suave">{tr('Nenhum compromisso futuro na agenda.', 'No upcoming appointments on the schedule.')}</p>
             )}
             {etapaSeguinte && (
               <p className="text-sm text-azul">
-                Next journey step: <strong>{etapaSeguinte.titulo}</strong>
+                {tr('Próxima etapa da jornada:', 'Next journey step:')} <strong>{etapaSeguinte.titulo}</strong>
                 {etapaSeguinte.responsavel ? ` · ${etapaSeguinte.responsavel}` : ''}
               </p>
             )}
@@ -208,7 +209,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
                 className="w-full flex items-center gap-2 rounded-xl border border-atencao-borda bg-atencao-fundo px-4 py-3 text-sm font-semibold text-atencao cursor-pointer"
               >
                 <ClipboardList className="w-4 h-4" aria-hidden />
-                {abertas.length} {abertas.length === 1 ? 'open pending item' : 'open pending items'} · see Summary
+                {abertas.length} {abertas.length === 1 ? tr('pendência aberta', 'open pending item') : tr('pendências abertas', 'open pending items')} · {tr('ver no Resumo', 'see Summary')}
               </button>
             )}
           </div>
@@ -216,21 +217,21 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
 
         {aba === 'agenda' && (
           <div className="space-y-3">
-            {proximos.length === 0 && <p className="text-tinta-suave">No upcoming appointments.</p>}
+            {proximos.length === 0 && <p className="text-tinta-suave">{tr('Nenhum compromisso futuro.', 'No upcoming appointments.')}</p>}
             {proximos.map((c) => (
               <div key={c.id} className="rounded-xl border border-linha p-4 space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-verde">{c.tipo === 'exame' ? 'Test' : 'Appointment'}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-verde">{c.tipo === 'exame' ? tr('Exame', 'Test') : tr('Consulta', 'Appointment')}</p>
                 <p className="font-semibold text-azul">{c.titulo}</p>
                 <p className="text-sm text-tinta-suave">
                   {dataCompromisso(c.dataHora)} · {c.local}
                   {c.profissional ? ` · ${c.profissional}` : ''}
                 </p>
-                {c.preparo && <p className="text-sm text-azul">Prep (institutional instructions): {c.preparo}</p>}
+                {c.preparo && <p className="text-sm text-azul">{tr('Preparo (orientação institucional):', 'Prep (institutional instructions):')} {c.preparo}</p>}
               </div>
             ))}
             {paciente.lembretes.length > 0 && (
               <div className="rounded-xl bg-gelo/60 p-4 text-sm text-azul">
-                <p className="font-semibold mb-1">Reminders created by the patient</p>
+                <p className="font-semibold mb-1">{tr('Lembretes que o paciente criou', 'Reminders created by the patient')}</p>
                 {paciente.lembretes.map((l) => (
                   <p key={l.id}>
                     {dataCompromisso(l.dataHora)}: {l.texto}
@@ -244,13 +245,13 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
         {aba === 'exames' && (
           <div className="space-y-3">
             {paciente.documentos.length === 0 && proximos.every((c) => c.tipo !== 'exame') && (
-              <p className="text-tinta-suave">No tests or documents recorded.</p>
+              <p className="text-tinta-suave">{tr('Nenhum exame ou documento registrado.', 'No tests or documents recorded.')}</p>
             )}
             {proximos
               .filter((c) => c.tipo === 'exame')
               .map((c) => (
                 <div key={c.id} className="rounded-xl border border-linha p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-atencao">Scheduled</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-atencao">{tr('Agendado', 'Scheduled')}</p>
                   <p className="font-semibold text-azul">{c.titulo}</p>
                   <p className="text-sm text-tinta-suave">{dataCompromisso(c.dataHora)} · {c.local}</p>
                 </div>
@@ -262,7 +263,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
                   {d.titulo}
                 </p>
                 <p className="text-sm text-tinta-suave">
-                  {d.tipo === 'resultado' ? 'Result' : 'Guidance'} · released to the patient on {dataHoraCurta(d.data)} by {d.liberadoPor}
+                  {d.tipo === 'resultado' ? tr('Resultado', 'Result') : tr('Orientação', 'Guidance')} · {tr('liberado ao paciente em', 'released to the patient on')} {dataHoraCurta(d.data)} {tr('por', 'by')} {d.liberadoPor}
                 </p>
                 <p className="text-sm text-azul">{d.texto}</p>
               </div>
@@ -280,28 +281,28 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
               <div className="flex gap-2.5">
                 <Stethoscope className="w-5 h-5 text-verde shrink-0" aria-hidden />
                 <div>
-                  <p className="font-semibold text-azul">Diagnosis</p>
+                  <p className="font-semibold text-azul">{tr('Diagnóstico', 'Diagnosis')}</p>
                   <p className="text-azul">{paciente.diagnosticoResumido}</p>
                 </div>
               </div>
               <div className="flex gap-2.5">
                 <Pill className="w-5 h-5 text-verde shrink-0" aria-hidden />
                 <div>
-                  <p className="font-semibold text-azul">Regimen</p>
+                  <p className="font-semibold text-azul">{tr('Esquema', 'Regimen')}</p>
                   <p className="text-azul">{paciente.esquemaResumido}</p>
                 </div>
               </div>
               <div className="flex gap-2.5">
                 <CalendarDays className="w-5 h-5 text-verde shrink-0" aria-hidden />
                 <div>
-                  <p className="font-semibold text-azul">Current cycle</p>
+                  <p className="font-semibold text-azul">{tr('Ciclo atual', 'Current cycle')}</p>
                   <p className="text-azul">{paciente.cicloAtual}</p>
                 </div>
               </div>
               <div className="flex gap-2.5">
                 <Activity className="w-5 h-5 text-verde shrink-0" aria-hidden />
                 <div>
-                  <p className="font-semibold text-azul">Performance status</p>
+                  <p className="font-semibold text-azul">{tr('Desempenho', 'Performance status')}</p>
                   <p className="text-azul">{paciente.ecog}</p>
                 </div>
               </div>
@@ -310,15 +311,15 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
             <div className="space-y-2">
               <h3 className="flex items-center gap-2 font-semibold text-azul">
                 <ClipboardList className="w-4 h-4 text-verde" aria-hidden />
-                Pending items ({abertas.length} open)
+                {tr(`Pendências (${abertas.length} abertas)`, `Pending items (${abertas.length} open)`)}
               </h3>
-              {abertas.length === 0 && <p className="text-sm text-tinta-suave">No open pending items.</p>}
+              {abertas.length === 0 && <p className="text-sm text-tinta-suave">{tr('Nenhuma pendência aberta.', 'No open pending items.')}</p>}
               {abertas.map((p) => (
                 <PendenciaItem key={p.id} pendencia={p} onAssumir={acoes.assumirPendencia} onConcluir={concluir} />
               ))}
               {concluidas.length > 0 && (
                 <details className="text-sm">
-                  <summary className="cursor-pointer text-tinta-suave hover:text-azul">{concluidas.length} reviewed</summary>
+                  <summary className="cursor-pointer text-tinta-suave hover:text-azul">{concluidas.length} {tr('revisadas', 'reviewed')}</summary>
                   <div className="space-y-2 mt-2">
                     {concluidas.map((p) => (
                       <PendenciaItem key={p.id} pendencia={p} onAssumir={acoes.assumirPendencia} onConcluir={concluir} />
@@ -333,13 +334,13 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
                 <HeartPulse className="w-4 h-4 text-verde" aria-hidden />
                 Check-ins
               </h3>
-              {checkins.length === 0 && <p className="text-sm text-tinta-suave">No check-ins logged.</p>}
+              {checkins.length === 0 && <p className="text-sm text-tinta-suave">{tr('Nenhum check-in registrado.', 'No check-ins logged.')}</p>}
               <ul className="space-y-1.5 text-sm">
                 {checkins.slice(0, 6).map((c) => (
                   <li key={c.id} className="flex flex-wrap gap-x-2">
                     <span className="text-tinta-suave tabular-nums">{dataHoraCurta(c.em)}</span>
-                    <span className="font-semibold text-azul">{c.opcoes.map((o) => ROTULO_OPCAO_CHECKIN[o]).join(', ') || 'Report'}</span>
-                    {c.origem === 'voz' && <span className="text-tinta-suave">· by voice</span>}
+                    <span className="font-semibold text-azul">{c.opcoes.map((o) => ROTULO_OPCAO_CHECKIN[o]).join(', ') || tr('Relato', 'Report')}</span>
+                    {c.origem === 'voz' && <span className="text-tinta-suave">{tr('· por voz', '· by voice')}</span>}
                     {c.texto && <span className="text-azul">“{c.texto}”</span>}
                   </li>
                 ))}
@@ -350,9 +351,9 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-verde" aria-hidden />
                 <div>
-                  <p className="font-semibold text-azul">Treatment plan (team document)</p>
+                  <p className="font-semibold text-azul">{tr('Plano terapêutico (documento da equipe)', 'Treatment plan (team document)')}</p>
                   <p className="text-xs text-tinta-suave">
-                    {paciente.planoAtualizadoEm ? `Updated on ${paciente.planoAtualizadoEm}` : 'Not attached yet'} · not used by Lia
+                    {paciente.planoAtualizadoEm ? tr(`Atualizado em ${paciente.planoAtualizadoEm}`, `Updated on ${paciente.planoAtualizadoEm}`) : tr('Ainda não anexado', 'Not attached yet')} · {tr('não é usado pela Lia', 'not used by Lia')}
                   </p>
                 </div>
               </div>
@@ -363,7 +364,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-linha bg-white text-xs font-semibold text-azul cursor-pointer"
                 >
                   <FileSearch className="w-3.5 h-3.5 text-verde" aria-hidden />
-                  See plan
+                  {tr('Ver plano', 'See plan')}
                 </button>
                 <UploadPlanoButton pacienteId={paciente.id} pacienteNome={paciente.nome} onPlanoAtualizado={acoes.atualizarPlano} />
               </div>
@@ -375,7 +376,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
               className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-verde text-white text-sm font-semibold hover:bg-verde-escuro cursor-pointer"
             >
               <MessageSquare className="w-4 h-4" aria-hidden />
-              Open conversation
+              {tr('Abrir conversa', 'Open conversation')}
             </button>
           </div>
         )}

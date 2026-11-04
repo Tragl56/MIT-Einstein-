@@ -14,9 +14,10 @@ import { ListaPacientes } from './components/ListaPacientes';
 import { DetalhePaciente } from './components/DetalhePaciente';
 import { PaginaPendencias } from './components/PaginaPendencias';
 import { InternoView } from './components/InternoView';
+import { tr } from './idioma';
 
 const CHAVE_USUARIO = 'oncoflow-pro-usuario';
-const INSTITUICAO = 'Fictional Oncology Center';
+const INSTITUICAO = tr('Centro de Oncologia Fictício', 'Fictional Oncology Center');
 
 function lerUsuarioSalvo(): string | null {
   try {
@@ -107,7 +108,7 @@ export default function App() {
           selecionadoId={selecionado?.id}
           onSelecionar={setPacienteSelecionadoId}
           onVerTodos={limite ? () => navegar('pacientes') : undefined}
-          titulo={limite ? 'Patients under follow-up' : `Patients (${filtrados.length})`}
+          titulo={limite ? tr('Pacientes em acompanhamento', 'Patients under follow-up') : tr(`Pacientes (${filtrados.length})`, `Patients (${filtrados.length})`)}
         />
       </div>
       <div className="xl:col-span-7">
@@ -119,7 +120,7 @@ export default function App() {
             minutosRetornoLia={estado!.minutosRetornoLia}
           />
         ) : (
-          <p className="text-tinta-suave">Select a patient.</p>
+          <p className="text-tinta-suave">{tr('Selecione um paciente.', 'Select a patient.')}</p>
         )}
       </div>
     </div>
@@ -155,7 +156,7 @@ export default function App() {
           )}
 
           {!estado ? (
-            <p className="text-tinta-suave">Loading patients…</p>
+            <p className="text-tinta-suave">{tr('Carregando pacientes…', 'Loading patients…')}</p>
           ) : pagina === 'inicio' ? (
             <>
               <Indicadores

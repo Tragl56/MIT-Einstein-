@@ -17,8 +17,10 @@ import {
   pacienteDaSessao,
   registrarCheckin,
   resetar,
+  trocarIdiomaDemo,
   usuarioPorId,
 } from './estado';
+import { ehIdioma, idiomaAtual, tr } from '../src/idioma';
 import { mensagemDoPaciente, responderProposta } from './lia';
 import { USUARIOS_EQUIPE } from './seed';
 import { visaoPaciente, visaoPro } from './visoes';
@@ -54,7 +56,7 @@ function pacienteDa(req: Request) {
 
 function textoDo(req: Request, campo = 'texto'): string {
   const valor = req.body?.[campo];
-  if (typeof valor !== 'string') throw new ErroDominio(400, 'campo_invalido', `Field "${campo}" is required.`);
+  if (typeof valor !== 'string') throw new ErroDominio(400, 'campo_invalido', tr(`Campo "${campo}" é obrigatório.`, `Field "${campo}" is required.`));
   return valor;
 }
 
@@ -70,6 +72,21 @@ export function criarRotas(): express.Router {
     rota((_req, res) => {
       resetar();
       res.json({ ok: true });
+    })
+  );
+  // Idioma único da demo (Pro e Paciente). Trocar recria os dados fictícios nesse idioma.
+  r.get('/api/demo/idioma', (_req, res) => {
+    res.json({ idioma: idiomaAtual() });
+  });
+  r.post(
+    '/api/demo/idioma',
+    rota((req, res) => {
+      const idioma = req.body?.idioma;
+      if (!ehIdioma(idioma)) {
+        throw new ErroDominio(400, 'idioma_invalido', tr('Idioma inválido. Use pt-BR ou en-US.', 'Invalid language. Use pt-BR or en-US.'));
+      }
+      trocarIdiomaDemo(idioma);
+      res.json({ idioma: idiomaAtual() });
     })
   );
 
@@ -127,7 +144,7 @@ export function criarRotas(): express.Router {
     rota((req, res) => {
       const desfecho = req.body?.desfecho as Desfecho;
       if (!DESFECHOS_VALIDOS.includes(desfecho)) {
-        throw new ErroDominio(400, 'desfecho_invalido', 'Choose the review outcome.');
+        throw new ErroDominio(400, 'desfecho_invalido', tr('Escolha o desfecho da revisão.', 'Choose the review outcome.'));
       }
       concluirPendencia(req.params.id, usuarioDa(req), desfecho);
       res.json({ ok: true });

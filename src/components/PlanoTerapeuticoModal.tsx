@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Clock, Download, X, Stethoscope, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Paciente } from '../types';
+import { tr } from '../idioma';
 
 interface PlanoTerapeuticoModalProps {
   paciente: Paciente;
@@ -16,7 +17,7 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
     const element = document.createElement('a');
     const file = new Blob([paciente.planoTerapeuticoTexto], { type: 'text/plain;charset=utf-8' });
     element.href = URL.createObjectURL(file);
-    element.download = `Treatment_Plan_${paciente.nome.replace(/\s+/g, '_')}.txt`;
+    element.download = tr(`Plano_Terapeutico_${paciente.nome.replace(/\s+/g, '_')}.txt`, `Treatment_Plan_${paciente.nome.replace(/\s+/g, '_')}.txt`);
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -34,7 +35,7 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-azul">
-                  Current Treatment Plan
+                  {tr('Plano Terapêutico Vigente', 'Current Treatment Plan')}
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gelo text-azul border border-verde/20">
                   {paciente.nome}
@@ -43,7 +44,7 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
               <div className="flex items-center gap-2 text-xs text-tinta-suave mt-0.5">
                 <Clock className="w-3 h-3 text-verde" />
                 <span className="font-medium text-azul">
-                  {paciente.planoAtualizadoEm ? `Plan updated on ${paciente.planoAtualizadoEm}` : 'Plan not attached yet'}
+                  {paciente.planoAtualizadoEm ? tr(`Plano atualizado em ${paciente.planoAtualizadoEm}`, `Plan updated on ${paciente.planoAtualizadoEm}`) : tr('Plano ainda não anexado', 'Plan not attached yet')}
                 </span>
               </div>
             </div>
@@ -54,7 +55,7 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
             id="btn-fechar-modal-plano"
             onClick={onFechar}
             className="p-1.5 rounded-lg text-tinta-suave hover:text-azul hover:bg-gelo transition-colors cursor-pointer"
-            title="Close"
+            title={tr("Fechar modal", "Close")}
           >
             <X className="w-5 h-5" />
           </button>
@@ -64,11 +65,11 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
         <div className="px-5 py-3 bg-gelo/40 border-b border-verde/20 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-tinta-suave">
-              Age: <strong className="text-azul">{paciente.idade} years</strong>
+              {tr('Idade:', 'Age:')} <strong className="text-azul">{paciente.idade} {tr('anos', 'years')}</strong>
             </span>
             <span className="text-tinta-suave">•</span>
             <span className="text-tinta-suave">
-              Cycle: <strong className="text-azul">{paciente.cicloAtual}</strong>
+              {tr('Ciclo:', 'Cycle:')} <strong className="text-azul">{paciente.cicloAtual}</strong>
             </span>
             <span className="text-tinta-suave">•</span>
             <span className="text-tinta-suave">
@@ -80,10 +81,10 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
             type="button"
             onClick={handleDownloadTxt}
             className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-azul bg-white hover:bg-gelo border border-linha rounded-md transition-colors cursor-pointer shadow-2xs"
-            title="Download a text file with the current plan to test re-uploading"
+            title={tr("Baixar arquivo de texto com o plano atual para testar o re-upload", "Download a text file with the current plan to test re-uploading")}
           >
             <Download className="w-3 h-3 text-verde" />
-            <span>Download as .txt</span>
+            <span>{tr('Baixar como .txt', 'Download as .txt')}</span>
           </button>
         </div>
 
@@ -97,8 +98,8 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
           <div className="p-3 bg-gelo border border-verde/30 rounded-lg text-xs text-azul flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 text-verde shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold block">Team document</span>
-              This plan is consulted by the team and is not used by Lia to answer the patient. A future AI extraction (warning signs, expected toxicities) would only take effect after being reviewed and approved by a clinician.
+              <span className="font-semibold block">{tr('Documento da equipe', 'Team document')}</span>
+              {tr('Este plano é consultado pela equipe e não é usado pela Lia para responder ao paciente. Uma futura extração por IA (sinais de alarme, toxicidades esperadas) só passaria a valer depois de revisada e aprovada pelo profissional.', 'This plan is consulted by the team and is not used by Lia to answer the patient. A future AI extraction (warning signs, expected toxicities) would only take effect after being reviewed and approved by a clinician.')}
             </div>
           </div>
         </div>
@@ -110,7 +111,7 @@ export const PlanoTerapeuticoModal: React.FC<PlanoTerapeuticoModalProps> = ({
             onClick={onFechar}
             className="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-verde hover:bg-azul rounded-lg transition-colors cursor-pointer shadow-xs"
           >
-            Close
+            {tr('Fechar', 'Close')}
           </button>
         </div>
       </div>

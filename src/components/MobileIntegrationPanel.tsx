@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CalendarDays, CheckCircle2, FileText, Link2, RefreshCw, Route, Smartphone } from 'lucide-react';
 import { chamarApi } from '../api/pro';
 import type { PacientePro, UsuarioEquipe } from '../types';
+import { idiomaAtual } from '../idioma';
 
 type Locale = 'pt-BR' | 'en-US';
 type Appointment = {
@@ -123,7 +124,8 @@ function JourneyForm({ item, copy, pending, save }: { item: JourneyEvent; copy: 
 }
 
 export function MobileIntegrationPanel({ paciente, usuario }: { paciente: PacientePro; usuario: UsuarioEquipe }) {
-  const [locale, setLocale] = useState<Locale>('pt-BR');
+  // Segue o idioma da demo (seletor no menu do usuário e no login).
+  const locale: Locale = idiomaAtual();
   const copy = COPY[locale];
   const [data, setData] = useState<MobileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -202,8 +204,7 @@ export function MobileIntegrationPanel({ paciente, usuario }: { paciente: Pacien
 
   return <div className="mobile-integration" lang={locale} data-testid="mobile-integration">
     <div className="mobile-integration-heading">
-      <div><p className="pro-eyebrow">OncoFlow · Pro + Paciente</p><h3>{copy.title}</h3><p>{copy.subtitle}</p></div>
-      <label className="mobile-language">{copy.language}<select aria-label={copy.language} value={locale} onChange={(e) => setLocale(e.target.value as Locale)}><option value="pt-BR">Português</option><option value="en-US">English</option></select></label>
+      <div><p className="pro-eyebrow">{locale === 'pt-BR' ? 'OncoFlow · Pro + Paciente' : 'OncoFlow · Pro + Patient'}</p><h3>{copy.title}</h3><p>{copy.subtitle}</p></div>
     </div>
     <p className="mobile-demo"><span aria-hidden className="demo-dot" />{copy.demo}</p>
     {error && <div role="alert" className="mobile-feedback is-error">{error}</div>}
@@ -217,7 +218,7 @@ export function MobileIntegrationPanel({ paciente, usuario }: { paciente: Pacien
       <button type="button" className="pro-primary" disabled={disabled} onClick={() => void generate()} data-testid="generate-pairing"><Link2 size={18} aria-hidden />{pending === 'pair' ? copy.generating : copy.generate}</button>
       {pairing && <div className="mobile-pairing-result">
         <p>{copy.instructions}</p>
-        <output aria-label="Pairing code" className="mobile-pairing-code" data-testid="pairing-code">{pairing.code}</output>
+        <output aria-label={locale === 'pt-BR' ? 'Código de pareamento' : 'Pairing code'} className="mobile-pairing-code" data-testid="pairing-code">{pairing.code}</output>
         <p>{expired ? copy.codeExpired : `${copy.expires}: ${new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(pairing.expiresAt))}`}</p>
       </div>}
       <a className="mobile-app-link" href="/app/" target="_blank" rel="noopener"><Smartphone size={17} aria-hidden />{copy.openApp}</a>

@@ -2,6 +2,8 @@
 // e OncoFlow Paciente. O servidor nunca envia `Paciente` inteiro ao app do paciente: ele monta
 // `InicioPaciente` com uma lista explícita de campos (server/visoes.ts).
 
+import { tr } from './idioma';
+
 export type PapelEquipe = 'medico' | 'enfermagem' | 'navegacao';
 
 export interface UsuarioEquipe {
@@ -95,13 +97,14 @@ export interface Lembrete {
 
 export type OpcaoCheckin = 'bem' | 'cansaco' | 'dor' | 'nausea' | 'ansiedade' | 'outro';
 
+// Getters: o servidor também usa estes rótulos, e o idioma da demo só é conhecido na hora do uso.
 export const ROTULO_OPCAO_CHECKIN: Record<OpcaoCheckin, string> = {
-  bem: 'Well',
-  cansaco: 'Tired',
-  dor: 'In pain',
-  nausea: 'Nauseous',
-  ansiedade: 'Anxious',
-  outro: 'Other',
+  get bem() { return tr('Bem', 'Well'); },
+  get cansaco() { return tr('Cansado(a)', 'Tired'); },
+  get dor() { return tr('Com dor', 'In pain'); },
+  get nausea() { return tr('Náusea', 'Nauseous'); },
+  get ansiedade() { return tr('Ansioso(a)', 'Anxious'); },
+  get outro() { return tr('Outro', 'Other'); },
 };
 
 export interface Checkin {
@@ -130,9 +133,9 @@ export type EstadoPendencia = 'aberta' | 'em_andamento' | 'concluida';
 export type Desfecho = 'sem_acao_necessaria' | 'contato_realizado' | 'encaminhado';
 
 export const ROTULO_DESFECHO: Record<Desfecho, string> = {
-  sem_acao_necessaria: 'No action needed',
-  contato_realizado: 'Contact made',
-  encaminhado: 'Referred',
+  get sem_acao_necessaria() { return tr('Sem ação necessária', 'No action needed'); },
+  get contato_realizado() { return tr('Contato realizado', 'Contact made'); },
+  get encaminhado() { return tr('Encaminhado', 'Referred'); },
 };
 
 export interface Pendencia {
