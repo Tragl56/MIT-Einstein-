@@ -188,6 +188,7 @@ export type SituacaoPaciente = 'sinal_a_revisar' | 'aguardando_revisao' | 'sem_p
 // ---------------------------------------------------------------------------
 
 export interface Paciente {
+  barreiras?: BarreiraAcesso[]; // Notas internas da equipe; nunca serializar para o paciente.
   id: string;
   nome: string;
   idade: number;
@@ -207,6 +208,37 @@ export interface Paciente {
   documentos: Documento[];
   lembretes: Lembrete[];
   checkins: Checkin[];
+}
+
+export type CategoriaBarreira = 'transporte' | 'agendamento' | 'apoio_social' | 'comunicacao' | 'outra';
+export type EstadoBarreira = 'aberta' | 'em_acompanhamento' | 'resolvida' | 'encerrada_sem_resolucao';
+export interface CriarBarreiraInput {
+  chave: string;
+  categoria: CategoriaBarreira;
+  descricao: string;
+  responsavelId: string;
+  prazo: string;
+}
+export interface AtualizarBarreiraInput {
+  revisao: number;
+  estado: EstadoBarreira;
+  responsavelId: string;
+  prazo: string;
+  motivo: string;
+}
+export interface BarreiraAcesso {
+  id: string;
+  chave: string;
+  criacao: CriarBarreiraInput;
+  categoria: CategoriaBarreira;
+  descricao: string;
+  responsavelId: string;
+  prazo: string;
+  criadaEm: string;
+  criadaPor: string;
+  estado: EstadoBarreira;
+  revisao: number;
+  historico: { em: string; atorId: string; atorNome: string; motivo: string; anterior?: { estado: EstadoBarreira; responsavelId: string; prazo: string }; novo: { estado: EstadoBarreira; responsavelId: string; prazo: string } }[];
 }
 
 export interface PacientePro extends Paciente {

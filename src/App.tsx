@@ -116,6 +116,7 @@ export default function App() {
           <DetalhePaciente
             paciente={selecionado}
             usuarioAtual={usuarioLogado}
+            usuarios={estado!.usuarios}
             acoes={acoes}
             minutosRetornoLia={estado!.minutosRetornoLia}
           />

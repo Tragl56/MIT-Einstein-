@@ -27,9 +27,10 @@ import { UploadPlanoButton } from './UploadPlanoButton';
 import { OrbeMini } from './OrbeMini';
 import { dataCompromisso, dataHoraCurta, diagnosticoCurto, iniciais } from './proUtil';
 import { MobileIntegrationPanel } from './MobileIntegrationPanel';
+import { BarreirasAcesso } from './BarreirasAcesso';
 import { tr } from '../idioma';
 
-type Aba = 'jornada' | 'agenda' | 'exames' | 'comunicacao' | 'resumo' | 'aplicativo';
+type Aba = 'jornada' | 'agenda' | 'exames' | 'comunicacao' | 'resumo' | 'aplicativo' | 'barreiras';
 
 const ABAS: [Aba, string][] = [
   ['jornada', tr('Jornada', 'Journey')],
@@ -37,10 +38,12 @@ const ABAS: [Aba, string][] = [
   ['exames', tr('Exames', 'Tests')],
   ['comunicacao', tr('Comunicação', 'Messages')],
   ['resumo', tr('Resumo', 'Summary')],
+  ['barreiras', tr('Barreiras de acesso', 'Access barriers')],
   ['aplicativo', tr('Aplicativo do paciente', 'Patient app')],
 ];
 
 interface DetalhePacienteProps {
+  usuarios: UsuarioEquipe[];
   paciente: PacientePro;
   usuarioAtual: UsuarioEquipe;
   acoes: AcoesPro;
@@ -88,7 +91,7 @@ const JornadaHorizontal: React.FC<{ paciente: PacientePro }> = ({ paciente }) =>
   );
 };
 
-export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usuarioAtual, acoes, minutosRetornoLia }) => {
+export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usuarioAtual, usuarios, acoes, minutosRetornoLia }) => {
   const [aba, setAba] = useState<Aba>('jornada');
   const [planoAberto, setPlanoAberto] = useState(false);
 
@@ -171,6 +174,7 @@ export const DetalhePaciente: React.FC<DetalhePacienteProps> = ({ paciente, usua
 
       <div className="pt-6" role="tabpanel">
         {aba === 'aplicativo' && <MobileIntegrationPanel key={`${paciente.id}:${usuarioAtual.id}`} paciente={paciente} usuario={usuarioAtual} />}
+        {aba === 'barreiras' && <BarreirasAcesso key={paciente.id} paciente={paciente} usuarios={usuarios} acoes={acoes} />}
         {aba === 'jornada' && (
           <div className="space-y-6">
             <JornadaHorizontal paciente={paciente} />

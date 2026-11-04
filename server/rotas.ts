@@ -25,6 +25,7 @@ import { ehIdioma, idiomaAtual, tr } from '../src/idioma';
 import { mensagemDoPaciente, responderProposta } from './lia';
 import { USUARIOS_EQUIPE } from './seed';
 import { visaoPaciente, visaoPro } from './visoes';
+import { criarBarreira, atualizarBarreira } from './barreiras';
 
 const OPCOES_VALIDAS: OpcaoCheckin[] = ['bem', 'cansaco', 'dor', 'nausea', 'ansiedade', 'outro'];
 const DESFECHOS_VALIDOS: Desfecho[] = ['sem_acao_necessaria', 'contato_realizado', 'encaminhado'];
@@ -92,6 +93,14 @@ export function criarRotas(): express.Router {
   );
 
   // OncoFlow Pro (equipe)
+  r.post('/api/pro/pacientes/:id/barreiras', rota((req, res) => {
+    const barreira = criarBarreira(req.params.id, usuarioDa(req), req.body);
+    res.json({ id: barreira.id });
+  }));
+  r.post('/api/pro/pacientes/:id/barreiras/:barreiraId', rota((req, res) => {
+    atualizarBarreira(req.params.id, req.params.barreiraId, usuarioDa(req), req.body);
+    res.json({ ok: true });
+  }));
   r.get(
     '/api/pro/estado',
     rota((req, res) => {
