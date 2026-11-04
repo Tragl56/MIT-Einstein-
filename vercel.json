@@ -10,7 +10,7 @@
     "api": {
       "root": "backend/",
       "entrypoint": "app.main:app",
-      "buildCommand": "python -m alembic upgrade head && python scripts/seed_demo.py"
+      "buildCommand": "python -m alembic upgrade head && python -m scripts.seed_demo"
     }
   },
   "rewrites": [
