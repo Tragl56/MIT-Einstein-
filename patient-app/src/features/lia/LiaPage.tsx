@@ -1302,7 +1302,7 @@ export function LiaPage({
                 <button
                   className="text-button lia-action"
                   disabled={
-                    !consent || !configured || busy.current || callActive
+                    !consent || (!configured && !web) || busy.current || callActive
                   }
                   aria-label={translate("Ouvir resposta da Lia")}
                   onClick={() => repeat(m.text)}
