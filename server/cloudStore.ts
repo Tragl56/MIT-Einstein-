@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { supabaseCa } from './supabaseCa';
 
 export interface SnapshotTransaction {
   snapshot: unknown;
@@ -10,7 +11,7 @@ export interface SnapshotStore { begin(): Promise<SnapshotTransaction> }
 export function postgresSnapshotStore(connectionString: string): SnapshotStore {
   const url = new URL(connectionString.replace(/^postgresql\+asyncpg:/, 'postgresql:'));
   for (const key of ['sslmode', 'ssl']) url.searchParams.delete(key);
-  const pool = new pg.Pool({ connectionString: url.href, ssl: { rejectUnauthorized: true }, max: 2,
+  const pool = new pg.Pool({ connectionString: url.href, ssl: { rejectUnauthorized: true, ca: supabaseCa }, max: 2,
     connectionTimeoutMillis: 10_000, idleTimeoutMillis: 10_000, allowExitOnIdle: true });
   return {
     async begin() {
