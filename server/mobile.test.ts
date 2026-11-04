@@ -12,6 +12,31 @@ const timestamp = () => new Date().toISOString();
 const confirmation = () => ({ confirmed: true, confirmedAt: timestamp() });
 const scopePath = (patientId = 'pac-maria') => `/api/v1/tenants/demo/hospitals/oncoflow/patients/${patientId}`;
 
+test('service-local API rewrites reach JSON routes instead of the Vite HTML fallback', async () => {
+  const api = criarApi({ statePath: null, autoConnect: true });
+  api.app.use((_req, res) => res.type('html').send('<html>SPA fallback</html>'));
+  const server = await new Promise<Server>(resolve => { const instance = api.app.listen(0, '127.0.0.1', () => resolve(instance)); });
+  const address = server.address(); assert.ok(address && typeof address !== 'string');
+  const base = `http://127.0.0.1:${address.port}`;
+  try {
+    const health = await fetch(`${base}/api/index?__oncoflow_path=/api/health`);
+    assert.match(health.headers.get('content-type') ?? '', /application\/json/);
+    assert.equal((await health.json()).service, 'OncoFlow');
+    const session = await fetch(`${base}/api/index?__oncoflow_path=/api/mobile/demo-session`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patientId: 'pac-maria' }) });
+    assert.equal(session.status, 200); assert.equal((await session.json()).scope.patientId, 'pac-maria');
+    const config = await fetch(`${base}/api/mobile/config`, { headers: { 'x-forwarded-host': '127.0.0.1:42861' } });
+    assert.equal((await config.json()).serviceUrl, 'http://127.0.0.1:42861', 'local service config preserves the public dev gateway');
+    for (const forwarded of ['untrusted.example', '10.untrusted.example', '192.168.untrusted.example', '172.16.untrusted.example', '127.0.0.1:42861, untrusted.example', '127.0.0.1:42861/path']) {
+      const response = await fetch(`${base}/api/mobile/config`, { headers: { 'x-forwarded-host': forwarded } });
+      assert.equal((await response.json()).serviceUrl, base, 'untrusted or malformed forwarded hosts are ignored');
+    }
+    for (const query of ['__oncoflow_path=/app/index.html', '__oncoflow_path=/api/health&__oncoflow_path=/api/pro/estado']) {
+      const invalid = await fetch(`${base}/api/index?${query}`);
+      assert.equal(invalid.status, 400); assert.match(invalid.headers.get('content-type') ?? '', /application\/json/);
+    }
+  } finally { api.dispose(); await new Promise<void>(resolve => server.close(() => resolve())); }
+});
+
 test('connected fictional demo uses real shared Pro state over HTTP, persists, and isolates patients', async t => {
   // This suite checks the English seed and service texts; Portuguese is the demo default.
   definirIdioma('en-US');
@@ -297,7 +322,7 @@ test('automatic symptom report is scoped, affirmative, atomic, durable and idemp
   let auth = await pair('pac-maria'); const jose = await pair('pac-001');
   const reports: any[] = [];
   await t.test('PT/EN affirmative fever/vomiting in text/voice need no extra confirmation and create exactly one shared review item', async () => {
-    for (const [index, text] of ['Estou vomitando e com febre agora.', 'Estou com febre e vômitos persistentes.', 'Não consigo parar de vomitar.', 'I have a fever and I am vomiting now.', 'O que fazer se tiver febre? Estou vomitando agora.', 'Tive febre ontem, hoje estou vomitando.', 'Tive febre ontem e hoje estou vomitando.', 'What should I do if I get fever? I am vomiting now.', 'I had a fever yesterday, and now I am vomiting.'].entries()) {
+    for (const [index, text] of ['Estou vomitando e com febre agora.', 'Estou com febre e vômitos persistentes.', 'Não consigo parar de vomitar.', 'I have a fever and I am vomiting now.', 'O que fazer se tiver febre? Estou vomitando agora.', 'Tive febre ontem, hoje estou vomitando.', 'Tive febre ontem e hoje estou vomitando.', 'What should I do if I get fever? I am vomiting now.', 'I had a fever yesterday, and now I am vomiting.', 'Estou com náusea, febre e vômito.'].entries()) {
       const source = index % 2 ? 'voice' : 'text'; const locale = index === 3 ? 'en-US' : 'pt-BR';
       const body = { text, source, locale, idempotencyKey: `auto-report-${index}` }; const headers = { ...auth, 'Idempotency-Key': body.idempotencyKey };
       const before = await proPatient(); const result = await call(scopePath() + '/symptom-reports', 'POST', body, headers);
@@ -310,7 +335,7 @@ test('automatic symptom report is scoped, affirmative, atomic, durable and idemp
       assert.deepEqual((await call(scopePath() + '/symptom-reports', 'POST', body, headers)).body.data, record);
       const after = await proPatient(); assert.equal(after.pendencias.length, before.pendencias.length + 1);
       const alert = after.pendencias.find((pe: any) => pe.id === record.alertId);
-      assert.equal(alert.falaLiteral, text); assert.equal(alert.origem, 'hipotese_sistema'); assert.equal(alert.estado, 'aberta'); assert.equal(alert.papelDestino, 'enfermagem');
+      assert.equal(alert.falaLiteral, text); assert.equal(alert.tipo, 'sinal_urgencia'); assert.equal(alert.origem, 'hipotese_sistema'); assert.equal(alert.estado, 'aberta'); assert.equal(alert.papelDestino, 'enfermagem');
       assert.equal(after.mensagens.filter((m: any) => m.autor === 'paciente' && m.texto === text).length, 1);
       assert.ok(!(await proPatient('pac-001')).pendencias.some((pe: any) => pe.id === record.alertId));
       const visible = (await call(scopePath() + '/messages', 'GET', undefined, auth)).body.data;
@@ -319,6 +344,15 @@ test('automatic symptom report is scoped, affirmative, atomic, durable and idemp
       assert.equal((await call(scopePath('pac-001') + '/symptom-reports', 'POST', body, headers)).status, 403);
       assert.equal((await call(scopePath() + '/symptom-reports', 'POST', { ...body, text: text + ' changed' }, headers)).status, 409);
     }
+  });
+  await t.test('vomiting with explicitly denied fever does not receive a fever-specific explanation', async () => {
+    const body = { text: 'Estou vomitando e sem febre.', source: 'voice', locale: 'pt-BR', idempotencyKey: 'auto-vomiting-no-fever' };
+    const result = await call(scopePath() + '/symptom-reports', 'POST', body, { ...auth, 'Idempotency-Key': body.idempotencyKey });
+    assert.equal(result.status, 200);
+    assert.equal(result.body.data.status, 'recorded');
+    assert.match(result.body.data.guidance, /avaliação agora/);
+    assert.doesNotMatch(result.body.data.guidance, /febre|infecção/i);
+    reports.push({ body, record: result.body.data });
   });
   await t.test('educational questions, hypothetical, historical, third party and negated mentions create no clinical records', async () => {
     const before = await proPatient();

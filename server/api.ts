@@ -1,12 +1,16 @@
 import express from 'express';
 import { criarRotas } from './rotas';
 import { criarIntegracaoMobile, type MobileOptions } from './mobile';
+import { unwrapApiPath } from './apiPath';
 import { tr } from '../src/idioma';
 
 /** Actual Express API, also mounted unchanged by HTTP integration tests. */
 export function criarApi(options: MobileOptions = {}) {
   const app = express();
   app.disable('x-powered-by');
+  app.use((req, _res, next) => {
+    try { req.url = unwrapApiPath(req.url); next(); } catch (error) { next(error); }
+  });
   const allowed = new Set(['https://localhost', 'http://localhost', 'capacitor://localhost', ...(process.env.ONCOFLOW_ALLOWED_ORIGINS ?? '').split(',').map(x => x.trim()).filter(Boolean)]);
   app.use((req, res, next) => {
     const origin = req.header('origin');
@@ -19,8 +23,10 @@ export function criarApi(options: MobileOptions = {}) {
     if (req.method === 'OPTIONS') { res.sendStatus(origin && !allowed.has(origin) ? 403 : 204); return; }
     next();
   });
+  app.get('/api/health', (_req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json({ status: 'ok', service: 'OncoFlow', demo: true, ready: true, storage: options.cloud ? 'redis' : 'local' }); });
   const json = express.json({ limit: '256kb' });
-  app.use((req, res, next) => req.path === '/api/transcrever-audio' ? next() : json(req, res, next));
+  // The cloud entrypoint parses the bounded body BEFORE entering its state transaction.
+  app.use((req, res, next) => options.cloud || req.path === '/api/transcrever-audio' ? next() : json(req, res, next));
   const mobile = criarIntegracaoMobile(options);
   app.use(mobile.router);
   app.use(criarRotas());

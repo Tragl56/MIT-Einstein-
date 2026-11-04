@@ -19,6 +19,7 @@ export type SpeechGateCallbacks = {
 };
 export type SpeechGate = {
   stream: MediaStream;
+  hasPendingSpeech(): boolean;
   setMuted(value: boolean): void;
   close(): void;
 };
@@ -26,7 +27,9 @@ export type SpeechGate = {
 export const SPEECH_GATE_SETTINGS = {
   positiveSpeechThreshold: 0.75,
   negativeSpeechThreshold: 0.45,
-  minSpeechMs: 250,
+  // v5 evaluates 32ms frames. Require three positive frames so short words such
+  // as "não" can pass; a 250ms minimum could discard the whole word as a misfire.
+  minSpeechMs: 96,
   redemptionMs: 500,
   preSpeechPadMs: 300,
   delayMs: 850,
@@ -83,6 +86,8 @@ export async function createSpeechGate(
   gain.gain.value = 0;
   gain.connect(destination);
   let delay: DelayNode | undefined;
+  let delayConnected = false,
+    draining = false;
   let engine: SpeechGateEngine | undefined;
   let closed = false,
     muted = false,
@@ -119,12 +124,18 @@ export async function createSpeechGate(
     clearTimeout(closeTimer);
     closeTimer = undefined;
     speaking = false;
+    draining = false;
     setGain(0);
     visual(0);
   }
+  function disconnectDelayInput() {
+    if (!delay || !delayConnected) return;
+    source.disconnect(delay);
+    delayConnected = false;
+  }
   function discardDelay() {
     if (!delay) return;
-    source.disconnect(delay);
+    disconnectDelayInput();
     delay.disconnect();
     delay = undefined;
   }
@@ -133,6 +144,7 @@ export async function createSpeechGate(
     delay = context.createDelay(1);
     delay.delayTime.value = SPEECH_GATE_SETTINGS.delayMs / 1000;
     source.connect(delay);
+    delayConnected = true;
     delay.connect(gain);
   }
   function close() {
@@ -191,6 +203,7 @@ export async function createSpeechGate(
       if (!validCallback()) return;
       clearTimeout(closeTimer);
       closeTimer = undefined;
+      draining = false;
       speaking = true;
       // The delay also covers uncertain onset frames before neural confirmation.
       setGain(1);
@@ -219,7 +232,7 @@ export async function createSpeechGate(
       );
     },
     onVADMisfire: () => {
-      if (validCallback()) shutGate();
+      if (validCallback() && !draining) shutGate();
     },
   };
   try {
@@ -289,19 +302,44 @@ export async function createSpeechGate(
     visual(0);
     return {
       stream: destination.stream,
+      hasPendingSpeech: () => !closed && speaking,
       setMuted(value) {
         if (closed || muted === value) return;
         muted = value;
         accepting = false;
         const change = ++revision;
-        shutGate();
-        discardDelay();
+        if (value) {
+          clearTimeout(closeTimer);
+          closeTimer = undefined;
+          // Stop new input synchronously, while the DelayNode finishes only
+          // samples already captured before mute (including the word ending).
+          disconnectDelayInput();
+          visual(0);
+          if (speaking) {
+            draining = true;
+            closeTimer = setTimeout(() => {
+              if (closed || !draining) return;
+              shutGate();
+              if (muted) discardDelay();
+            }, SPEECH_GATE_SETTINGS.delayMs);
+          } else {
+            shutGate();
+            discardDelay();
+          }
+        } else if (!draining) {
+          shutGate();
+          discardDelay();
+        }
         operations = operations
           .then(async () => {
             if (closed) return;
             await loaded.pause();
             if (closed || muted || change !== revision) return;
-            freshDelay();
+            // A quick unmute must not erase the previous word's pending tail.
+            if (draining && delay) {
+              source.connect(delay);
+              delayConnected = true;
+            } else freshDelay();
             await loaded.start();
             if (!closed && !muted && change === revision) accepting = true;
           })

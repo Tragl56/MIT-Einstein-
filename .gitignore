@@ -44,3 +44,6 @@ test-results/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# patient-app is the canonical source; sync:patient writes this only for explicit imports
+patient-app/.source-manifest.json

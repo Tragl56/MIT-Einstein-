@@ -35,6 +35,21 @@ powershell -ExecutionPolicy Bypass -File .\Start-OncoFlow.ps1 -Build
 Nas próximas execuções, `Start-OncoFlow.ps1` reutiliza o build. Use `-Build` depois de alterar o código;
 `-Port 3100` escolhe outra porta. O script utiliza o terminal atual e não abre outras janelas.
 
+## Entrada automática no app (0.15)
+
+Com `ONCOFLOW_DEMO_AUTO_CONNECT=true`, o app web em `/app/` mostra **Entrar no app**: o servidor escolhe a
+paciente fictícia padrão (Maria) e emite uma sessão restrita a ela, sem endereço nem código. No PowerShell:
+
+```powershell
+$env:ONCOFLOW_DEMO_AUTO_CONNECT = 'true'
+npm run start:platform
+```
+
+A opção é só para dados fictícios: quem alcança o servidor pode abrir sessões dos pacientes da
+demonstração (há limite de tentativas por endereço). Sem ela, o app continua com o pareamento por código
+descrito abaixo, em **Conexão avançada**. No Android, a entrada automática precisa de um endereço HTTPS
+publicado em `platform/mobile-config.json`; enquanto ele estiver vazio, use o pareamento.
+
 ## Parear o Android na mesma rede
 
 1. Conecte computador e celular à mesma rede privada. No celular, use o IP do computador informado no
