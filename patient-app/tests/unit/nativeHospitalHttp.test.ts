@@ -5,6 +5,18 @@ vi.mock("@capacitor/core", () => ({
   CapacitorHttp: { request: native.request },
 }));
 import { hospitalFetch } from "../../src/integrations/nativeHttp";
+it("keeps preview access cookies only for requests to the web app's own origin", async () => {
+  native.isNative = false;
+  const fetcher = vi.fn().mockResolvedValue(new Response('{}'));
+  vi.stubGlobal('location', { origin: 'https://preview.example' });
+  vi.stubGlobal('fetch', fetcher);
+  try {
+    await hospitalFetch('https://preview.example/api/mobile/config', { credentials: 'omit' });
+    expect(fetcher.mock.calls[0][1].credentials).toBe('same-origin');
+    await hospitalFetch('https://other.example/api/mobile/config', { credentials: 'include' });
+    expect(fetcher.mock.calls[1][1].credentials).toBe('omit');
+  } finally { vi.unstubAllGlobals(); }
+});
 beforeEach(() => {
   native.request.mockReset();
   native.isNative = true;

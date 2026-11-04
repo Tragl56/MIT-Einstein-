@@ -48,6 +48,7 @@ export type MobileOptions = {
   autoConnect?: boolean;
   /** Passed by the stateless function entrypoint, never from an HTTP body. */
   cloud?: boolean;
+  storage?: 'supabase';
 };
 const scopeFor = (patientId: string): Scope => ({ tenantId: 'demo', hospitalId: 'oncoflow', patientId });
 const baseFor = (patientId: string, id: string): RecordBase => ({ ...scopeFor(patientId), id });
@@ -239,7 +240,7 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
   });
   const autoConnectEnabled = () => options.autoConnect ?? process.env.ONCOFLOW_DEMO_AUTO_CONNECT === 'true';
   function serviceUrl(req: Request): string {
-    const canonical = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    const canonical = process.env.ONCOFLOW_SERVICE_URL ?? (options.cloud ? undefined : process.env.VERCEL_PROJECT_PRODUCTION_URL);
     if (canonical) {
       const parsed = new URL(canonical.includes('://') ? canonical : `https://${canonical}`);
       if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) throw new ErroDominio(503, 'origem_invalida', 'Endereço canônico da demonstração não configurado corretamente.');

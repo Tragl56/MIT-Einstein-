@@ -2,13 +2,17 @@
 
 ## Endereços
 
-- `/profissional` — painel da equipe clínica, com tabela rolável em telas estreitas.
-- `/paciente` — jornada do paciente, com layout pensado para celular.
-- `/` — escolha entre os dois painéis.
+- `/profissional.html` e `/` — painel profissional completo da demonstração.
+- `/app/` — app completo do paciente no navegador: jornada, agenda, documentos, registros e mensagens.
+- `/paciente.html` — redireciona ao app completo.
 
 ## Composição
 
-`vercel.json` publica o frontend Vite e o backend FastAPI como serviços no mesmo projeto e domínio. As chamadas `/api/*` seguem para o backend; as demais rotas seguem para o frontend.
+`vercel.json` publica os frontends Pro e paciente e a API Express que ambos compartilham no mesmo domínio. O serviço FastAPI mantém as migrações Alembic e o endpoint de diagnóstico `/api/saude`.
+
+A API completa carrega e salva seu cenário fictício em `oncoflow_demo_snapshot` no Supabase. Cada chamada usa uma transação com bloqueio da linha, e a instância serializa a hidratação do domínio. A resposta só é enviada após o commit; falhas retornam 503, sem recibo de sucesso. Sessões e chaves de idempotência também persistem no cenário. É uma ponte para demonstração, não o modelo relacional clínico definitivo.
+
+O navegador usa cookies somente para chamadas da própria origem, para preservar o acesso temporário ao preview protegido. O Ollama local e o plugin de voz Android não ficam disponíveis automaticamente no navegador pela publicação do frontend.
 
 ## Variáveis secretas necessárias no Vercel
 
