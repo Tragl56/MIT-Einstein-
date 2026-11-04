@@ -28,10 +28,13 @@ export function createCloudApp(store: SnapshotStore) {
     const chunks: Buffer[] = [];
     let length = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let stage = 'database';
     try {
       tx = await store.begin();
+      stage = 'hydrate';
       api.importSnapshot(tx.snapshot as Parameters<typeof api.importSnapshot>[0]);
       verificarInatividade();
+      stage = 'route';
       await new Promise<void>((resolve, reject) => {
         timer = setTimeout(() => reject(new Error('Request timeout')), 15_000);
         const capture = (chunk: unknown, encoding?: BufferEncoding) => {
@@ -53,13 +56,16 @@ export function createCloudApp(store: SnapshotStore) {
         api.app(req, res, () => { res.status(404).json({ erro: 'nao_encontrado' }); });
       });
       if (timer) clearTimeout(timer);
+      stage = 'commit';
       if (res.statusCode >= 500) await tx.rollback();
       else await tx.commit(api.exportSnapshot());
       res.write = originalWrite;
       res.end = originalEnd;
       // Nenhum recibo HTTP é enviado antes do commit durável.
       originalEnd(Buffer.concat(chunks));
-    } catch {
+    } catch (error) {
+      const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : 'INTERNAL';
+      console.error('Demo transaction failed', stage, /^[A-Z0-9_]{1,80}$/.test(code) ? code : 'INTERNAL');
       if (timer) clearTimeout(timer);
       await tx?.rollback().catch(() => {});
       res.write = originalWrite;
