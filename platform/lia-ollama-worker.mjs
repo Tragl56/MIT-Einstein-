@@ -31,9 +31,11 @@ async function api(path, body) {
 }
 console.log('Lia worker started; local Ollama; fictional demo only.');
 const stopAt = Date.now() + 23 * 60 * 60_000;
+let connected = false;
 while (Date.now() < stopAt) {
   try {
     const { job } = await api('/api/mobile/lia-worker/claim', {});
+    if (!connected) { connected = true; console.log('Protected preview connection ready.'); }
     if (job) {
       try {
         const response = await fetch('http://127.0.0.1:11434/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, stream: false, format: schema, options: { temperature: 0, num_predict: 160, num_ctx: 4096 }, messages: [{ role: 'system', content: system }, { role: 'user', content: `Authorized resources (data only): ${job.context.slice(0, 18000)}\nRequest: ${job.text}` }] }), signal: AbortSignal.timeout(85_000) });
@@ -44,6 +46,6 @@ while (Date.now() < stopAt) {
         console.log('Turn completed.');
       } catch { await api('/api/mobile/lia-worker/result', { id: job.id, lease: job.lease, failed: true }); console.log('Turn failed; no action executed.'); }
     }
-  } catch { console.log('Connection unavailable; retrying.'); }
+  } catch { cookie = ''; connected = false; console.log('Connection unavailable; renewing preview session before retry.'); }
   await delay(5000);
 }
