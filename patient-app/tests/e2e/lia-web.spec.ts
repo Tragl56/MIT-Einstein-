@@ -16,12 +16,19 @@ async function open(page: import("@playwright/test").Page) {
 test("browser Lia reads actual app data and requires confirmation before a contact request", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    (window as any).__liaSpoken = [];
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: class { text: string; onend?: () => void; constructor(text: string) { this.text = text; } } });
+    Object.defineProperty(window, 'speechSynthesis', { value: { cancel() {}, speak(utterance: { text: string; onend?: () => void }) { (window as any).__liaSpoken.push(utterance.text); setTimeout(() => utterance.onend?.(), 10); } } });
+  });
   await open(page);
   await page.getByLabel("Mensagem para a Lia").fill("leia minha agenda");
   await page
     .getByRole("button", { name: "Enviar mensagem", exact: true })
     .click();
   await expect(page.getByTestId("lia-answer").last()).toContainText("novembro");
+  await page.getByRole('button', { name: 'Ouvir resposta da Lia', exact: true }).last().click();
+  await expect.poll(() => page.evaluate(() => (window as any).__liaSpoken.length)).toBe(1);
   await page.getByLabel("Mensagem para a Lia").fill("quero falar com a equipe");
   await page
     .getByRole("button", { name: "Enviar mensagem", exact: true })

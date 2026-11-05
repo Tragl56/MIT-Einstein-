@@ -990,7 +990,7 @@ export function LiaPage({
     }
   }
   function repeat(text: string) {
-    if (busy.current || !consent || !configured) return;
+    if (busy.current || !consent || (!configured && !web)) return;
     stopPlayback();
     setError("");
     const id = ++job.current;
