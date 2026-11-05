@@ -143,10 +143,25 @@ export function useGravador() {
   return { gravando, iniciando, nivel, iniciar, parar, cancelar };
 }
 
+// A Lia tem voz feminina adulta e acolhedora. Sem escolha explícita, o navegador usa a primeira voz do
+// sistema (no Windows em pt-BR, "Microsoft Daniel", masculina). Vozes neurais primeiro; nunca uma masculina.
+const VOZES_MASCULINAS = /daniel|ant[oô]nio|donato|f[aá]bio|humberto|j[uú]lio|val[eé]rio|nicolau|guy|davis|andrew|brian|christopher|eric|roger|steffan|david|mark|george|james|\bmale\b/i;
+// Um pouco mais aguda e mais calma que o padrão do sistema, para soar suave.
+const TOM_LIA = 1.1;
+const RITMO_LIA = 0.92;
+
 function escolherVoz(): SpeechSynthesisVoice | undefined {
   const vozes = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith(tr('pt', 'en')));
-  const preferidas = tr(/francisca|maria|luciana|thalita|vit[oó]ria|female|feminina|google portugu[eê]s do brasil/i, /aria|jenny|samantha|ava|allison|zira|female|google us english/i);
-  return vozes.find((v) => v.lang === tr('pt-BR', 'en-US') && preferidas.test(v.name)) ?? vozes.find((v) => v.lang === tr('pt-BR', 'en-US')) ?? vozes[0];
+  const preferidas = tr(
+    [/(francisca|thalita).*natural/i, /francisca|thalita|google portugu[eê]s do brasil/i, /maria|luciana|vit[oó]ria|helo[ií]sa|leila|yara|female|feminina/i],
+    [/(aria|jenny|ava|emma|michelle).*natural/i, /aria|jenny|ava|emma|michelle|google us english/i, /samantha|allison|susan|zira|hazel|female/i],
+  );
+  const local = tr('pt-BR', 'en-US');
+  for (const padrao of preferidas) {
+    const voz = vozes.find((v) => v.lang === local && padrao.test(v.name)) ?? vozes.find((v) => padrao.test(v.name));
+    if (voz) return voz;
+  }
+  return vozes.find((v) => v.lang === local && !VOZES_MASCULINAS.test(v.name)) ?? vozes.find((v) => !VOZES_MASCULINAS.test(v.name));
 }
 
 export function useFala() {
@@ -175,7 +190,8 @@ export function useFala() {
     const rodada = geracao.current;
     const fala = new SpeechSynthesisUtterance(texto);
     fala.lang = tr('pt-BR', 'en-US');
-    fala.rate = velocidade;
+    fala.rate = Math.max(0.5, velocidade * RITMO_LIA);
+    fala.pitch = TOM_LIA;
     const voz = escolherVoz();
     if (voz) fala.voice = voz;
     fala.onstart = () => {

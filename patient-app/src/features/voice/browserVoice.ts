@@ -78,20 +78,85 @@ export function recognizeBrowser(
     }
   });
 }
-export function speakBrowser(
+// Lia's identity is a warm adult female voice. Browsers default to whatever the system lists first
+// (on Windows pt-BR that is "Microsoft Daniel", a male voice), so the voice is chosen explicitly:
+// neural voices first, then other known female voices, never a known male voice.
+const FEMALE_VOICES: Record<"pt" | "en", RegExp[]> = {
+  pt: [
+    /(francisca|thalita).*natural/i,
+    /francisca|thalita|google portugu[eê]s do brasil/i,
+    /maria|luciana|vit[oó]ria|helo[ií]sa|leila|yara|female|feminina/i,
+  ],
+  en: [
+    /(aria|jenny|ava|emma|michelle).*natural/i,
+    /aria|jenny|ava|emma|michelle|google us english/i,
+    /samantha|allison|susan|zira|hazel|female/i,
+  ],
+};
+const MALE_VOICES =
+  /daniel|ant[oô]nio|donato|f[aá]bio|humberto|j[uú]lio|val[eé]rio|nicolau|guy|davis|andrew|brian|christopher|eric|roger|steffan|david|mark|george|james|\bmale\b/i;
+
+/** Lia speaks a little slower and slightly higher than the system default, to sound gentle. */
+export const LIA_VOICE_PITCH = 1.1;
+export const LIA_VOICE_PACE = 0.92;
+
+type VoiceOption = Pick<SpeechSynthesisVoice, "name" | "lang">;
+export function chooseLiaVoice<T extends VoiceOption>(
+  voices: readonly T[],
+  locale: string,
+): T | undefined {
+  const language = locale.toLowerCase().startsWith("en") ? "en" : "pt";
+  const sameLanguage = voices.filter((voice) =>
+    voice.lang.toLowerCase().startsWith(language),
+  );
+  const exact = (voice: T) =>
+    voice.lang.toLowerCase() === locale.toLowerCase();
+  for (const preferred of FEMALE_VOICES[language]) {
+    const match =
+      sameLanguage.find((voice) => exact(voice) && preferred.test(voice.name)) ??
+      sameLanguage.find((voice) => preferred.test(voice.name));
+    if (match) return match;
+  }
+  return (
+    sameLanguage.find((voice) => exact(voice) && !MALE_VOICES.test(voice.name)) ??
+    sameLanguage.find((voice) => !MALE_VOICES.test(voice.name))
+  );
+}
+
+// Some browsers fill the voice list asynchronously after the first call.
+function loadVoices(): Promise<SpeechSynthesisVoice[]> {
+  const ready = window.speechSynthesis.getVoices();
+  if (ready.length) return Promise.resolve(ready);
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      window.speechSynthesis.removeEventListener?.("voiceschanged", done);
+      resolve(window.speechSynthesis.getVoices?.() ?? []);
+    };
+    const timer = setTimeout(done, 1_000);
+    window.speechSynthesis.addEventListener?.("voiceschanged", done);
+  });
+}
+
+export async function speakBrowser(
   text: string,
   locale: string,
   rate: number,
   signal: AbortSignal,
 ): Promise<void> {
+  if (!("speechSynthesis" in window) || signal.aborted) return;
+  const voices =
+    typeof window.speechSynthesis.getVoices === "function"
+      ? await loadVoices()
+      : [];
+  if (signal.aborted) return;
   return new Promise((resolve, reject) => {
-    if (!("speechSynthesis" in window) || signal.aborted) {
-      resolve();
-      return;
-    }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = locale;
-    utterance.rate = rate;
+    utterance.rate = Math.max(0.5, rate * LIA_VOICE_PACE);
+    utterance.pitch = LIA_VOICE_PITCH;
+    const voice = chooseLiaVoice(voices, locale);
+    if (voice) utterance.voice = voice;
     const cleanup = () => {
       clearTimeout(timer);
       signal.removeEventListener("abort", cancel);
