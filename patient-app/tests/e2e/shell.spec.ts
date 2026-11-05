@@ -61,7 +61,7 @@ test("Lia explains live voice availability in the browser preview", async ({
     .getByRole("button", { name: "Lia", exact: true })
     .click();
   await expect(
-    page.getByText("A IA ao vivo está disponível no APK Android.", {
+    page.getByText("O reconhecimento e a reprodução de voz usam seu navegador", {
       exact: false,
     }),
   ).toBeVisible();

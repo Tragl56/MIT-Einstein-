@@ -50,7 +50,7 @@ test("Lia keeps text accessible, discloses processing and offers fictional scena
     .click();
   await expect(page.getByLabel("Mensagem para a Lia")).toBeVisible();
   await expect(
-    page.getByText("OpenAI e ElevenLabs", { exact: false }).first(),
+    page.getByText("Llama via Ollama", { exact: false }).first(),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Enviar mensagem" }),

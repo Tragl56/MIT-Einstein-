@@ -20,6 +20,7 @@ import { HospitalIntegrationError } from "../integrations/hospital/errors";
 import type { HospitalCareContext } from "../../shared/hospitalContracts";
 
 export type ConnectedLiaActions = {
+  chat?: NonNullable<LiaAppBridge['chat']>;
   reportSymptoms?: NonNullable<LiaAppBridge["reportSymptoms"]>;
   saveMood(
     feeling: string,
@@ -138,6 +139,14 @@ export function createLiaAppBridge(options: Options): SyncLiaAppBridge;
 export function createLiaAppBridge(options: Options): LiaAppBridge {
   return {
     getSnapshot: options.getSnapshot,
+    async chat(text, locale, signal) {
+      const expected = { ...options.getSnapshot().context };
+      const chat = options.connected?.()?.chat;
+      if (!chat || !isCurrent(expected) || signal?.aborted) throw new HospitalIntegrationError('auth');
+      const result = await chat(text, locale, signal);
+      if (!isCurrent(expected) || options.getSnapshot().context.sessionId !== expected.sessionId || signal?.aborted) throw new HospitalIntegrationError('aborted');
+      return result;
+    },
     get reportSymptoms() {
       const snapshot = options.getSnapshot();
       const remote = options.connected?.();

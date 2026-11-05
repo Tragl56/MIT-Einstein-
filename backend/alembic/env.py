@@ -7,6 +7,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
+from app.db import preparar_url_asyncpg
 from app.config import obter_config
 from app.modelos import Base
 
@@ -25,7 +26,11 @@ def _executar(conexao: Connection) -> None:
 
 
 async def _online() -> None:
-    engine = create_async_engine(_url(), poolclass=NullPool)
+    url, usar_pooler_transacional = preparar_url_asyncpg(_url())
+    opcoes = {"poolclass": NullPool}
+    if usar_pooler_transacional:
+        opcoes["connect_args"] = {"statement_cache_size": 0, "ssl": "require"}
+    engine = create_async_engine(url, **opcoes)
     async with engine.connect() as conexao:
         await conexao.run_sync(_executar)
     await engine.dispose()

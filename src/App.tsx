@@ -116,6 +116,7 @@ export default function App() {
           <DetalhePaciente
             paciente={selecionado}
             usuarioAtual={usuarioLogado}
+            usuarios={estado!.usuarios}
             acoes={acoes}
             minutosRetornoLia={estado!.minutosRetornoLia}
           />
@@ -174,7 +175,7 @@ export default function App() {
           ) : pagina === 'pacientes' ? (
             listaEDetalhe()
           ) : pagina === 'pendencias' ? (
-            <PaginaPendencias estado={estado} acoes={acoes} somenteSinais={somenteSinais} onAlternarFiltro={setSomenteSinais} />
+            <PaginaPendencias estado={estado} acoes={acoes} usuarioAtual={usuarioLogado} somenteSinais={somenteSinais} onAlternarFiltro={setSomenteSinais} />
           ) : (
             <div>
               <InternoView

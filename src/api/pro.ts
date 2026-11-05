@@ -2,7 +2,7 @@
 // e é atualizado a cada 2 segundos; as ações chamam a API e recarregam o estado em seguida.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Desfecho, EstadoPro, UsuarioEquipe } from '../types';
+import type { Desfecho, EstadoPro, UsuarioEquipe, GestaoPendenciaInput, CriarBarreiraInput, AtualizarBarreiraInput } from '../types';
 import { tr } from '../idioma';
 
 export async function chamarApi<T>(caminho: string, usuarioId?: string, corpo?: unknown, options?: { signal?: AbortSignal }): Promise<T> {
@@ -23,6 +23,8 @@ export async function chamarApi<T>(caminho: string, usuarioId?: string, corpo?: 
 }
 
 export interface AcoesPro {
+  criarBarreira: (pacienteId: string, input: CriarBarreiraInput) => Promise<void>;
+  atualizarBarreira: (pacienteId: string, id: string, input: AtualizarBarreiraInput) => Promise<void>;
   assumir: (pacienteId: string) => Promise<void>;
   devolver: (pacienteId: string) => Promise<void>;
   enviar: (pacienteId: string, texto: string) => Promise<void>;
@@ -30,6 +32,7 @@ export interface AcoesPro {
   videochamada: (pacienteId: string) => Promise<string | undefined>;
   assumirPendencia: (pendenciaId: string) => Promise<void>;
   concluirPendencia: (pendenciaId: string, desfecho: Desfecho) => Promise<void>;
+  gerenciarPendencia: (pendenciaId: string, input: GestaoPendenciaInput) => Promise<void>;
   resetarDemo: () => Promise<void>;
 }
 
@@ -91,6 +94,8 @@ export function useEstadoPro(usuario: UsuarioEquipe | null) {
   );
 
   const acoes: AcoesPro = {
+    criarBarreira: (id, input) => acao(`/api/pro/pacientes/${id}/barreiras`, input, true),
+    atualizarBarreira: (id, barreiraId, input) => acao(`/api/pro/pacientes/${id}/barreiras/${barreiraId}`, input, true),
     assumir: (id) => acao(`/api/pro/pacientes/${id}/assumir`),
     devolver: (id) => acao(`/api/pro/pacientes/${id}/devolver`),
     enviar: (id, texto) => acao(`/api/pro/pacientes/${id}/mensagens`, { texto }, true),
@@ -110,6 +115,7 @@ export function useEstadoPro(usuario: UsuarioEquipe | null) {
     },
     assumirPendencia: (id) => acao(`/api/pro/pendencias/${id}/assumir`, {}, true),
     concluirPendencia: (id, desfecho) => acao(`/api/pro/pendencias/${id}/concluir`, { desfecho }, true),
+    gerenciarPendencia: (id, input) => acao(`/api/pro/pendencias/${id}/gestao`, input, true),
     resetarDemo: () => acao('/api/demo/reset'),
   };
 

@@ -319,7 +319,7 @@ test("an identical symptom in a new app session creates a new report, while retr
   );
 });
 
-test("Lia automatically registers a literal symptom report before GPT, without an extra confirmation", async ({
+test("Lia automatically registers a literal symptom report before the LLM, without an extra confirmation", async ({
   page,
 }) => {
   await mockConnectedAgent(page);
@@ -384,7 +384,7 @@ test("Lia retry reconciles a lost acknowledgement with the same report key", asy
   expect(writes[1].body).toEqual(writes[0].body);
 });
 
-test("Lia sends the registered cancer context to GPT for education while negated symptoms create no alert", async ({
+test("Lia sends the registered cancer context to the LLM for education while negated symptoms create no alert", async ({
   page,
 }) => {
   await mockConnectedAgent(page);

@@ -7,6 +7,7 @@ export async function mockConnectedAgent(
 ) {
   await page.addInitScript(() => {
     localStorage.setItem("oncoflow-lia-consent-v1", "accepted");
+    localStorage.setItem("oncoflow-lia-web-consent-v2", "accepted");
     const state: any = { chats: [], plays: 0 };
     (window as any).agent = state;
     (window as any).AudioContext = class {

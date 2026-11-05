@@ -4,7 +4,7 @@ Seleção de provedores verificada em 31/10/2026. Registro histórico da configu
 
 | Função | Configuração |
 | --- | --- |
-| Conversação | OpenAI `gpt-4o`, conforme preferência do usuário |
+| Conversação atual | Ollama `onco-llama3.1:latest` (Llama 3.1) |
 | Transcrição | OpenAI `gpt-4o-mini-transcribe`, idioma `pt` |
 | Síntese | ElevenLabs `eleven_multilingual_v2` |
 | Voz | Sarah — Mature, Reassuring, Confident |
@@ -19,7 +19,7 @@ A candidata Yasmin (`lWq4KDY8znfkV0DrK8Vb`), identificada no catálogo como bras
 
 - Amostra gerada: `../../output/audio/lia-voice-preview.mp3`, 168.898 bytes, MP3 `44100_128`.
 - Texto: “Olá, eu sou a Lia, assistente virtual do OncoFlow. Estou aqui para ajudar você a organizar sua jornada, um passo de cada vez. Vamos olhar sua próxima consulta?”
-- GPT-4o respondeu `teste_ok` à solicitação curta de verificação.
+- A verificação de GPT-4o documentada aqui é histórica; a configuração atual de conversa usa Llama via Ollama.
 - O STT transcreveu a amostra com o conteúdo esperado, incluindo Lia, OncoFlow e próxima consulta; houve apenas diferença de pontuação.
 - Resultado estruturado: `../../output/audio/lia-provider-check.json`.
 

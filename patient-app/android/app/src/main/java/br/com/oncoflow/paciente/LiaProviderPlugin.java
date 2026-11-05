@@ -45,13 +45,14 @@ public class LiaProviderPlugin extends Plugin {
 
     @PluginMethod public void status(PluginCall call) {
         JSObject result = new JSObject();
-        result.put("configured", !BuildConfig.OPENAI_API_KEY.isEmpty() && !BuildConfig.ELEVENLABS_API_KEY.isEmpty());
+        boolean llmConfigured = "ollama".equalsIgnoreCase(BuildConfig.LLM_PROVIDER)
+            && !BuildConfig.OLLAMA_MODEL.isEmpty() && !BuildConfig.OLLAMA_BASE_URL.isEmpty();
+        result.put("configured", llmConfigured && !BuildConfig.OPENAI_API_KEY.isEmpty() && !BuildConfig.ELEVENLABS_API_KEY.isEmpty());
         call.resolve(result);
     }
 
     @PluginMethod public void chat(PluginCall call) {
         submit(call, (requestEpoch) -> {
-            requireKey(BuildConfig.OPENAI_API_KEY);
             boolean english = isEnglish(call);
             boolean connected = Boolean.TRUE.equals(call.getBoolean("connected", false));
             String text = bounded(call.getString("text"), 1500);
@@ -121,24 +122,21 @@ public class LiaProviderPlugin extends Plugin {
                     .put("action", actionSchema))
                 .put("required", new JSONArray(Arrays.asList("intent", "text", "action")))
                 .put("additionalProperties", false);
-            JSONObject body = new JSONObject()
-                .put("model", BuildConfig.OPENAI_LLM_MODEL)
-                .put("instructions", instructions)
-                .put("input", input)
-                .put("store", false)
-                .put("max_output_tokens", 600)
-                .put("text", new JSONObject().put("format", new JSONObject().put("type", "json_schema").put("name", "lia_app_action").put("strict", true).put("schema", schema)));
-            JSONObject response = jsonRequest("https://api.openai.com/v1/responses", body, requestEpoch);
-            if (!"completed".equals(response.optString("status"))) throw new ProviderError("A Lia não concluiu a resposta. Tente novamente.", "INCOMPLETE");
             String resultText = "";
-            JSONArray output = response.optJSONArray("output");
-            if (output != null) for (int i = 0; i < output.length(); i++) {
-                JSONArray content = output.getJSONObject(i).optJSONArray("content");
-                if (content != null) for (int j = 0; j < content.length(); j++) {
-                    JSONObject part = content.getJSONObject(j);
-                    if ("output_text".equals(part.optString("type"))) resultText += part.optString("text");
-                }
-            }
+            if ("ollama".equalsIgnoreCase(BuildConfig.LLM_PROVIDER)) {
+                JSONArray messages = new JSONArray().put(new JSONObject().put("role", "system").put("content", instructions));
+                for (int i = 0; i < input.length(); i++) messages.put(input.getJSONObject(i));
+                JSONObject body = new JSONObject()
+                    .put("model", BuildConfig.OLLAMA_MODEL)
+                    .put("messages", messages)
+                    .put("stream", false)
+                    .put("format", schema)
+                    .put("options", new JSONObject().put("num_predict", 600));
+                JSONObject response = jsonRequest(BuildConfig.OLLAMA_BASE_URL.replaceAll("/+$", "") + "/api/chat", body, requestEpoch);
+                JSONObject message = response.optJSONObject("message");
+                if (!response.optBoolean("done", false) || message == null) throw new ProviderError("A Lia não concluiu a resposta. Tente novamente.", "INCOMPLETE");
+                resultText = message.optString("content", "");
+            } else throw new ProviderError("O provedor de linguagem não está configurado.", "NOT_CONFIGURED");
             JSONObject parsed = new JSONObject(resultText);
             String intent = parsed.optString("intent");
             if (!INTENTS.contains(intent)) throw new ProviderError("A Lia não retornou uma resposta válida.", "INVALID_RESPONSE");
@@ -300,7 +298,8 @@ public class LiaProviderPlugin extends Plugin {
         if (expected != epoch.get()) throw new ProviderError("Operação cancelada.", "CANCELLED");
     }
     private JSONObject jsonRequest(String url, JSONObject body, int requestEpoch) throws Exception {
-        return new JSONObject(new String(request(url, "Authorization", "Bearer " + BuildConfig.OPENAI_API_KEY,
+        boolean ollama = url.startsWith(BuildConfig.OLLAMA_BASE_URL.replaceAll("/+$", ""));
+        return new JSONObject(new String(request(url, ollama ? null : "Authorization", ollama ? null : "Bearer " + BuildConfig.OPENAI_API_KEY,
             "application/json", body.toString().getBytes(StandardCharsets.UTF_8), 200_000, requestEpoch), StandardCharsets.UTF_8));
     }
     private byte[] request(String address, String authHeader, String authValue, String contentType, byte[] body, int maxResponse, int requestEpoch) throws Exception {
@@ -314,7 +313,7 @@ public class LiaProviderPlugin extends Plugin {
             connection.setReadTimeout(45000);
             connection.setUseCaches(false);
             connection.setDoOutput(true);
-            connection.setRequestProperty(authHeader, authValue);
+            if (authHeader != null && !authHeader.isEmpty()) connection.setRequestProperty(authHeader, authValue);
             connection.setRequestProperty("Content-Type", contentType);
             connection.setRequestProperty("Accept", address.contains("elevenlabs.io") ? "audio/mpeg" : "application/json");
             connection.setFixedLengthStreamingMode(body.length);

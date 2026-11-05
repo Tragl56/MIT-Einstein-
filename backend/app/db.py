@@ -6,6 +6,7 @@ import enum
 import uuid
 from collections.abc import AsyncIterator
 from datetime import datetime
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy import DateTime, Enum, MetaData, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -42,13 +43,32 @@ def enum_pg(classe: type[enum.Enum], nome: str) -> Enum:
     return Enum(classe, name=nome, values_callable=lambda c: [m.value for m in c])
 
 
+def preparar_url_asyncpg(url: str) -> tuple[str, bool]:
+    """Normaliza URLs do Supabase Transaction Pooler para o driver asyncpg."""
+    partes = urlsplit(url)
+    usar_pooler_transacional = bool(partes.hostname and partes.hostname.endswith(".pooler.supabase.com"))
+    if not usar_pooler_transacional:
+        return url, False
+    query = [(chave, valor) for chave, valor in parse_qsl(partes.query) if chave != "sslmode"]
+    normalizada = urlunsplit(("postgresql+asyncpg", partes.netloc, partes.path, urlencode(query), partes.fragment))
+    return normalizada, True
+
+
 _engine: AsyncEngine | None = None
 _fabrica: async_sessionmaker[AsyncSession] | None = None
 
 
 def configurar(url: str, pool_nulo: bool = False) -> None:
     global _engine, _fabrica
-    opcoes = {"poolclass": NullPool} if pool_nulo else {"pool_pre_ping": True}
+    # O pooler transacional do Supabase é indicado para funções serverless. Não
+    # mantenha conexões entre invocações nem use prepared statements nomeados.
+    url, usar_pooler_transacional = preparar_url_asyncpg(url)
+    if pool_nulo or usar_pooler_transacional:
+        opcoes = {"poolclass": NullPool}
+    else:
+        opcoes = {"pool_pre_ping": True}
+    if usar_pooler_transacional:
+        opcoes["connect_args"] = {"statement_cache_size": 0, "ssl": "require"}
     _engine = create_async_engine(url, **opcoes)
     _fabrica = async_sessionmaker(_engine, expire_on_commit=False)
 

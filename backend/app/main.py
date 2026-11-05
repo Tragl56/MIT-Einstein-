@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 from sqlalchemy import func, select
 
 from app import db
@@ -33,6 +35,18 @@ def create_app(config: Config | None = None) -> FastAPI:
         allow_methods=["GET", "POST", "PATCH"],
         allow_headers=["Authorization", "Content-Type"],
     )
+
+    @app.middleware("http")
+    async def cabecalhos_de_seguranca(request: Request, call_next) -> Response:
+        resposta = await call_next(request)
+        resposta.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resposta.headers.setdefault("X-Frame-Options", "DENY")
+        resposta.headers.setdefault("Referrer-Policy", "no-referrer")
+        resposta.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        # A API pode devolver dados de saúde. Clientes não devem reutilizar respostas em cache compartilhado.
+        resposta.headers["Cache-Control"] = "no-store"
+        return resposta
+
     registrar_tratadores(app)
 
     app.include_router(router_acesso)

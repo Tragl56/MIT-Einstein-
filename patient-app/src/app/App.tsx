@@ -515,6 +515,10 @@ export function App() {
   }
   connectedActions.current = hospital
     ? {
+        chat: (text, locale, signal) => {
+          if (!hospital.liaChat) throw new Error('Lia unavailable');
+          return hospital.liaChat(text, locale, signal);
+        },
         reportSymptoms: (input, signal) =>
           performConnected(
             `symptoms-${input.operationId}`,
@@ -2012,7 +2016,7 @@ export function App() {
               </p>
               <p>
                 {t(
-                  "A Lia conversa com GPT-4o, transcreve sua fala e responde com a voz Sarah no Android. Os cenários de gravidade e os alertas são simulações. ",
+                  "A Lia conversa com Llama via Ollama, transcreve sua fala pela OpenAI e responde com a voz Sarah da ElevenLabs no Android. Os cenários de gravidade e os alertas são simulações. ",
                 )}
               </p>
               <p>

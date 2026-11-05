@@ -31,6 +31,17 @@ async def test_sem_token_responde_401_no_formato_padrao(cliente: AsyncClient) ->
     assert resposta.json()["erro"] == "nao_autenticado"
 
 
+async def test_respostas_da_api_nao_sao_cacheadas_e_trazem_cabecalhos_de_seguranca(
+    cliente: AsyncClient,
+) -> None:
+    resposta = await cliente.get("/api/saude")
+    assert resposta.headers["cache-control"] == "no-store"
+    assert resposta.headers["x-content-type-options"] == "nosniff"
+    assert resposta.headers["x-frame-options"] == "DENY"
+    assert resposta.headers["referrer-policy"] == "no-referrer"
+    assert resposta.headers["permissions-policy"] == "camera=(), microphone=(), geolocation=()"
+
+
 @pytest.mark.parametrize(
     ("login", "rota", "esperado"),
     [

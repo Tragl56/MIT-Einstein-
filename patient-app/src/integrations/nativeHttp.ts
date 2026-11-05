@@ -24,7 +24,12 @@ function allowedDestination(url: URL): boolean {
  * the connection/repository layer additionally requires the user's LAN opt-in.
  */
 export const hospitalFetch: typeof fetch = async (input, init) => {
-  if (!Capacitor.isNativePlatform()) return globalThis.fetch(input, init);
+  if (!Capacitor.isNativePlatform()) {
+    const address = new URL(input instanceof Request ? input.url : String(input), globalThis.location?.origin);
+    const sameOrigin = address.origin === globalThis.location?.origin;
+    // Preserva o cookie de acesso do preview Vercel apenas na própria origem.
+    return globalThis.fetch(input, { ...init, credentials: sameOrigin ? 'same-origin' : 'omit' });
+  }
   const request = new Request(input, init);
   const signal = init?.signal ?? request.signal;
   if (signal?.aborted) throw aborted();

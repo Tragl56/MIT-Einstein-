@@ -14,6 +14,7 @@ import { CONFIG_SERVICO } from './configServico';
 import { detectarRelatoAfirmativo, detectarUrgencia } from './urgencia';
 import { agoraISO, gerarId } from './util';
 import { tr } from '../src/idioma';
+import { relayAuth, relayClaim, relayCreate, relayPrune, type LiaRelayState } from './liaRelay';
 
 type Scope = { tenantId: string; hospitalId: string; patientId: string };
 type RecordBase = Scope & { id: string };
@@ -27,6 +28,7 @@ type SymptomReport = RecordBase & { text: string; source: 'text' | 'voice'; reco
 type DraftDocument = RecordBase & { title: string; issuedAt: string; typeLabel: string; authorLabel: string; body: string[]; published: boolean };
 type Idempotent = { fingerprint: string; resource: string; resultId: string; result?: unknown };
 type Extras = {
+  liaRelay?: LiaRelayState;
   convertedAt: string;
   appointmentStatuses: Record<string, AppointmentStatus>;
   journeyDates: Record<string, string>;
@@ -48,6 +50,7 @@ export type MobileOptions = {
   autoConnect?: boolean;
   /** Passed by the stateless function entrypoint, never from an HTTP body. */
   cloud?: boolean;
+  storage?: 'supabase';
 };
 const scopeFor = (patientId: string): Scope => ({ tenantId: 'demo', hospitalId: 'oncoflow', patientId });
 const baseFor = (patientId: string, id: string): RecordBase => ({ ...scopeFor(patientId), id });
@@ -239,7 +242,7 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
   });
   const autoConnectEnabled = () => options.autoConnect ?? process.env.ONCOFLOW_DEMO_AUTO_CONNECT === 'true';
   function serviceUrl(req: Request): string {
-    const canonical = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    const canonical = process.env.ONCOFLOW_SERVICE_URL ?? (options.cloud ? undefined : process.env.VERCEL_PROJECT_PRODUCTION_URL);
     if (canonical) {
       const parsed = new URL(canonical.includes('://') ? canonical : `https://${canonical}`);
       if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) throw new ErroDominio(503, 'origem_invalida', 'Endereço canônico da demonstração não configurado corretamente.');
@@ -309,6 +312,42 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
     res.json(newSession(p));
   }));
   const prefix = '/api/v1/tenants/:tenantId/hospitals/:hospitalId/patients/:patientId';
+  const relay = () => extras.liaRelay ??= { heartbeat: 0, jobs: [] };
+  r.post('/api/mobile/lia-worker/claim', route((req, res) => {
+    relayAuth(req.header('x-oncoflow-worker')); object(req.body ?? {}, []);
+    const job = relayClaim(relay(), now()); persist(); res.json({ job });
+  }));
+  r.post('/api/mobile/lia-worker/result', route((req, res) => {
+    relayAuth(req.header('x-oncoflow-worker'));
+    const input = object(req.body, ['id', 'lease'], ['result', 'failed']);
+    relayPrune(relay(), now());
+    const job = relay().jobs.find(j => j.id === input.id && j.lease === input.lease && j.leasedUntil! > now());
+    if (!job) throw new ErroDominio(409, 'turno_expirado', 'Turno expirado.');
+    if (job.result || job.failed) { res.json({ ok: true }); return; }
+    if (input.failed === true) job.failed = true;
+    else {
+      const result = object(input.result, ['action']);
+      if (JSON.stringify(result).length > 1024) invalid();
+      job.result = result;
+    }
+    persist(); res.json({ ok: true });
+  }));
+  r.post(`${prefix}/lia`, route((req, res) => {
+    const p = patient(req); bound(`lia:${p.id}`, 20);
+    const input = object(req.body, ['text', 'locale']);
+    const value = text(input.text, 1500); const locale = choice(input.locale, ['pt-BR', 'en-US']);
+    const session = hash(req.header('authorization')!);
+    // Only authorized resources; no internal plan, notes, barriers or hypotheses.
+    const context = JSON.stringify({ appointments: appointments(p), journey: journey(p), documents: p.documentos.map(d => ({ id: d.id, title: d.titulo })), timezone: 'America/Sao_Paulo' });
+    const job = relayCreate(relay(), now(), { pacienteId: p.id, session, text: value, locale, context });
+    persist(); envelope(res, p, 'lia_turn', { id: job.id, state: 'pending' });
+  }));
+  r.get(`${prefix}/lia/:turnId`, route((req, res) => {
+    const p = patient(req); relayPrune(relay(), now());
+    const job = relay().jobs.find(j => j.id === req.params.turnId && j.pacienteId === p.id && j.session === hash(req.header('authorization')!));
+    if (!job) throw new ErroDominio(404, 'turno_nao_encontrado', 'Conversa expirada. Envie novamente.');
+    envelope(res, p, 'lia_turn', { id: job.id, state: job.failed ? 'failed' : job.result ? 'completed' : 'pending', ...(job.result ? { result: job.result } : {}) });
+  }));
   r.get(`${prefix}/summary`, route((req, res) => {
     const p = patient(req);
     const last = Object.values(extras.wellbeing).filter(record => record.patientId === p.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).at(-1);

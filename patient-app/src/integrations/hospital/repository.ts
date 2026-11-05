@@ -330,6 +330,28 @@ export function createHospitalRepository(
   }
 
   return {
+    async liaChat(text, locale, signal) {
+      type Turn = { id: string; state: 'pending' | 'completed' | 'failed'; result?: unknown };
+      const parse = (value: unknown): Turn => {
+        if (!value || typeof value !== 'object') throw new HospitalIntegrationError('invalid_response');
+        const t = value as Turn;
+        if (!validId(t.id) || !['pending', 'completed', 'failed'].includes(t.state)) throw new HospitalIntegrationError('invalid_response');
+        return t;
+      };
+      let turn = (await execute('lia', 'lia_turn', parse, { signal }, { body: JSON.stringify({ text, locale }), idempotencyKey: crypto.randomUUID() })).data;
+      const expires = Date.now() + 100_000;
+      while (turn.state === 'pending' && Date.now() < expires) {
+        await new Promise<void>((resolve, reject) => {
+          if (signal?.aborted) { reject(new HospitalIntegrationError('aborted')); return; }
+          const aborted = () => { clearTimeout(timer); reject(new HospitalIntegrationError('aborted')); };
+          const timer = setTimeout(() => { signal?.removeEventListener('abort', aborted); resolve(); }, 2000);
+          signal?.addEventListener('abort', aborted, { once: true });
+        });
+        turn = (await execute(`lia/${turn.id}`, 'lia_turn', parse, { signal })).data;
+      }
+      if (turn.state !== 'completed') throw new Error('A Lia não conseguiu responder. Verifique se o computador está ligado e tente novamente.');
+      return turn.result;
+    },
     summary: (readOptions) =>
       execute("summary", "patient_summary", parseSummary, readOptions),
     appointments: (readOptions) =>

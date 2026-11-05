@@ -90,6 +90,7 @@ export type PendingLiaAction = {
   createdAt: number;
 };
 export type LiaAppBridge = {
+  chat?(text: string, locale: string, signal?: AbortSignal): Promise<unknown>;
   getSnapshot(): LiaAppSnapshot;
   reportSymptoms?(
     input: LiaSymptomReportInput,

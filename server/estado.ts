@@ -13,6 +13,8 @@ import type {
   SituacaoPaciente,
   TipoPendencia,
   UsuarioEquipe,
+  GestaoPendenciaInput,
+  EventoPendencia,
 } from '../src/types';
 import { CONFIG_SERVICO, type RegraRevisaoCheckin } from './configServico';
 import { criarSeed, SESSOES_PACIENTE, USUARIOS_EQUIPE } from './seed';
@@ -326,8 +328,15 @@ export function assumirPendencia(id: string, usuario: UsuarioEquipe): void {
   if (pendencia.estado === 'concluida') {
     throw new ErroDominio(409, 'pendencia_concluida', tr('Esta pendência já foi concluída.', 'This pending item is already closed.'));
   }
+  if ((pendencia.responsavelId && pendencia.responsavelId !== usuario.id) || (!pendencia.responsavelId && pendencia.responsavel && pendencia.responsavel !== usuario.nome)) {
+    throw new ErroDominio(409, 'responsavel_diferente', tr('Esta pendência tem outro responsável. Registre uma transferência antes de assumir.', 'This item has another assignee. Record a transfer before taking it on.'));
+  }
+  if (pendencia.estado === 'em_andamento' && (pendencia.responsavelId === usuario.id || pendencia.responsavel === usuario.nome)) return;
   pendencia.estado = 'em_andamento';
   pendencia.responsavel = usuario.nome;
+  pendencia.responsavelId = usuario.id;
+  pendencia.assumidaEm ??= agoraISO();
+  registrarEventoPendencia(pendencia, usuario, { acao: 'assumida' });
   auditar(usuario.nome, 'assumiu_pendencia', id);
   mudou();
 }
@@ -337,12 +346,57 @@ export function concluirPendencia(id: string, usuario: UsuarioEquipe, desfecho: 
   if (pendencia.estado === 'concluida') {
     throw new ErroDominio(409, 'pendencia_concluida', tr('Esta pendência já foi concluída.', 'This pending item is already closed.'));
   }
+  if ((pendencia.responsavelId && pendencia.responsavelId !== usuario.id) || (!pendencia.responsavelId && pendencia.responsavel && pendencia.responsavel !== usuario.nome)) {
+    throw new ErroDominio(409, 'responsavel_diferente', tr('Registre a transferência de responsabilidade antes de concluir.', 'Record an assignment transfer before completing this item.'));
+  }
   pendencia.estado = 'concluida';
   pendencia.responsavel = pendencia.responsavel ?? usuario.nome;
+  pendencia.responsavelId ??= usuario.id;
   pendencia.desfecho = desfecho;
   pendencia.concluidaEm = agoraISO();
   pendencia.concluidaPor = usuario.nome;
+  registrarEventoPendencia(pendencia, usuario, { acao: 'concluida', para: desfecho });
   auditar(usuario.nome, `concluiu_pendencia_${desfecho}`, id);
+  mudou();
+}
+
+function registrarEventoPendencia(pendencia: Pendencia, usuario: UsuarioEquipe, evento: Pick<EventoPendencia, 'acao' | 'motivo' | 'de' | 'para'>): void {
+  pendencia.historico ??= [];
+  pendencia.historico.push({ id: gerarId('evento'), em: agoraISO(), atorId: usuario.id, atorNome: usuario.nome, ...evento });
+  pendencia.revisao = (pendencia.revisao ?? 0) + 1;
+}
+
+export function gerenciarPendencia(id: string, usuario: UsuarioEquipe, input: GestaoPendenciaInput): void {
+  const p = obterPendencia(id);
+  if (p.estado === 'concluida') throw new ErroDominio(409, 'pendencia_concluida', tr('Pendência concluída não pode ser alterada.', 'Closed items cannot be changed.'));
+  if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(k => !['revisao', 'motivo', 'responsavelId', 'prazo'].includes(k))) {
+    throw new ErroDominio(400, 'gestao_invalida', tr('Alteração inválida.', 'Invalid change.'));
+  }
+  if (!Number.isInteger(input.revisao) || input.revisao !== (p.revisao ?? 0)) {
+    throw new ErroDominio(409, 'revisao_desatualizada', tr('Outro profissional alterou esta pendência. Atualize antes de salvar.', 'Another professional changed this item. Refresh before saving.'));
+  }
+  if (typeof input.motivo !== 'string' || input.motivo.trim().length < 8 || input.motivo.length > 500 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(input.motivo)) {
+    throw new ErroDominio(400, 'motivo_invalido', tr('Informe uma justificativa de 8 a 500 caracteres.', 'Enter a reason with 8 to 500 characters.'));
+  }
+  const destino = input.responsavelId === undefined ? undefined : USUARIOS_EQUIPE.find(u => u.id === input.responsavelId);
+  if (input.responsavelId !== undefined && !destino) throw new ErroDominio(400, 'responsavel_invalido', tr('Selecione um profissional da equipe.', 'Select a care team professional.'));
+  if (input.prazo !== undefined && (typeof input.prazo !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(input.prazo) || !Number.isFinite(Date.parse(input.prazo)) || new Date(input.prazo).toISOString() !== input.prazo || Date.parse(input.prazo) <= Date.now())) {
+    throw new ErroDominio(400, 'prazo_invalido', tr('O novo prazo precisa ser uma data futura válida.', 'The new deadline must be a valid future date.'));
+  }
+  const motivo = input.motivo.trim();
+  const alterarResponsavel = destino && destino.id !== p.responsavelId;
+  const alterarPrazo = input.prazo !== undefined && input.prazo !== p.prazo;
+  if (!alterarResponsavel && !alterarPrazo) throw new ErroDominio(400, 'sem_alteracao', tr('Nenhuma alteração foi informada.', 'No change was provided.'));
+  // Todas as validações vêm antes de alterar o domínio.
+  if (alterarResponsavel) {
+    registrarEventoPendencia(p, usuario, { acao: 'atribuida', motivo, de: p.responsavel, para: destino.nome });
+    p.responsavel = destino.nome; p.responsavelId = destino.id; p.papelDestino = destino.papel;
+  }
+  if (alterarPrazo) {
+    registrarEventoPendencia(p, usuario, { acao: 'prazo_alterado', motivo, de: p.prazo, para: input.prazo });
+    p.prazo = input.prazo!;
+  }
+  auditar(usuario.nome, 'gerenciou_pendencia', id);
   mudou();
 }
 

@@ -72,3 +72,7 @@ Os testes de descoberta e entrada usam respostas controladas de GitHub e do serv
 Para preparar o Android, use `npm run android:sync` e `npm run apk:debug` com SDK/JDK configurados. O script exporta `../output/apk/OncoFlow-Paciente-demo-v0.15.0.apk`, com a conexão direta ao painel. O arquivo e as chaves ficam fora do Git. A assinatura de desenvolvimento permite atualizar a instalação anterior feita com a mesma chave.
 
 Os relatórios anteriores em `docs/verification-*.md` são históricos. Seus resultados de emulador, voz ou API não comprovam uma nova publicação, um novo APK ou o funcionamento atual de um provedor.
+
+## Llama e Ollama
+
+A conversa da Lia usa o modelo local onco-llama3.1:latest servido pelo Ollama. A transcrição de voz continua usando o modelo de fala configurado em OPENAI_STT_MODEL; transcrição e geração de linguagem são serviços diferentes. Consulte [a migração para Ollama](../docs/migracao-llama.md) para as configurações e os limites do modo Android.

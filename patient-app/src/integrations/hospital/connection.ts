@@ -74,6 +74,7 @@ export function hospitalOrigin(
 }
 
 export type HospitalConnection = {
+  liaChat?(text: string, locale: string, signal?: AbortSignal): Promise<unknown>;
   scope: Readonly<HospitalPatientScope>;
   displayName: string;
   expiresAt: string;
@@ -421,6 +422,11 @@ export function createHospitalConnection(
       };
     },
     refresh,
+    liaChat: (text, locale, signal) => {
+      ensureActive();
+      if (!repository.liaChat) throw new Error('Lia unavailable');
+      return repository.liaChat(text, locale, signal);
+    },
     reportSymptoms(value, options) {
       return mutate(
         `symptoms-${value.idempotencyKey}`,

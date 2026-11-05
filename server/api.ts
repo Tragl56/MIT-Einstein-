@@ -23,7 +23,7 @@ export function criarApi(options: MobileOptions = {}) {
     if (req.method === 'OPTIONS') { res.sendStatus(origin && !allowed.has(origin) ? 403 : 204); return; }
     next();
   });
-  app.get('/api/health', (_req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json({ status: 'ok', service: 'OncoFlow', demo: true, ready: true, storage: options.cloud ? 'redis' : 'local' }); });
+  app.get('/api/health', (_req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json({ status: 'ok', service: 'OncoFlow', demo: true, ready: true, storage: options.storage ?? (options.cloud ? 'redis' : 'local') }); });
   const json = express.json({ limit: '256kb' });
   // The cloud entrypoint parses the bounded body BEFORE entering its state transaction.
   app.use((req, res, next) => options.cloud || req.path === '/api/transcrever-audio' ? next() : json(req, res, next));
