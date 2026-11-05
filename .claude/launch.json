@@ -8,6 +8,12 @@
       "port": 3000
     },
     {
+      "name": "platform-ollama",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--env-file=.env.lia-local", "platform/start.mjs"],
+      "port": 3000
+    },
+    {
       "name": "platform",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "start:platform"],

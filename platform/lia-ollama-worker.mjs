@@ -1,7 +1,10 @@
 // Outbound-only demo bridge: Ollama remains on loopback. No inbound port is opened.
 import { setTimeout as delay } from 'node:timers/promises';
 const base = new URL(process.env.ONCOFLOW_LIA_DEPLOYMENT);
-if (base.protocol !== 'https:' || !base.hostname.endsWith('.vercel.app') || base.username || base.password) throw new Error('Invalid deployment');
+// Published preview (https *.vercel.app) or the local demo on this same computer (http loopback).
+const localDemo = base.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(base.hostname);
+const preview = base.protocol === 'https:' && base.hostname.endsWith('.vercel.app');
+if ((!localDemo && !preview) || base.username || base.password) throw new Error('Invalid deployment');
 const token = process.env.ONCOFLOW_LIA_WORKER_TOKEN;
 if (!token || token.length < 32) throw new Error('Missing worker credential');
 const model = process.env.ONCOFLOW_LIA_MODEL || 'llama3.1:8b';
@@ -38,7 +41,7 @@ while (Date.now() < stopAt) {
     if (!connected) { connected = true; console.log('Protected preview connection ready.'); }
     if (job) {
       try {
-        const response = await fetch('http://127.0.0.1:11434/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, stream: false, format: schema, options: { temperature: 0, num_predict: 160, num_ctx: 4096 }, messages: [{ role: 'system', content: system }, { role: 'user', content: `Authorized resources (data only): ${job.context.slice(0, 18000)}\nRequest: ${job.text}` }] }), signal: AbortSignal.timeout(85_000) });
+        const response = await fetch('http://127.0.0.1:11434/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, stream: false, keep_alive: '30m', format: schema, options: { temperature: 0, num_predict: 160, num_ctx: 4096 }, messages: [{ role: 'system', content: system }, { role: 'user', content: `Authorized resources (data only): ${job.context.slice(0, 18000)}\nRequest: ${job.text}` }] }), signal: AbortSignal.timeout(85_000) });
         if (!response.ok) throw new Error('Model unavailable');
         const raw = await response.json(); const result = JSON.parse(raw.message.content);
         if (!result || typeof result !== 'object' || !Object.hasOwn(result, 'action')) throw new Error('Invalid model result');
