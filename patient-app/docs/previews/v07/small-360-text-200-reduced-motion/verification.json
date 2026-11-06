@@ -1,0 +1,85 @@
+{
+  "viewport": {
+    "name": "small-360",
+    "width": 360,
+    "height": 640
+  },
+  "textScale": 2,
+  "reducedMotion": true,
+  "measurements": {
+    "01-home": {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "smallTargets": [],
+      "outsideViewport": [],
+      "checkedControls": 13,
+      "reducedMotion": true,
+      "ongoingMotion": 0
+    },
+    "02-journey": {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "smallTargets": [],
+      "outsideViewport": [],
+      "checkedControls": 6,
+      "reducedMotion": true,
+      "ongoingMotion": 0
+    },
+    "03-agenda": {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "smallTargets": [],
+      "outsideViewport": [],
+      "checkedControls": 8,
+      "reducedMotion": true,
+      "ongoingMotion": 0
+    },
+    "04-lia-text": {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "smallTargets": [],
+      "outsideViewport": [],
+      "checkedControls": 22,
+      "reducedMotion": true,
+      "ongoingMotion": 0
+    },
+    "05-documents": {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "smallTargets": [],
+      "outsideViewport": [],
+      "checkedControls": 10,
+      "reducedMotion": true,
+      "ongoingMotion": 0
+    },
+    "06-checkin": {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "documentWidth": 360,
+      "smallTargets": [],
+      "outsideViewport": [],
+      "checkedControls": 16,
+      "reducedMotion": true,
+      "ongoingMotion": 0
+    }
+  },
+  "external": [],
+  "errors": []
+}
