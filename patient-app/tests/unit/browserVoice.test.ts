@@ -1,5 +1,53 @@
-import { describe, expect, it } from "vitest";
-import { chooseLiaVoice } from "../../src/features/voice/browserVoice";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { chooseLiaVoice, recognizeBrowser } from "../../src/features/voice/browserVoice";
+
+type Mic = { permission: PermissionState; getUserMedia?: () => Promise<unknown>; secure?: boolean };
+function browser({ permission, getUserMedia, secure = true }: Mic) {
+  class Recognition {
+    lang = ""; continuous = false; interimResults = false;
+    onresult: ((e: unknown) => void) | null = null; onerror = null; onend = null;
+    start() { setTimeout(() => this.onresult?.({ results: [[{ transcript: "leia minha agenda" }]] }), 0); }
+    abort() {}
+  }
+  vi.stubGlobal("window", { isSecureContext: secure, webkitSpeechRecognition: Recognition });
+  vi.stubGlobal("navigator", {
+    permissions: { query: async () => ({ state: permission }) },
+    mediaDevices: getUserMedia ? { getUserMedia } : undefined,
+  });
+}
+const denied = (name: string) => async () => { throw Object.assign(new Error(name), { name }); };
+const stream = async () => ({ getTracks: () => [{ stop() {} }] });
+
+describe("Lia browser microphone", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("listens once the microphone is allowed", async () => {
+    browser({ permission: "granted", getUserMedia: stream });
+    await expect(recognizeBrowser("pt-BR", new AbortController().signal)).resolves.toBe("leia minha agenda");
+  });
+
+  it("explains a site block without asking again", async () => {
+    const getUserMedia = vi.fn(stream);
+    browser({ permission: "denied", getUserMedia });
+    await expect(recognizeBrowser("pt-BR", new AbortController().signal)).rejects.toThrow(/bloqueado para este site/);
+    expect(getUserMedia).not.toHaveBeenCalled();
+  });
+
+  it("points to Windows when the site is allowed but capture is refused", async () => {
+    browser({ permission: "granted", getUserMedia: denied("NotAllowedError") });
+    await expect(recognizeBrowser("pt-BR", new AbortController().signal)).rejects.toThrow(/Privacidade > Microfone/);
+  });
+
+  it("says when there is no microphone, in English too", async () => {
+    browser({ permission: "prompt", getUserMedia: denied("NotFoundError") });
+    await expect(recognizeBrowser("en-US", new AbortController().signal)).rejects.toThrow(/No microphone was found/);
+  });
+
+  it("asks for a secure address when the page is not one", async () => {
+    browser({ permission: "prompt", getUserMedia: stream, secure: false });
+    await expect(recognizeBrowser("pt-BR", new AbortController().signal)).rejects.toThrow(/localhost:3000/);
+  });
+});
 
 const voice = (name: string, lang: string) => ({ name, lang });
 
