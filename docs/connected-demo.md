@@ -52,8 +52,12 @@ publicado em `platform/mobile-config.json`; enquanto ele estiver vazio, use o pa
 
 ## Parear o Android na mesma rede
 
-1. Conecte computador e celular à mesma rede privada. No celular, use o IP do computador informado no
-   terminal, por exemplo `http://192.168.1.20:3000`. `localhost` no celular identifica o próprio aparelho.
+1. Conecte computador e celular à mesma rede privada. Por segurança, o servidor só atende este computador;
+   para o celular, inicie com a rede liberada (no PowerShell: `$env:ONCOFLOW_REDE_LOCAL = 'true'` antes de
+   `npm run start:platform`). No celular, use o IP do computador informado no terminal, por exemplo
+   `http://192.168.1.20:3000`. `localhost` no celular identifica o próprio aparelho. Mesmo com a rede
+   liberada, o painel Pro, a troca de perfil, o reset da demo e a sessão fixa da paciente só respondem ao
+   próprio computador; pela rede ficam abertos o app do paciente e a API móvel com pareamento.
 2. No Pro, escolha um perfil fictício, selecione o paciente e abra **Aplicativo do paciente**.
 3. Toque em **Gerar código de pareamento**. O código tem prazo de validade e só pode ser utilizado uma vez.
 4. No aplicativo Android, toque em **Conectar ao hospital** na entrada ou em **Perfil → Conectar ao hospital**.
@@ -65,8 +69,9 @@ O campo de endereço exibido no painel reflete como você abriu o Pro. Se o pain
 substitua pelo IP da rede ao preencher o Android. O aplicativo também aceita um endereço HTTPS acessível ao
 aparelho; o modo HTTP de demonstração é reservado aos endereços locais permitidos pelo app.
 
-Se o celular não alcançar o servidor, teste primeiro o endereço do painel no navegador do celular. Confira
-o IP, a porta e a conexão à mesma rede; redes de convidados podem isolar os aparelhos. Quando o Windows
+Se o celular não alcançar o servidor, confira se ele foi iniciado com `ONCOFLOW_REDE_LOCAL=true` e teste
+`http://<IP>:3000/app/` no navegador do celular (o Pro não abre pela rede, de propósito). Confira o IP, a
+porta e a conexão à mesma rede; redes de convidados podem isolar os aparelhos. Quando o Windows
 solicitar acesso de rede ao Node.js, permita a rede privada usada pela demonstração.
 
 ## Ver a troca nos dois sentidos

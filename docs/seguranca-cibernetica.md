@@ -74,3 +74,20 @@ Ainda há gaps impeditivos para uso com dados reais: o `docker-compose.yml` publ
 ## Limites
 
 Este texto é uma avaliação técnica preliminar do código e das configurações visíveis. Não é parecer jurídico, auditoria certificadora, pentest nem declaração de conformidade LGPD, NIST, OWASP ou requisitos específicos de SUS/operadora/hospital. O risco final depende do ambiente de hospedagem, contratos, fluxos reais, perfis de acesso e operação do controlador.
+
+## Controles implementados no servidor da demo — 5/11/2026
+
+A avaliação de 4/11 olhou sobretudo a arquitetura-alvo (FastAPI). O que de fato roda localmente e é publicado é o servidor Express da demo (`server.ts`, `server/api.ts`). Nele, a identidade ainda é de demonstração: a equipe escolhe o usuário pelo cabeçalho `x-demo-usuario` e o paciente usa a sessão fixa `demo-maria`. Como o servidor escutava em todas as interfaces, qualquer aparelho no mesmo Wi-Fi podia ler os pacientes fictícios, trocar de perfil ou zerar a demo. Os controles abaixo reduzem essa exposição; **não substituem autenticação real**.
+
+| Risco | Controle | Onde | Evidência |
+|---|---|---|---|
+| Exposição na rede (Wi-Fi do evento) | O servidor local escuta só em `127.0.0.1`. A rede só é aberta com `ONCOFLOW_REDE_LOCAL=true`, e o terminal avisa o que fica exposto. | `server/seguranca.ts` (`hostDoServidor`), `server.ts`, `platform/start.mjs` | Teste unitário; pelo IP do Wi-Fi, sem a variável, a conexão é recusada. |
+| Identidade de demo usada por outro aparelho | Mesmo com a rede aberta, `/api/pro/*`, `/api/demo/*` (exceto ler o idioma), `/api/paciente/*` e `/api/transcrever-audio` só respondem ao próprio computador (403 pela rede). O app do celular segue pela API móvel, que tem pareamento e sessão própria. | `protegerRotasLocais` em `server/api.ts` (fora da nuvem) | Teste unitário por rota; teste real em porta separada: pela rede, Pro, usuários e sessão fixa → 403; app e saúde → 200; localmente, Pro → 200. |
+| Abuso de custo na transcrição | Tipos de áudio permitidos (`audio/webm`, `ogg`, `mp4`, `mpeg`, `wav`, `aac`), base64 válido, no máximo 8 MB de áudio (antes 25 MB para qualquer conteúdo) e 12 transcrições por minuto por origem. | `validarAudio` e `server.ts` | Testes de tipo (415), tamanho (413) e codificação (400). |
+| Força bruta e repetição | Reset/troca de idioma da demo: 20 por minuto; mensagens à Lia por texto: 30 por minuto; demais rotas: 1.200 por minuto por aparelho da rede. Respostas 429 com `Retry-After`. | `limitarTaxa` em `server/api.ts` | Teste HTTP do reset (21º pedido → 429). |
+| Clickjacking, sniffing e vazamento de referência | `X-Frame-Options: SAMEORIGIN`, CSP `frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'`, `nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy` (microfone e câmera só na própria página), `Cross-Origin-Opener-Policy` e `Cache-Control: no-store` na API. Vale também na nuvem. | `cabecalhosSeguranca` | Teste HTTP dos cabeçalhos. |
+| Revelar configuração de fornecedor | Removida a rota `/api/health` duplicada que informava se havia chave do Gemini; a rota ativa não expõe isso. | `server.ts` | Teste confirma ausência de `hasApiKey`. |
+
+**Escolhas e limites.** O limite geral não se aplica a este computador (o app do paciente faz cerca de 230 requisições por minuto ao abrir, e várias abas somariam) nem à nuvem (todos chegariam pelo mesmo proxy; lá vale a proteção do provedor e os limites da API móvel). A restrição por endereço usa o socket, não `X-Forwarded-For`, porque o servidor local não fica atrás de proxy. Os limites ficam em memória e valem para um único processo. A CSP não restringe scripts, para não quebrar o modo de desenvolvimento do Vite; uma CSP completa fica para a versão de produção.
+
+**Continua em aberto para o piloto (P0):** autenticação real de equipe e paciente no lugar de `x-demo-usuario` e `demo-maria`; a entrada automática (`ONCOFLOW_DEMO_AUTO_CONNECT`) emite sessões de pacientes fictícios a quem alcança o servidor e deve ficar desligada fora da demo; chaves de fornecedor ainda embutidas no APK; os demais itens P0 da seção anterior.

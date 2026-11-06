@@ -3,11 +3,27 @@ import { criarRotas } from './rotas';
 import { criarIntegracaoMobile, type MobileOptions } from './mobile';
 import { unwrapApiPath } from './apiPath';
 import { tr } from '../src/idioma';
+import { cabecalhosSeguranca, doProprioComputador, limitarTaxa, protegerRotasLocais } from './seguranca';
 
 /** Actual Express API, also mounted unchanged by HTTP integration tests. */
 export function criarApi(options: MobileOptions = {}) {
   const app = express();
   app.disable('x-powered-by');
+  app.use(cabecalhosSeguranca);
+  // Na nuvem o acesso passa pela proteção do provedor; localmente, o Pro e a sessão fixa da demo
+  // ficam restritos a este computador mesmo se o servidor for aberto na rede para o celular.
+  if (!options.cloud) {
+    app.use(protegerRotasLocais);
+    // Limites por origem só no servidor local: na nuvem todos chegariam pelo mesmo proxy, e a rota
+    // móvel já tem limites próprios. O app do paciente consulta a API com frequência (~230/min ao
+    // abrir), por isso o limite geral vale para aparelhos da rede, não para este computador.
+    const porIp = (req: express.Request) => req.socket.remoteAddress ?? '?';
+    const limiteRede = limitarTaxa('api', 1200, 60_000, porIp);
+    app.use('/api', (req, res, next) => (doProprioComputador(req) ? next() : limiteRede(req, res, next)));
+    const limiteDemo = limitarTaxa('demo', 20, 60_000, porIp);
+    app.use('/api/demo', (req, res, next) => (req.method === 'POST' ? limiteDemo(req, res, next) : next()));
+    app.use('/api/paciente/conversa', limitarTaxa('lia-texto', 30, 60_000, porIp));
+  }
   app.use((req, _res, next) => {
     try { req.url = unwrapApiPath(req.url); next(); } catch (error) { next(error); }
   });
