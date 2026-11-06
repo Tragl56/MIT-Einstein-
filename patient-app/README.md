@@ -4,7 +4,9 @@ Este diretório é a fonte do aplicativo do paciente no repositório `Tragl56/MI
 
 ## Entrada
 
-Toque em **Entrar no app**. O serviço escolhe o paciente fictício padrão, atualmente Maria, e fornece a identidade da sessão. Não há endereço ou código para digitar nesse fluxo. Em **Perfil → Perfil fictício conectado**, é possível escolher outro paciente da lista fornecida pelo serviço. A troca encerra a sessão anterior e cancela suas operações pendentes.
+**No navegador, o acesso é liberado pela equipe.** No Pro, o profissional abre o paciente em **Aplicativo do paciente → Liberar acesso ao app** e entrega o código (uso único, 5 minutos). Na tela de entrada, o paciente usa **Tenho um código da minha equipe**. Se a equipe tocar em **Encerrar acesso**, o app volta à entrada avisando que o acesso foi encerrado e que é preciso um novo código. Detalhes em `docs/connected-demo.md`.
+
+Só quando o serviço tem `ONCOFLOW_DEMO_AUTO_CONNECT=true` aparece também **Entrar sem código (demonstração)** (no Android, **Entrar no app**): o serviço escolhe o paciente fictício padrão, atualmente Maria, e fornece a identidade da sessão, sem endereço nem código. Em **Perfil → Perfil fictício conectado**, é possível escolher outro paciente da lista fornecida pelo serviço. A troca encerra a sessão anterior e cancela suas operações pendentes.
 
 No navegador, a aplicação em `/app/` usa a origem da própria página, inclusive no servidor local. No Android, a entrada usa o endereço público de `platform/mobile-config.json`, o único incorporado pelo Vite, sem chaves dos fornecedores. Enquanto a demonstração não estiver publicada, `serviceUrl` fica vazio e o APK segue direto para a descoberta abaixo:
 

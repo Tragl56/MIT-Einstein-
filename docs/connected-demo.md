@@ -35,9 +35,26 @@ powershell -ExecutionPolicy Bypass -File .\Start-OncoFlow.ps1 -Build
 Nas próximas execuções, `Start-OncoFlow.ps1` reutiliza o build. Use `-Build` depois de alterar o código;
 `-Port 3100` escolhe outra porta. O script utiliza o terminal atual e não abre outras janelas.
 
-## Entrada automática no app (0.15)
+## Acesso liberado pela equipe
 
-Com `ONCOFLOW_DEMO_AUTO_CONNECT=true`, o app web em `/app/` mostra **Entrar no app**: o servidor escolhe a
+O paciente só entra no app com um código liberado pela equipe:
+
+1. No Pro, abra o paciente, vá em **Aplicativo do paciente** e toque em **Liberar acesso ao app**. O painel
+   mostra um código de uso único, válido por 5 minutos, e o estado "aguardando o paciente entrar".
+2. No app web (`/app/`), o paciente toca em **Tenho um código da minha equipe**, digita o código e entra.
+   O Pro passa a mostrar **Acesso ativo no aplicativo** com o horário de expiração da sessão.
+3. Para encerrar, toque em **Encerrar acesso** e confirme. A sessão e qualquer código pendente são
+   cancelados na hora; o app do paciente volta à tela de entrada avisando que o acesso foi encerrado e que
+   é preciso pedir um novo código. Emissão e revogação ficam na auditoria.
+
+Só a equipe vê e encerra o acesso (`GET /api/pro/pacientes/:id/mobile-acesso` e
+`POST .../mobile-acesso/revogar`); o painel recebe contagens e horários, nunca o token da sessão. A sessão
+dura 30 minutos; depois disso o paciente precisa de um novo código.
+
+## Entrada sem código, só para demonstração (0.15)
+
+Com `ONCOFLOW_DEMO_AUTO_CONNECT=true`, o app web em `/app/` mostra também **Entrar sem código
+(demonstração)**, abaixo do código da equipe; sem a variável, o botão nem aparece. Nesse modo o servidor escolhe a
 paciente fictícia padrão (Maria) e emite uma sessão restrita a ela, sem endereço nem código. No PowerShell:
 
 ```powershell

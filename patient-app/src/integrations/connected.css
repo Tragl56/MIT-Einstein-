@@ -161,3 +161,21 @@
   display: grid;
   gap: 12px;
 }
+/* Entrada com o código liberado pela equipe: cartão principal da tela de boas-vindas. */
+.care-team-code {
+  width: 100%;
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid #b9d6d9;
+  border-radius: 20px;
+  background: white;
+}
+.care-team-code h2 {
+  font-size: 1.15rem;
+  color: #123b56;
+}
+.care-team-code input {
+  font-size: 1.25rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

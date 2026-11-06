@@ -67,7 +67,7 @@ export type LiaAppSnapshot = {
   requests: DemoRequest[];
   savedMood: string;
   /** Connected snapshots contain patient-visible server data only; never credentials. */
-  connected?: { status: "loading" | "ready" | "offline"; asOf?: string };
+  connected?: { status: "loading" | "ready" | "offline" | "ended"; asOf?: string };
   careContext?: HospitalCareContext;
   messages?: {
     id: string;

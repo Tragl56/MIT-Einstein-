@@ -63,6 +63,7 @@ import { createLiaAppBridge, type ConnectedLiaActions } from "./liaAppBridge";
 import type { LiaAppBridge, LiaAppSnapshot } from "../../shared/liaActions";
 import { useConnectedPatient } from "../integrations/useConnectedPatient";
 import {
+  CareTeamCodePanel,
   PairHospitalPanel,
   TeamMessages,
 } from "../integrations/ConnectedPanels";
@@ -289,6 +290,22 @@ export function App() {
   const operationKeys = useRef(new Map<string, string>());
   const [context, setContext] = useState(getSession);
   const [entered, setEntered] = useState(false);
+  // Access comes from the care team (one-time code). Entering without a code exists only when the
+  // demo server allows it (ONCOFLOW_DEMO_AUTO_CONNECT); the native app keeps its published flow.
+  const nativeApp = Capacitor.isNativePlatform();
+  const [autoEntry, setAutoEntry] = useState(nativeApp);
+  const [accessEnded, setAccessEnded] = useState(false);
+  useEffect(() => {
+    if (nativeApp) return;
+    const abort = new AbortController();
+    fetch("/api/mobile/config", { signal: abort.signal, cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((config: { autoConnectEnabled?: unknown } | null) => {
+        if (!abort.signal.aborted) setAutoEntry(config?.autoConnectEnabled === true);
+      })
+      .catch(() => {});
+    return () => abort.abort();
+  }, [nativeApp]);
   const [page, setPage] = useState<Page>(currentPage);
   const [prefs, setPrefs] = useState(loadPreferences);
   const [modal, setModal] = useState<Modal | null>(null);
@@ -614,6 +631,19 @@ export function App() {
     const result = await connected.connectAutomatically(patientId);
     if (result) activateHospital(result);
   }
+  async function enterWithCareTeamCode(code: string) {
+    setAccessEnded(false);
+    // On the web the app is served by the hospital server itself; plain HTTP is accepted only for
+    // the local demo addresses that the connection layer already allows.
+    await pair(window.location.origin, code, window.location.protocol === "http:");
+  }
+  // The team ended access (or the session expired): leave the connected app at once.
+  useEffect(() => {
+    if (!hospital || connected.view.status !== "ended") return;
+    disconnectHospital();
+    setAccessEnded(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hospital, connected.view.status]);
   function disconnectHospital() {
     currentHospital.current = null;
     connected.disconnect();
@@ -855,14 +885,30 @@ export function App() {
             </p>
           </div>
           <LanguageSelector id="welcome-language" />
-          <button
-            className="primary full"
-            disabled={connected.pairing}
-            onClick={() => void enterAutomatically()}
-          >
-            {t(connected.pairing ? "Entrando…" : "Entrar no app")}
-            <ArrowRight size={20} />
-          </button>
+          {!nativeApp && (
+            <CareTeamCodePanel
+              pairing={connected.pairing}
+              error={connected.pairError}
+              ended={accessEnded}
+              onConnect={enterWithCareTeamCode}
+            />
+          )}
+          {autoEntry && (
+            <button
+              className={nativeApp ? "primary full" : "secondary full"}
+              disabled={connected.pairing}
+              onClick={() => void enterAutomatically()}
+            >
+              {t(
+                connected.pairing
+                  ? "Entrando…"
+                  : nativeApp
+                    ? "Entrar no app"
+                    : "Entrar sem código (demonstração)",
+              )}
+              <ArrowRight size={20} />
+            </button>
+          )}
           {connected.autoError && (
             <p role="alert" className="hospital-error">
               {t(

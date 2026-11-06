@@ -90,4 +90,16 @@ A avaliação de 4/11 olhou sobretudo a arquitetura-alvo (FastAPI). O que de fat
 
 **Escolhas e limites.** O limite geral não se aplica a este computador (o app do paciente faz cerca de 230 requisições por minuto ao abrir, e várias abas somariam) nem à nuvem (todos chegariam pelo mesmo proxy; lá vale a proteção do provedor e os limites da API móvel). A restrição por endereço usa o socket, não `X-Forwarded-For`, porque o servidor local não fica atrás de proxy. Os limites ficam em memória e valem para um único processo. A CSP não restringe scripts, para não quebrar o modo de desenvolvimento do Vite; uma CSP completa fica para a versão de produção.
 
-**Continua em aberto para o piloto (P0):** autenticação real de equipe e paciente no lugar de `x-demo-usuario` e `demo-maria`; a entrada automática (`ONCOFLOW_DEMO_AUTO_CONNECT`) emite sessões de pacientes fictícios a quem alcança o servidor e deve ficar desligada fora da demo; chaves de fornecedor ainda embutidas no APK; os demais itens P0 da seção anterior.
+**Continua em aberto para o piloto (P0):** autenticação real de equipe e paciente no lugar de `x-demo-usuario` e `demo-maria`; a entrada sem código (`ONCOFLOW_DEMO_AUTO_CONNECT`) ainda existe como opção de demonstração e deve ficar desligada fora dela; chaves de fornecedor ainda embutidas no APK; os demais itens P0 da seção anterior.
+
+### Acesso do paciente liberado pela equipe — 5/11/2026
+
+O acesso ao app passa a ser concedido pelo profissional, e não aberto por padrão:
+
+- **Concessão:** no Pro, **Liberar acesso ao app** emite um código aleatório (40 bits), de uso único, válido por 5 minutos e guardado só como hash. O paciente entra digitando esse código; não há mais botão de entrada sem código, salvo com `ONCOFLOW_DEMO_AUTO_CONNECT=true`, e então rotulado "demonstração".
+- **Visibilidade:** o Pro mostra se há código pendente ou sessão ativa e até quando, sem expor o token (`GET /api/pro/pacientes/:id/mobile-acesso`).
+- **Revogação imediata:** **Encerrar acesso** apaga as sessões e os códigos pendentes daquele paciente (`POST .../mobile-acesso/revogar`), sem afetar outros pacientes. O app trata a recusa da sessão (401) como acesso encerrado, sai da área conectada e orienta a pedir um novo código; uma falha de rede continua sendo "sem conexão", sem expulsar o paciente.
+- **Auditoria:** emissão (`emitiu_pareamento_mobile_demo`), entrada (`conectou_mobile_demo`) e revogação (`revogou_acesso_mobile_demo`) com o profissional e o paciente, sem token nem código.
+- **Evidência:** `server/acessoPaciente.test.ts` (sem código ninguém entra; só a equipe vê e revoga; revogar derruba a sessão e o código pendente e preserva outro paciente; auditoria); testes de unidade da conexão (401 → encerrado, rede → offline); testes de navegador do app (entrada por código, código inválido, expulsão após revogação); fluxo completo verificado no navegador.
+
+**Limites:** a equipe ainda é identificada pelo cabeçalho de demonstração, então "só a equipe" vale dentro do modelo da demo e da restrição a este computador; a sessão do paciente dura 30 minutos e fica em memória (ou no snapshot, na nuvem). Na autenticação real, o vínculo profissional–paciente deve ser verificado antes de emitir ou revogar o acesso.
