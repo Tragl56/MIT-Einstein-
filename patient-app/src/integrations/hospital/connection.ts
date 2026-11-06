@@ -22,7 +22,8 @@ import { HospitalIntegrationError } from "./errors";
 import { parseScope } from "./validation";
 
 export type HospitalView = {
-  status: "loading" | "ready" | "offline";
+  /** "ended": the server no longer accepts this session (the care team ended access or it expired). */
+  status: "loading" | "ready" | "offline" | "ended";
   asOf?: string;
   summary?: HospitalPatientSummary;
   appointments: HospitalAppointment[];
@@ -343,12 +344,16 @@ export function createHospitalConnection(
           savedMood: summary.data.lastWellbeing?.feeling ?? view.savedMood,
           error: unresolved ? "write" : null,
         });
-      } catch {
+      } catch (error) {
         if (active)
-          publish({
-            status: "offline",
-            error: view.error === "write" ? "write" : "read",
-          });
+          publish(
+            error instanceof HospitalIntegrationError && error.code === "auth"
+              ? { status: "ended", error: null }
+              : {
+                  status: "offline",
+                  error: view.error === "write" ? "write" : "read",
+                },
+          );
       } finally {
         refreshPromise = null;
       }

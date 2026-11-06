@@ -31,7 +31,8 @@ npm run start:platform
 
 Abra o Pro em `http://localhost:3000/` e o app web em `http://localhost:3000/app/`. Para o Android, gere o
 código em **Aplicativo do paciente**, use o endereço do computador na mesma rede e marque a opção de rede
-local para HTTP. O terminal informa os IPs disponíveis. No Windows, também é possível executar
+local para HTTP. Por segurança o servidor só atende este computador: para o celular, inicie com
+`ONCOFLOW_REDE_LOCAL=true` e o terminal informa os IPs disponíveis. O Pro continua acessível só no computador. No Windows, também é possível executar
 `powershell -ExecutionPolicy Bypass -File .\Start-OncoFlow.ps1 -Build`.
 
 Os dados fictícios ficam em arquivo local persistente, ignorado pelo Git. O servidor precisa permanecer

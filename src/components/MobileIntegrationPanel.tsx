@@ -17,16 +17,22 @@ type Document = {
 };
 type MobileData = { demo: true; appointments: Appointment[]; journey: JourneyEvent[]; documents: Document[] };
 type Pairing = { code: string; expiresAt: string; demo: true };
+type Access = { activeSessions: number; sessionExpiresAt: string | null; pendingCodeExpiresAt: string | null; demo: true };
 
 const COPY = {
   'pt-BR': {
     title: 'Aplicativo do paciente', subtitle: 'O mesmo cuidado, conectado entre a equipe e o aplicativo.',
     language: 'Idioma desta área', refresh: 'Atualizar dados', loading: 'Carregando informações compartilhadas…',
-    failure: 'Não foi possível concluir. Tente novamente.', paired: 'Código emitido pelo servidor.',
-    pairTitle: 'Conectar o aplicativo', pairIntro: 'Gere um código temporário para este paciente. O código só pode ser usado uma vez.',
-    generate: 'Gerar código de pareamento', generating: 'Gerando código…', server: 'Endereço do servidor',
+    failure: 'Não foi possível concluir. Tente novamente.', paired: 'Acesso liberado. Entregue o código ao paciente.',
+    pairTitle: 'Acesso do paciente ao app', pairIntro: 'O paciente só entra no aplicativo com um código liberado pela equipe. O código vale uma única vez e por poucos minutos; você pode encerrar o acesso quando quiser.',
+    generate: 'Liberar acesso ao app', generating: 'Liberando…', server: 'Endereço do servidor',
     addressHint: 'No Android, use o endereço HTTPS do painel acessível pelo aparelho. localhost aponta para o próprio celular.',
-    instructions: 'No aplicativo, escolha Conectar ao hospital na entrada ou no Perfil. Informe o endereço do servidor e o código abaixo. Para HTTP na rede local, marque a opção de demonstração.',
+    instructions: 'Entregue este código ao paciente. No aplicativo, ele toca em "Tenho um código da minha equipe" e digita o código.',
+    androidTitle: 'Aplicativo Android', androidHint: 'No Android, o paciente também informa o endereço do servidor em Conexão avançada. Para HTTP na rede local, marque a opção de demonstração.',
+    statusNone: 'Sem acesso ao app.', statusCode: 'Código liberado, aguardando o paciente entrar.', statusActive: 'Acesso ativo no aplicativo',
+    statusUntil: 'até', revoke: 'Encerrar acesso', revokeConfirm: 'Confirmar: encerrar agora', revokeCancel: 'Manter acesso', revoking: 'Encerrando…',
+    revoked: 'Acesso encerrado. O app do paciente perdeu a conexão e o código pendente foi cancelado.',
+    revokeHint: 'O paciente sai do app na hora e só volta com um novo código.',
     expires: 'Válido até', openApp: 'Abrir aplicativo web', demo: 'Dados fictícios · conexão de demonstração',
     schedule: 'Agenda publicada', scheduleHint: 'Salvar altera o compromisso real que o aplicativo consulta. Pedidos de reagendamento são revisados nas pendências.',
     journey: 'Jornada compartilhada', journeyHint: 'Revise os textos e estados antes de disponibilizá-los ao paciente.',
@@ -45,11 +51,16 @@ const COPY = {
   'en-US': {
     title: 'Patient app', subtitle: 'The same care, connected between the team and the app.',
     language: 'Language for this area', refresh: 'Refresh data', loading: 'Loading shared information…',
-    failure: "We couldn't finish. Please try again.", paired: 'Code issued by the server.',
-    pairTitle: 'Connect the app', pairIntro: 'Generate a temporary code for this patient. The code can only be used once.',
-    generate: 'Generate pairing code', generating: 'Generating code…', server: 'Server address',
+    failure: "We couldn't finish. Please try again.", paired: 'Access granted. Give the code to the patient.',
+    pairTitle: 'Patient access to the app', pairIntro: 'The patient enters the app only with a code granted by the team. The code works once and for a few minutes; you can end access at any time.',
+    generate: 'Grant app access', generating: 'Granting…', server: 'Server address',
     addressHint: 'On Android, use the HTTPS panel address accessible to the device. localhost refers to the phone itself.',
-    instructions: 'In the app, choose Connect to hospital on the welcome screen or in Profile. Enter the server address and code below. For local HTTP, enable the demo network option.',
+    instructions: 'Give this code to the patient. In the app, they tap "I have a code from my care team" and type it.',
+    androidTitle: 'Android app', androidHint: 'On Android, the patient also enters the server address under Advanced connection. For local HTTP, enable the demo network option.',
+    statusNone: 'No app access.', statusCode: 'Code granted, waiting for the patient to enter.', statusActive: 'App access active',
+    statusUntil: 'until', revoke: 'End access', revokeConfirm: 'Confirm: end now', revokeCancel: 'Keep access', revoking: 'Ending…',
+    revoked: 'Access ended. The patient app lost its connection and the pending code was cancelled.',
+    revokeHint: 'The patient leaves the app at once and can only return with a new code.',
     expires: 'Valid until', openApp: 'Open web app', demo: 'Fictional data · demo connection',
     schedule: 'Published schedule', scheduleHint: 'Saving changes the actual appointment read by the app. Review rescheduling requests in Pending items.',
     journey: 'Shared journey', journeyHint: 'Review the text and status before making them available to the patient.',
@@ -133,6 +144,8 @@ export function MobileIntegrationPanel({ paciente, usuario }: { paciente: Pacien
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [pairing, setPairing] = useState<Pairing | null>(null);
+  const [access, setAccess] = useState<Access | null>(null);
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
   const [now, setNow] = useState(Date.now());
   const active = useRef(true);
   const lock = useRef(false);
@@ -158,6 +171,23 @@ export function MobileIntegrationPanel({ paciente, usuario }: { paciente: Pacien
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [pairing]);
+
+  // Access state: whether the patient is in the app, or a code is waiting to be used.
+  const loadAccess = useCallback(async (signal?: AbortSignal) => {
+    const next = await chamarApi<Access>(`${path}/mobile-acesso`, usuario.id, undefined, { signal });
+    if (active.current && !signal?.aborted) {
+      setAccess(next);
+      // The code was used (or expired): stop showing it as something to hand over.
+      if (!next.pendingCodeExpiresAt) setPairing(null);
+    }
+  }, [path, usuario.id]);
+  useEffect(() => {
+    const abort = new AbortController();
+    const tick = () => { void loadAccess(abort.signal).catch(() => {}); };
+    tick();
+    const timer = window.setInterval(tick, 4000);
+    return () => { abort.abort(); window.clearInterval(timer); };
+  }, [loadAccess]);
 
   // A synchronous lock also blocks two clicks before React renders the disabled button.
   const mutate = async (key: string, suffix: string, input: unknown, acknowledgement: string): Promise<boolean> => {
@@ -186,7 +216,17 @@ export function MobileIntegrationPanel({ paciente, usuario }: { paciente: Pacien
     lock.current = true; setPending('pair'); setError(''); setNotice(''); setPairing(null);
     try {
       const result = await chamarApi<Pairing>(`${path}/mobile-pairing`, usuario.id, {}, { signal: controller.current?.signal });
-      if (active.current) { setPairing(result); setNow(Date.now()); setNotice(copy.paired); }
+      if (active.current) { setPairing(result); setNow(Date.now()); setNotice(copy.paired); void loadAccess().catch(() => {}); }
+    } catch (e) { if (active.current) setError((e as Error).message || copy.failure); }
+    finally { lock.current = false; if (active.current) setPending(null); }
+  };
+
+  const revoke = async () => {
+    if (lock.current) return;
+    lock.current = true; setPending('revoke'); setError(''); setNotice('');
+    try {
+      const result = await chamarApi<Access>(`${path}/mobile-acesso/revogar`, usuario.id, {}, { signal: controller.current?.signal });
+      if (active.current) { setAccess(result); setPairing(null); setConfirmRevoke(false); setNotice(copy.revoked); }
     } catch (e) { if (active.current) setError((e as Error).message || copy.failure); }
     finally { lock.current = false; if (active.current) setPending(null); }
   };
@@ -213,15 +253,33 @@ export function MobileIntegrationPanel({ paciente, usuario }: { paciente: Pacien
     <section className="mobile-section mobile-pairing" aria-labelledby="mobile-pairing-title">
       <div className="mobile-section-title"><Smartphone aria-hidden size={23} /><h4 id="mobile-pairing-title">{copy.pairTitle}</h4></div>
       <p>{copy.pairIntro}</p>
-      <label className="mobile-server-address">{copy.server}<input readOnly value={window.location.origin} aria-describedby="mobile-address-hint" /></label>
-      <p id="mobile-address-hint" className="mobile-hint">{copy.addressHint}</p>
+      <p role="status" className="mobile-access-status" data-testid="access-status">
+        {access?.activeSessions
+          ? <><CheckCircle2 size={18} aria-hidden /><strong>{copy.statusActive}</strong>{access.sessionExpiresAt && <> · {copy.statusUntil} {new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(new Date(access.sessionExpiresAt))}</>}</>
+          : access?.pendingCodeExpiresAt ? copy.statusCode : copy.statusNone}
+      </p>
       <button type="button" className="pro-primary" disabled={disabled} onClick={() => void generate()} data-testid="generate-pairing"><Link2 size={18} aria-hidden />{pending === 'pair' ? copy.generating : copy.generate}</button>
       {pairing && <div className="mobile-pairing-result">
         <p>{copy.instructions}</p>
-        <output aria-label={locale === 'pt-BR' ? 'Código de pareamento' : 'Pairing code'} className="mobile-pairing-code" data-testid="pairing-code">{pairing.code}</output>
+        <output aria-label={locale === 'pt-BR' ? 'Código de acesso' : 'Access code'} className="mobile-pairing-code" data-testid="pairing-code">{pairing.code}</output>
         <p>{expired ? copy.codeExpired : `${copy.expires}: ${new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(pairing.expiresAt))}`}</p>
       </div>}
+      {(access?.activeSessions || access?.pendingCodeExpiresAt) ? <div className="mobile-revoke">
+        {!confirmRevoke
+          ? <button type="button" className="pro-secondary" disabled={disabled} onClick={() => setConfirmRevoke(true)} data-testid="revoke-access">{copy.revoke}</button>
+          : <>
+            <p>{copy.revokeHint}</p>
+            <button type="button" className="pro-danger" disabled={disabled} onClick={() => void revoke()} data-testid="confirm-revoke">{pending === 'revoke' ? copy.revoking : copy.revokeConfirm}</button>
+            <button type="button" className="pro-secondary" disabled={disabled} onClick={() => setConfirmRevoke(false)}>{copy.revokeCancel}</button>
+          </>}
+      </div> : null}
       <a className="mobile-app-link" href="/app/" target="_blank" rel="noopener"><Smartphone size={17} aria-hidden />{copy.openApp}</a>
+      <details className="mobile-android">
+        <summary>{copy.androidTitle}</summary>
+        <p>{copy.androidHint}</p>
+        <label className="mobile-server-address">{copy.server}<input readOnly value={window.location.origin} aria-describedby="mobile-address-hint" /></label>
+        <p id="mobile-address-hint" className="mobile-hint">{copy.addressHint}</p>
+      </details>
     </section>
 
     <button className="pro-secondary" type="button" disabled={disabled} onClick={() => void reload()}><RefreshCw size={17} aria-hidden />{loading ? copy.loading : copy.refresh}</button>

@@ -299,6 +299,32 @@ export function criarIntegracaoMobile(options: MobileOptions = {}) {
     auditar(user.nome, 'emitiu_pareamento_mobile_demo', p.id);
     res.json({ code, expiresAt: new Date(expires).toISOString(), demo: true });
   }));
+  // The team grants access (one-time code above) and can see and end it. Counts only: the
+  // session tokens themselves never leave the server.
+  function accessStatus(patientId: string) {
+    prune();
+    const active = [...sessions.values()].filter(s => s.patientId === patientId);
+    const code = [...pairings.values()].find(pair => pair.patientId === patientId);
+    return {
+      activeSessions: active.length,
+      sessionExpiresAt: active.length ? new Date(Math.max(...active.map(s => s.expires))).toISOString() : null,
+      pendingCodeExpiresAt: code ? new Date(code.expires).toISOString() : null,
+      demo: true as const,
+    };
+  }
+  r.get('/api/pro/pacientes/:id/mobile-acesso', route((req, res) => {
+    const { p } = team(req);
+    res.json(accessStatus(p.id));
+  }));
+  r.post('/api/pro/pacientes/:id/mobile-acesso/revogar', route((req, res) => {
+    const { p, user } = team(req);
+    object(req.body ?? {}, []);
+    let ended = 0;
+    for (const [key, session] of sessions) if (session.patientId === p.id) { sessions.delete(key); ended++; }
+    for (const [key, pair] of pairings) if (pair.patientId === p.id) pairings.delete(key);
+    auditar(user.nome, 'revogou_acesso_mobile_demo', p.id);
+    res.json({ ...accessStatus(p.id), ended });
+  }));
   r.post('/api/mobile/pair', route((req, res) => {
     bound(`pair-attempt:${req.ip}`, 20);
     const item = object(req.body, ['code']);

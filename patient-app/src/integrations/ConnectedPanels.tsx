@@ -114,6 +114,73 @@ export function PairHospitalPanel({
   );
 }
 
+/**
+ * Access is granted by the care team: the patient enters with the one-time code shown in the
+ * team panel. On the web the app is served by the hospital server, so only the code is asked.
+ */
+export function CareTeamCodePanel({
+  pairing,
+  error,
+  ended,
+  onConnect,
+}: {
+  pairing: boolean;
+  error: boolean;
+  ended: boolean;
+  onConnect(code: string): Promise<void>;
+}) {
+  const { t } = useI18n();
+  const [code, setCode] = useState("");
+  return (
+    <form
+      className="card hospital-pair-form care-team-code"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void onConnect(code);
+      }}
+    >
+      <h2>{t("Tenho um código da minha equipe")}</h2>
+      <p>
+        {t(
+          "Sua equipe de cuidado libera o acesso ao app e entrega um código. Ele vale uma única vez e por poucos minutos.",
+        )}
+      </p>
+      {ended && (
+        <p role="status" className="hospital-error">
+          {t(
+            "Seu acesso ao app foi encerrado. Para voltar, peça um novo código à sua equipe.",
+          )}
+        </p>
+      )}
+      <label htmlFor="care-team-code">{t("Código de acesso")}</label>
+      <input
+        id="care-team-code"
+        value={code}
+        onChange={(event) => setCode(event.target.value.toUpperCase())}
+        autoComplete="one-time-code"
+        autoCapitalize="characters"
+        autoCorrect="off"
+        spellCheck={false}
+        inputMode="text"
+        required
+        minLength={4}
+        maxLength={64}
+        disabled={pairing}
+      />
+      {error && (
+        <p role="alert" className="hospital-error">
+          {t(
+            "Código inválido, expirado ou já usado. Peça um novo código à sua equipe.",
+          )}
+        </p>
+      )}
+      <button className="primary full" disabled={pairing || !code.trim()}>
+        {t(pairing ? "Entrando…" : "Entrar com o código")}
+      </button>
+    </form>
+  );
+}
+
 export function TeamMessages({
   messages,
   pending,

@@ -127,6 +127,34 @@ function setup() {
   };
 }
 
+describe("access ended by the care team", () => {
+  it("reports an ended session instead of an offline one when the server refuses it", async () => {
+    const { HospitalIntegrationError } = await import(
+      "../../src/integrations/hospital/errors"
+    );
+    const { connection, repository } = setup();
+    await connection.refresh();
+    expect(connection.getSnapshot().status).toBe("ready");
+    vi.mocked(repository.summary).mockRejectedValueOnce(
+      new HospitalIntegrationError("auth", 401),
+    );
+    await connection.refresh();
+    expect(connection.getSnapshot()).toMatchObject({ status: "ended", error: null });
+  });
+
+  it("keeps a network failure as offline, so the patient is not sent away", async () => {
+    const { HospitalIntegrationError } = await import(
+      "../../src/integrations/hospital/errors"
+    );
+    const { connection, repository } = setup();
+    vi.mocked(repository.summary).mockRejectedValueOnce(
+      new HospitalIntegrationError("network"),
+    );
+    await connection.refresh();
+    expect(connection.getSnapshot()).toMatchObject({ status: "offline", error: "read" });
+  });
+});
+
 describe("connected patient session", () => {
   it("keeps the server patient identity and publishes a complete read snapshot", async () => {
     const { connection, repository } = setup();

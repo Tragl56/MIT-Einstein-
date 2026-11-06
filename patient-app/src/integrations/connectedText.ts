@@ -6,6 +6,16 @@ registerTranslations("en-US", {
   "VERSÃO 0.15.0 · DEMONSTRAÇÃO": "VERSION 0.15.0 · DEMO",
   "Explorar demonstração offline": "Explore demo offline",
   "Entrar no app": "Enter app",
+  "Tenho um código da minha equipe": "I have a code from my care team",
+  "Sua equipe de cuidado libera o acesso ao app e entrega um código. Ele vale uma única vez e por poucos minutos.":
+    "Your care team grants access to the app and gives you a code. It works once and for a few minutes.",
+  "Seu acesso ao app foi encerrado. Para voltar, peça um novo código à sua equipe.":
+    "Your access to the app was ended. To come back, ask your care team for a new code.",
+  "Código de acesso": "Access code",
+  "Código inválido, expirado ou já usado. Peça um novo código à sua equipe.":
+    "Invalid, expired or already used code. Ask your care team for a new code.",
+  "Entrar com o código": "Enter with the code",
+  "Entrar sem código (demonstração)": "Enter without a code (demo)",
   "Entrando…": "Entering…",
   "Conexão avançada": "Advanced connection",
   "Perfil fictício conectado": "Connected fictional profile",

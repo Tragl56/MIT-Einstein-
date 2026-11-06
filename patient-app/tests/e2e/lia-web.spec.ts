@@ -61,6 +61,15 @@ test("browser voice receives a transcript through the same safe application acti
       abort() {}
     }
     Object.defineProperty(window, "SpeechRecognition", { value: Recognition });
+    // The Lia asks for the microphone before listening; simulate a device that allows it.
+    Object.defineProperty(navigator, "mediaDevices", {
+      value: {
+        getUserMedia: async () => ({ getTracks: () => [{ stop() {} }] }),
+      },
+    });
+    Object.defineProperty(navigator, "permissions", {
+      value: { query: async () => ({ state: "granted" }) },
+    });
   });
   await open(page);
   await page

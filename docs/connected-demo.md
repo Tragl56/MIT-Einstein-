@@ -35,9 +35,26 @@ powershell -ExecutionPolicy Bypass -File .\Start-OncoFlow.ps1 -Build
 Nas próximas execuções, `Start-OncoFlow.ps1` reutiliza o build. Use `-Build` depois de alterar o código;
 `-Port 3100` escolhe outra porta. O script utiliza o terminal atual e não abre outras janelas.
 
-## Entrada automática no app (0.15)
+## Acesso liberado pela equipe
 
-Com `ONCOFLOW_DEMO_AUTO_CONNECT=true`, o app web em `/app/` mostra **Entrar no app**: o servidor escolhe a
+O paciente só entra no app com um código liberado pela equipe:
+
+1. No Pro, abra o paciente, vá em **Aplicativo do paciente** e toque em **Liberar acesso ao app**. O painel
+   mostra um código de uso único, válido por 5 minutos, e o estado "aguardando o paciente entrar".
+2. No app web (`/app/`), o paciente toca em **Tenho um código da minha equipe**, digita o código e entra.
+   O Pro passa a mostrar **Acesso ativo no aplicativo** com o horário de expiração da sessão.
+3. Para encerrar, toque em **Encerrar acesso** e confirme. A sessão e qualquer código pendente são
+   cancelados na hora; o app do paciente volta à tela de entrada avisando que o acesso foi encerrado e que
+   é preciso pedir um novo código. Emissão e revogação ficam na auditoria.
+
+Só a equipe vê e encerra o acesso (`GET /api/pro/pacientes/:id/mobile-acesso` e
+`POST .../mobile-acesso/revogar`); o painel recebe contagens e horários, nunca o token da sessão. A sessão
+dura 30 minutos; depois disso o paciente precisa de um novo código.
+
+## Entrada sem código, só para demonstração (0.15)
+
+Com `ONCOFLOW_DEMO_AUTO_CONNECT=true`, o app web em `/app/` mostra também **Entrar sem código
+(demonstração)**, abaixo do código da equipe; sem a variável, o botão nem aparece. Nesse modo o servidor escolhe a
 paciente fictícia padrão (Maria) e emite uma sessão restrita a ela, sem endereço nem código. No PowerShell:
 
 ```powershell
@@ -52,8 +69,12 @@ publicado em `platform/mobile-config.json`; enquanto ele estiver vazio, use o pa
 
 ## Parear o Android na mesma rede
 
-1. Conecte computador e celular à mesma rede privada. No celular, use o IP do computador informado no
-   terminal, por exemplo `http://192.168.1.20:3000`. `localhost` no celular identifica o próprio aparelho.
+1. Conecte computador e celular à mesma rede privada. Por segurança, o servidor só atende este computador;
+   para o celular, inicie com a rede liberada (no PowerShell: `$env:ONCOFLOW_REDE_LOCAL = 'true'` antes de
+   `npm run start:platform`). No celular, use o IP do computador informado no terminal, por exemplo
+   `http://192.168.1.20:3000`. `localhost` no celular identifica o próprio aparelho. Mesmo com a rede
+   liberada, o painel Pro, a troca de perfil, o reset da demo e a sessão fixa da paciente só respondem ao
+   próprio computador; pela rede ficam abertos o app do paciente e a API móvel com pareamento.
 2. No Pro, escolha um perfil fictício, selecione o paciente e abra **Aplicativo do paciente**.
 3. Toque em **Gerar código de pareamento**. O código tem prazo de validade e só pode ser utilizado uma vez.
 4. No aplicativo Android, toque em **Conectar ao hospital** na entrada ou em **Perfil → Conectar ao hospital**.
@@ -65,8 +86,9 @@ O campo de endereço exibido no painel reflete como você abriu o Pro. Se o pain
 substitua pelo IP da rede ao preencher o Android. O aplicativo também aceita um endereço HTTPS acessível ao
 aparelho; o modo HTTP de demonstração é reservado aos endereços locais permitidos pelo app.
 
-Se o celular não alcançar o servidor, teste primeiro o endereço do painel no navegador do celular. Confira
-o IP, a porta e a conexão à mesma rede; redes de convidados podem isolar os aparelhos. Quando o Windows
+Se o celular não alcançar o servidor, confira se ele foi iniciado com `ONCOFLOW_REDE_LOCAL=true` e teste
+`http://<IP>:3000/app/` no navegador do celular (o Pro não abre pela rede, de propósito). Confira o IP, a
+porta e a conexão à mesma rede; redes de convidados podem isolar os aparelhos. Quando o Windows
 solicitar acesso de rede ao Node.js, permita a rede privada usada pela demonstração.
 
 ## Ver a troca nos dois sentidos

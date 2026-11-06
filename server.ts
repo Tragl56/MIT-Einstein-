@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { criarApi } from './server/api';
 import { pacienteDaSessao, verificarInatividade, ErroDominio } from './server/estado';
 import { tr } from './src/idioma';
+import { hostDoServidor, limitarTaxa, validarAudio } from './server/seguranca';
 
 dotenv.config();
 
@@ -13,7 +14,12 @@ async function startServer() {
   const { app, persist } = criarApi();
   const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json({ limit: '25mb' }));
+  // Só a transcrição recebe corpo grande (áudio em base64); o resto da API tem limite de 256 kB.
+  const corpoAudio = express.json({ limit: '12mb' });
+  const sessaoDa = (req: express.Request) => req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? '';
+  // Cada transcrição custa uma chamada ao fornecedor: limite por origem para conter abuso de custo
+  // (por sessão não serviria, pois quem abusa pode trocar o token a cada pedido).
+  const limiteTranscricao = limitarTaxa('transcricao', 12, 60_000, req => req.socket.remoteAddress ?? '?');
 
   // Inicialização centralizada do SDK @google/genai no servidor (usado só para transcrever áudio)
   let aiClient: GoogleGenAI | null = null;
@@ -27,36 +33,26 @@ async function startServer() {
     return aiClient;
   };
 
-  app.get('/api/health', (_req, res) => {
-    res.json({
-      status: 'ok',
-      service: 'OncoFlow',
-      hasApiKey: !!process.env.GEMINI_API_KEY,
-      timestamp: new Date().toISOString(),
-    });
-  });
+  // /api/health fica em server/api.ts e não informa se há chave de fornecedor configurada.
 
   // Transcrição do áudio do paciente (fala para a Lia ou check-in por voz). Vem do IRIS.
   // O áudio não é guardado: só a transcrição volta para o app, que mostra "Entendi: ..." antes
   // de qualquer ação.
-  app.post('/api/transcrever-audio', async (req, res) => {
+  app.post('/api/transcrever-audio', limiteTranscricao, corpoAudio, async (req, res) => {
+    let cleanMimeType: string;
     try {
-      pacienteDaSessao(req.header('authorization')?.replace(/^Bearer\s+/i, ''));
+      pacienteDaSessao(sessaoDa(req));
+      cleanMimeType = validarAudio(req.body?.audioBase64, req.body?.mimeType);
     } catch (err) {
       const erro = err as ErroDominio;
-      return res.status(erro.status ?? 401).json({ error: erro.message, sucesso: false });
+      return res.status(erro.status ?? 400).json({ error: erro.message, sucesso: false });
     }
-
-    const { audioBase64, mimeType } = req.body ?? {};
-    if (!audioBase64) {
-      return res.status(400).json({ error: tr('audioBase64 é obrigatório', 'audioBase64 is required'), sucesso: false });
-    }
+    const { audioBase64 } = req.body;
     if (!process.env.GEMINI_API_KEY) {
       return res.status(503).json({ error: tr('Transcrição indisponível: chave do Gemini não configurada', 'Transcription unavailable: Gemini key not configured'), sucesso: false });
     }
 
     const ai = getAiClient();
-    const cleanMimeType = (mimeType || 'audio/webm').split(';')[0];
     const contents = [
       {
         role: 'user',
@@ -110,8 +106,10 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`OncoFlow listening on port ${PORT}`);
+  // Por padrão só este computador acessa. Para o celular na mesma rede: ONCOFLOW_REDE_LOCAL=true.
+  const HOST = hostDoServidor();
+  app.listen(PORT, HOST, () => {
+    console.log(`OncoFlow listening on ${HOST}:${PORT}${HOST === '127.0.0.1' ? ' (only this computer)' : ' (local network)'}`);
   });
 }
 

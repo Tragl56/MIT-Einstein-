@@ -18,7 +18,12 @@ for (const entries of Object.values(networkInterfaces())) for (const entry of en
   const parts = entry.address.split('.').map(Number);
   if (entry.family === 'IPv4' && !entry.internal && (parts[0] === 10 || (parts[0] === 192 && parts[1] === 168) || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31))) addresses.add(entry.address);
 }
-for (const address of addresses) console.log(`Celular na mesma rede: http://${address}:${port} · marque Rede local de demonstração (HTTP) no app.`);
+if (process.env.ONCOFLOW_REDE_LOCAL === 'true') {
+  for (const address of addresses) console.log(`Celular na mesma rede: http://${address}:${port} · marque Rede local de demonstração (HTTP) no app.`);
+  console.log('Atenção: qualquer aparelho nesta rede alcança o app do paciente. O painel Pro continua só neste computador.');
+} else {
+  console.log('Acesso só deste computador. Para usar o celular na mesma rede, inicie com ONCOFLOW_REDE_LOCAL=true.');
+}
 console.log('Mantenha este processo aberto durante a demonstração. Ctrl+C encerra o servidor.');
 const child = spawn(process.execPath, [server], { cwd: root, env, stdio: 'inherit', shell: false, windowsHide: true });
 child.once('error', error => { console.error(error.message); process.exitCode = 1; });
